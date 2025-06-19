@@ -18,6 +18,9 @@ document.querySelector('.login-form').addEventListener('submit', async function(
   e.preventDefault();
   const username = this.username.value;
   const password = this.password.value;
+  const errorDiv = document.getElementById('login-error');
+  errorDiv.textContent = ''; // Clear previous error
+
   const response = await fetch('/api/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -27,7 +30,7 @@ document.querySelector('.login-form').addEventListener('submit', async function(
   if(result.success) {
     window.location.href = "dashboard.html";
   } else {
-    alert(result.message);
+    errorDiv.textContent = result.message;
   }
 });
 </script>
