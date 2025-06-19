@@ -85,9 +85,9 @@ body {
 }
 
 @media (max-width: 480px) {
-  .login-container {
+  .login-container, .dashboard-container {
     max-width: 98vw;
-    padding: 0 4vw;
+    padding: 0 2vw;
   }
 
   .center-logo {
@@ -96,7 +96,7 @@ body {
   }
 
   .login-form {
-    padding: 20px 8px 14px 8px;
+    padding: 14px 2vw 10px 2vw;
   }
 
   .login-form input[type="text"],
