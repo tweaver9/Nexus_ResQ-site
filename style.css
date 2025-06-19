@@ -110,3 +110,11 @@ body {
     padding: 10px 0;
   }
 }
+.error-message {
+  color: #ff4444;
+  font-size: 0.96em;
+  min-height: 20px;
+  margin-bottom: 10px;
+  text-align: center;
+  transition: opacity 0.2s;
+}
