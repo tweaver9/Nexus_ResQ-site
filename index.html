@@ -33,10 +33,13 @@ window.addEventListener('DOMContentLoaded', function() {
     });
     const result = await response.json();
     if(result.success) {
-      window.location.href = "dashboard.html";
-    } else {
-      errorDiv.textContent = result.message;
-    }
+  // Save to sessionStorage so dashboard.html can use it
+  sessionStorage.setItem('role', result.role);
+  sessionStorage.setItem('username', result.username);
+  window.location.href = "dashboard.html";
+} else {
+  errorDiv.textContent = result.message;
+}
   });
 });
 </script>
