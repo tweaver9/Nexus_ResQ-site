@@ -1,21 +1,85 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: Arial, sans-serif;
   background: #1b1d21;
   color: #fff;
-  margin: 0;
-  padding: 2rem;
+  min-height: 100vh;
+  min-width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-h1 {
-  color: #e7ba34;
-}
-p {
-  color: #aac7ff;
+
+.login-container {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .center-logo {
   display: block;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 20px;
-  width: 180px; /* Or whatever width you want */
+  margin: 0 auto 32px auto;
+  width: 160px;
+}
+
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: rgba(34, 38, 51, 0.97);
+  padding: 32px 28px 18px 28px;
+  border-radius: 12px;
+  box-shadow: 0 6px 32px #00000033;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+  margin-bottom: 10px;
+  padding: 13px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #23242a;
+  color: #fff;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.forgot-password {
+  font-size: 0.9em;
+  color: #aac7ff;
+  margin-bottom: 16px;
+  text-align: right;
+  text-decoration: none;
+  display: block;
+  transition: color 0.2s;
+}
+
+.forgot-password:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.login-form button {
+  background: #e7ba34;
+  color: #23242a;
+  border: none;
+  padding: 13px 0;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 2px;
+  transition: background 0.2s;
+}
+
+.login-form button:hover {
+  background: #ffce3c;
 }
