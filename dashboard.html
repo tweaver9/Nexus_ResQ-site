@@ -6,9 +6,31 @@
 </head>
 <body>
   <div class="dashboard-container">
-    <h1>Welcome to NexusResQ!</h1>
+    <h1 id="welcome-message">Welcome!</h1>
     <p>You are now logged in.</p>
-    <a href="index.html">Log Out</a>
+
+    <div id="admin-controls" style="display: none;">
+      <h2>Admin Controls</h2>
+      <button>Add User</button>
+      <button>Manage Users</button>
+      <!-- Add more admin-only features here -->
+    </div>
+    
+    <a href="index.html" onclick="sessionStorage.clear();">Log Out</a>
   </div>
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+  const role = sessionStorage.getItem('role');
+  const username = sessionStorage.getItem('username');
+
+  // Show username
+  document.getElementById('welcome-message').textContent = "Welcome, " + (username ? username : "User") + "!";
+
+  // If admin, show admin controls
+  if (role === 'admin') {
+    document.getElementById('admin-controls').style.display = 'block';
+  }
+});
+</script>
 </body>
 </html>
