@@ -83,3 +83,30 @@ body {
 .login-form button:hover {
   background: #ffce3c;
 }
+
+@media (max-width: 480px) {
+  .login-container {
+    max-width: 98vw;
+    padding: 0 4vw;
+  }
+
+  .center-logo {
+    width: 120px;
+    margin-bottom: 24px;
+  }
+
+  .login-form {
+    padding: 20px 8px 14px 8px;
+  }
+
+  .login-form input[type="text"],
+  .login-form input[type="password"] {
+    font-size: 1em;
+    padding: 10px 8px;
+  }
+
+  .login-form button {
+    font-size: 1em;
+    padding: 10px 0;
+  }
+}
