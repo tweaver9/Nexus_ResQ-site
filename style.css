@@ -85,26 +85,28 @@ body {
 }
 
 @media (max-width: 480px) {
-  body {
-    padding: 0;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
   .login-container {
     max-width: 98vw;
     padding: 0 4vw;
-    margin: 0;
   }
 
   .center-logo {
-    width: 110px;
-    margin-bottom: 18px;
+    width: 120px;
+    margin-bottom: 24px;
   }
 
   .login-form {
-    padding: 18px 6px 12px 6px;
+    padding: 20px 8px 14px 8px;
+  }
+
+  .login-form input[type="text"],
+  .login-form input[type="password"] {
+    font-size: 1em;
+    padding: 10px 8px;
+  }
+
+  .login-form button {
+    font-size: 1em;
+    padding: 10px 0;
   }
 }
