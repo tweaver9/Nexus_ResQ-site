@@ -9,24 +9,31 @@ export default async function handler(req, res) {
     const { action, username, password, role } = req.body;
 
     // LOGIN
-    if (action === 'login') {
-      // Try to find this user
-      const { data: users, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', username)
-        .eq('password', password)
-        .limit(1);
+    
+  if (action === 'login') {
+  console.log("Login API received:", { username, password });
+  const { data: users, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('username', username)
+    .eq('password', password)
+    .limit(1);
+  console.log("Supabase result:", { users, error });
+  if (error) {
+    return res.status(500).json({ success: false, message: 'Database error.' });
+  }
+  if (users && users.length === 1) {
+    return res.status(200).json({
+      success: true,
+      message: `Login successful! Welcome, ${username}.`,
+      role: users[0].role,
+      username: users[0].username
+    });
+  } else {
+    return res.status(401).json({ success: false, message: 'Invalid username or password' });
+  }
+}
 
-      if (error) {
-        return res.status(500).json({ success: false, message: 'Database error.' });
-      }
-      if (users && users.length === 1) {
-        return res.status(200).json({
-          success: true,
-          message: `Login successful! Welcome, ${username}.`,
-          role: users[0].role,
-          username: users[0].username
         });
       } else {
         return res.status(401).json({ success: false, message: 'Invalid username or password' });
