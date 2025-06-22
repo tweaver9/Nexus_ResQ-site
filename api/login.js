@@ -58,6 +58,32 @@ export default async function handler(req, res) {
         .from('users')
         .select('id')
         .eq('username', username);
+    // LIST USERS (admin only)
+if (action === 'listUsers') {
+  const { data: users, error } = await supabase
+    .from('users')
+    .select('username, role')
+    .order('username');
+  if (error) {
+    return res.status(500).json({ success: false, message: 'Failed to fetch users.' });
+  }
+  return res.status(200).json({ success: true, users });
+}
+
+// DELETE USER (admin only)
+if (action === 'deleteUser') {
+  if (!username) {
+    return res.status(400).json({ success: false, message: 'Username required.' });
+  }
+  const { error } = await supabase
+    .from('users')
+    .delete()
+    .eq('username', username);
+  if (error) {
+    return res.status(500).json({ success: false, message: 'Failed to delete user.' });
+  }
+  return res.status(200).json({ success: true, message: 'User deleted.' });
+}
 
       if (error2) {
         return res.status(500).json({ success: false, message: 'Database error.' });
