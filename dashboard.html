@@ -9,12 +9,23 @@
   <div class="dashboard-container">
     <h1 id="welcome-message">Welcome!</h1>
     <p>You are now logged in.</p>
-
-    <div id="admin-controls" style="display: none;">
-      <h2>Admin Controls</h2>
-      <button>Add User</button>
-      <button>Manage Users</button>
-      <!-- Add more admin-only features here -->
+   <div id="admin-controls" style="display: none;">
+  <h2>Admin Controls</h2>
+  <h3>Add User</h3>
+  <form id="add-user-form">
+    <input type="text" id="new-username" placeholder="Username" required>
+    <input type="password" id="new-password" placeholder="Password" required>
+    <select id="new-role" required>
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button type="submit">Add User</button>
+    <div id="add-user-error" class="error-message"></div>
+  </form>
+  <h3>Current Users</h3>
+  <ul id="user-list"></ul>
+</div>
+       <!-- Add more admin-only features here -->
     </div>
     
     <a href="index.html" onclick="sessionStorage.clear();">Log Out</a>
