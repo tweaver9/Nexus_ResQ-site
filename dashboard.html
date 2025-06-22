@@ -38,11 +38,79 @@ document.addEventListener('DOMContentLoaded', function() {
   // Show username
   document.getElementById('welcome-message').textContent = "Welcome, " + (username ? username : "User") + "!";
 
-  // If admin, show admin controls
+  // If admin, show admin controls and load users
   if (role === 'admin') {
     document.getElementById('admin-controls').style.display = 'block';
+    loadUsers();
+  }
+
+  // Add User functionality
+  const addUserForm = document.getElementById('add-user-form');
+  if (addUserForm) {
+    addUserForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const newUsername = document.getElementById('new-username').value;
+      const newPassword = document.getElementById('new-password').value;
+      const newRole = document.getElementById('new-role').value;
+      const errorDiv = document.getElementById('add-user-error');
+      errorDiv.textContent = '';
+
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'addUser',
+          username: newUsername,
+          password: newPassword,
+          role: newRole
+        })
+      });
+      const result = await res.json();
+      if (result.success) {
+        loadUsers();
+        addUserForm.reset();
+      } else {
+        errorDiv.textContent = result.message;
+      }
+    });
+  }
+
+  // Load and manage users
+  async function loadUsers() {
+    const userList = document.getElementById('user-list');
+    userList.innerHTML = '';
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'listUsers' })
+    });
+    const result = await res.json();
+    if (result.success && result.users) {
+      result.users.forEach(user => {
+        const li = document.createElement('li');
+        li.textContent = `${user.username} (${user.role})`;
+        // Prevent admin from deleting themselves
+        if(user.username !== username) {
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Delete';
+          delBtn.onclick = async () => {
+            if(confirm(`Delete user "${user.username}"?`)) {
+              await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'deleteUser', username: user.username })
+              });
+              loadUsers();
+            }
+          };
+          li.appendChild(delBtn);
+        }
+        userList.appendChild(li);
+      });
+    }
   }
 });
 </script>
+
 </body>
 </html>
