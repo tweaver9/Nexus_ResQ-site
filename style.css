@@ -1,170 +1,91 @@
-/* General Reset */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #0f0f10;
-  color: #f1f1f1;
-  min-height: 100vh;
+  margin: 0;
+  font-family: 'Oswald', sans-serif;
+  background-color: #000;
+  color: #f2f2f2;
 }
 
-/* NAVIGATION BAR */
-.nav {
+header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background-color: #0f0f10;
-  border-bottom: 2px solid #1a1a1a;
+  padding: 20px;
+  background-color: #111;
 }
 
 .logo {
-  max-width: 180px;
-  height: 180px;
-  display: block;
-  margin-bottom: 2rem;
+  height: 60px;
+  margin-right: 20px;
 }
 
-/* NAV BUTTONS */
-.nav-buttons {
+.site-title {
+  font-size: 2.2em;
+  font-weight: 600;
+  color: #fdd835; /* safety yellow */
+}
+
+.intro {
+  text-align: center;
+  padding: 60px 30px 30px;
+  max-width: 800px;
+  margin: auto;
+  font-size: 1.2em;
+  color: #ccc;
+}
+
+.features {
   display: flex;
-  gap: 1.5rem;
-}
-
-.nav-btn {
-  text-decoration: none;
-  color: #FFD700;
-  font-weight: 500;
-  font-size: 1rem;
-  padding: 0.25rem 0.5rem;
-  transition: color 0.2s ease;
-}
-
-.nav-btn:hover {
-  color: #ffffff;
-}
-
-/* MAIN CONTAINER */
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 3rem;
-  padding: 4rem 2rem;
   flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  padding: 30px;
+  background-color: #0d0d0d;
 }
 
-/* LOGIN FORM */
-.login-form {
-  background: none;
-  flex: 1 1 350px;
-  max-width: 400px;
-}
-
-.login-form h1 {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  color: #FFD700;
-}
-
-.login-form label {
-  display: block;
-  margin: 1rem 0 0.25rem;
-  font-weight: 500;
-}
-
-.login-form input {
-  width: 100%;
-  padding: 0.75rem;
+.feature {
   background-color: #1a1a1a;
-  border: none;
-  border-radius: 5px;
-  color: #f1f1f1;
+  border-left: 4px solid #4682b4; /* steel blue */
+  padding: 20px;
+  width: 280px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
 }
 
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  margin: 1rem 0 0.5rem;
+.feature h2 {
+  color: #fdd835;
+  font-size: 1.3em;
+  margin-bottom: 10px;
 }
 
-.checkbox-row input {
-  margin-right: 0.5rem;
+.feature p {
+  color: #ddd;
+  font-size: 1em;
 }
 
-.password-help {
-  font-size: 0.9rem;
-  color: #3399ff;
-  text-decoration: none;
+footer {
+  text-align: center;
+  padding: 30px;
+  background-color: #111;
+  font-size: 0.9em;
+  color: #777;
 }
 
-.password-help:hover {
-  text-decoration: underline;
-}
-
-.login-form button {
-  margin-top: 1.5rem;
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #0057ff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.login-form button:hover {
-  background-color: #003fcc;
-}
-
-.create-account {
-  margin-top: 1rem;
-  font-size: 0.9rem;
-}
-
-.create-account a {
-  color: #FFD700;
-  text-decoration: none;
-}
-
-.create-account a:hover {
-  text-decoration: underline;
-}
-}
-
-/* RESPONSIVE */
+/* Responsive */
 @media (max-width: 768px) {
-  .nav {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .nav-buttons {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin-top: 1rem;
-  }
-
-  .container {
+  .features {
     flex-direction: column;
     align-items: center;
-    padding: 2rem 1.5rem;
   }
 
-  .login-form,
-  .order-box {
-    max-width: 100%;
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .site-title {
+    margin-top: 10px;
+    font-size: 1.8em;
   }
 
   .logo {
-    margin-bottom: 1rem;
+    height: 50px;
   }
 }
