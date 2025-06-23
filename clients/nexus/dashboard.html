@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard | NexusResQ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Oswald', sans-serif;
+      background-color: #0d1b2a;
+      color: #f2f2f2;
+      text-align: center;
+      padding-top: 60px;
+    }
+
+    .dashboard-header {
+      margin-bottom: 40px;
+    }
+
+    .dashboard-menu button,
+    .logout-btn {
+      display: block;
+      margin: 12px auto;
+      padding: 12px 24px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      background-color: #fdd835;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      width: 240px;
+      transition: background 0.2s ease;
+      text-decoration: none;
+    }
+
+    .dashboard-menu button:hover,
+    .logout-btn:hover {
+      background-color: #fff176;
+    }
+
+    #user-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+    }
+
+    #user-modal-content {
+      background-color: #142b47;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: 80px auto;
+      color: #fff;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0 12px;
+      font-family: 'Oswald', sans-serif;
+    }
+
+    button[type="submit"] {
+      background-color: #fdd835;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    h3 {
+      margin-top: 0;
+      color: #fdd835;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-header">
+    <h1 id="welcome-message">Welcome!</h1>
+  </div>
+
+  <div class="dashboard-menu">
+    <button id="manage-users-btn" style="display: none;">Manage Users</button>
+    <button onclick="window.location.href='view-inspections.html'">View Inspection Logs</button>
+    <button onclick="window.location.href='help.html'">Help</button>
+    <a class="logout-btn" href="login.html" onclick="localStorage.clear();">Log Out</a>
+  </div>
+
+  <div id="user-modal">
+    <div id="user-modal-content"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const role = localStorage.getItem('role');
+      const username = localStorage.getItem('username');
+
+      document.getElementById('welcome-message').textContent = "Welcome, " + (username ? username : "User") + "!";
+
+      if (role === 'admin') {
+        document.getElementById('manage-users-btn').style.display = 'block';
+        document.getElementById('manage-users-btn').onclick = openUserManager;
+      }
+
+      function openModal(html) {
+        const modal = document.getElementById('user-modal');
+        document.getElementById('user-modal-content').innerHTML = html;
+        modal.style.display = 'block';
+        modal.onclick = (e) => {
+          if (e.target === modal) modal.style.display = 'none';
+        };
+      }
+
+      async function openUserManager() {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'listUsers', adminRole: role })
+        });
+        const result = await res.json();
+        if (!result.success) return alert(result.message);
+
+        let userListHTML = '<h3>User List</h3><ul>';
+        for (const user of result.users) {
+          userListHTML += `
+            <li>
+              ${user.username} (${user.role}) 
+              <button onclick="viewUser('${user.username}')">View/Modify</button>
+              <button onclick="deleteUser('${user.username}')">Delete</button>
+            </li>`;
+        }
+        userListHTML += '</ul><button onclick="addUserPopup()">Add User</button>';
+        openModal(userListHTML);
+      }
+
+      window.addUserPopup = function () {
+        openModal(`
+          <h3>Add User</h3>
+          <form id="addUserForm">
+            <input type="text" id="newUsername" placeholder="Username" required><br>
+            <input type="password" id="newPassword" placeholder="Password" required><br>
+            <select id="newRole"><option value="user">User</option><option value="admin">Admin</option></select><br>
+            <button type="submit">Add</button>
+            <button type="button" onclick="document.getElementById('user-modal').style.display='none'">Cancel</button>
+          </form>
+          <div id="addUserError"></div>
+        `);
+        document.getElementById('addUserForm').onsubmit = async function (e) {
+          e.preventDefault();
+          const newUsername = document.getElementById('newUsername').value;
+          const newPassword = document.getElementById('newPassword').value;
+          const newRole = document.getElementById('newRole').value;
+          const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'addUser',
+              username: newUsername,
+              password: newPassword,
+              role: newRole,
+              adminRole: role
+            })
+          });
+          const result = await res.json();
+          if (result.success) {
+            openUserManager();
+          } else {
+            document.getElementById('addUserError').textContent = result.message;
+          }
+        };
+      };
+
+      window.deleteUser = async function (user) {
+        if (!confirm("Delete user: " + user + "?")) return;
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'deleteUser', targetUser: user, adminRole: role })
+        });
+        const result = await res.json();
+        if (result.success) openUserManager();
+        else alert(result.message);
+      };
+
+      window.viewUser = async function (user) {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'viewUser', targetUser: user, adminRole: role })
+        });
+        const result = await res.json();
+        if (!result.success) return alert(result.message);
+
+        openModal(`
+          <h3>User: ${result.user.username}</h3>
+          <p>Role: ${result.user.role}</p>
+          <p>Last Login: ${result.user.last_login ? new Date(result.user.last_login).toLocaleString() : 'Never'}</p>
+          <button onclick="changePasswordPopup('${result.user.username}')">Change Password</button>
+          <button onclick="document.getElementById('user-modal').style.display='none'">Close</button>
+        `);
+      };
+
+      window.changePasswordPopup = function (user) {
+        openModal(`
+          <h3>Change Password for ${user}</h3>
+          <form id="changePwForm">
+            <input type="password" id="newPw" placeholder="New Password" required>
+            <button type="submit">Change</button>
+            <button type="button" onclick="document.getElementById('user-modal').style.display='none'">Cancel</button>
+          </form>
+          <div id="changePwError"></div>
+        `);
+        document.getElementById('changePwForm').onsubmit = async function (e) {
+          e.preventDefault();
+          const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'changePassword',
+              targetUser: user,
+              newPassword: document.getElementById('newPw').value,
+              adminRole: role
+            })
+          });
+          const result = await res.json();
+          if (result.success) {
+            openUserManager();
+          } else {
+            document.getElementById('changePwError').textContent = result.message;
+          }
+        };
+      };
+    });
+  </script>
+</body>
+</html>
