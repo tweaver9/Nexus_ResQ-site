@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Select Your Company</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #0d1b2a;
+      font-family: 'Oswald', sans-serif;
+      color: #f2f2f2;
+      margin: 0;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #fdd835;
+      margin-bottom: 30px;
+    }
+
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 30px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .logo-grid a {
+      background-color: #142b47;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s ease;
+    }
+
+    .logo-grid a:hover {
+      background-color: #1e3d63;
+    }
+
+    .logo-grid img {
+      max-width: 100px;
+      max-height: 80px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <h1>Select Your Company</h1>
+
+  <div class="logo-grid">
+    <a href="https://chevron.nexusresq.com">
+      <img src="logos/chevron.png" alt="Chevron" />
+    </a>
+    <a href="https://dow.nexusresq.com">
+      <img src="logos/dow.png" alt="Dow" />
+    </a>
+    <a href="https://exxon.nexusresq.com">
+      <img src="logos/exxon.png" alt="Exxon" />
+    </a>
+    <!-- Add more as needed -->
+  </div>
+</body>
+</html>
