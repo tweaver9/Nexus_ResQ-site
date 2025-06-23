@@ -5,35 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <div class="dashboard-container">
-    <h1 id="welcome-message">Welcome!</h1>
-    <p>You are now logged in.</p>
-   <!-- Add this to your dashboard where you want the admin panel -->
-<div id="admin-controls" style="display:none;">
-  <button id="manage-users-btn">Manage Users</button>
-</div>
 
-<!-- User Management Modal -->
-<div id="user-modal" style="display:none;">
-  <div id="user-modal-content">
-    <!-- Dynamic content will be injected here -->
-  </div>
-</div>
-  </form>
-  <h3>Current Users</h3>
-  <ul id="user-list"></ul>
-</div>
-       <!-- Add more admin-only features here -->
-    </div>
-    
-    <a href="index.html" onclick="sessionStorage.clear();">Log Out</a>
-  </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const role = sessionStorage.getItem('role');
   const username = sessionStorage.getItem('username');
-
+<body>
+  <div class="dashboard-header">
+    <span id="welcome-message"></span>
+  </div>
+  <div class="dashboard-menu">
+    <button onclick="window.location.href='manage-users.html'">Manage Users</button>
+    <button onclick="window.location.href='inspection-logs.html'">View Inspection Logs</button>
+    <button onclick="window.location.href='help.html'">Help</button>
+    <a class="logout-btn" href="index.html" onclick="sessionStorage.clear();">Log Out</a>
+  </div>
+</body>
   // Welcome message
   document.getElementById('welcome-message').textContent = "Welcome, " + (username ? username : "User") + "!";
 
