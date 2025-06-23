@@ -7,85 +7,144 @@ body {
 
 header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 20px 40px;
   background-color: #111;
 }
 
 .logo {
-  height: 60px;
-  margin-right: 20px;
+  height: 55px;
 }
 
-.site-title {
-  font-size: 2.2em;
-  font-weight: 600;
-  color: #fdd835; /* safety yellow */
-}
-
-.intro {
-  text-align: center;
-  padding: 60px 30px 30px;
-  max-width: 800px;
-  margin: auto;
-  font-size: 1.2em;
+.nav-links a {
   color: #ccc;
+  margin-left: 30px;
+  text-decoration: none;
+  font-weight: 300;
+  font-size: 1em;
+}
+
+.nav-links a:hover {
+  color: #fdd835;
+}
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 60px 40px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hero-text {
+  flex: 1 1 500px;
+  max-width: 600px;
+}
+
+.hero h1 {
+  font-size: 2.8em;
+  font-weight: 600;
+  color: #fdd835;
+  margin-bottom: 20px;
+}
+
+.hero p {
+  font-size: 1.1em;
+  color: #ccc;
+  margin-bottom: 30px;
+}
+
+.buttons .btn {
+  display: inline-block;
+  padding: 12px 24px;
+  margin-right: 15px;
+  font-size: 1em;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.primary {
+  background-color: #fdd835;
+  color: #000;
+  font-weight: 600;
+}
+
+.secondary {
+  background-color: #333;
+  color: #fdd835;
+  border: 1px solid #fdd835;
+}
+
+.hero-image {
+  flex: 1 1 400px;
+  height: 240px;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  margin-top: 30px;
 }
 
 .features {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 30px;
-  padding: 30px;
-  background-color: #0d0d0d;
+  padding: 60px 40px;
+  background-color: #0a0a0a;
 }
 
-.feature {
+.feature-box {
   background-color: #1a1a1a;
-  border-left: 4px solid #4682b4; /* steel blue */
+  border: 1px solid #333;
   padding: 20px;
-  width: 280px;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  text-align: left;
 }
 
-.feature h2 {
-  color: #fdd835;
-  font-size: 1.3em;
+.feature-box .icon {
+  font-size: 1.5em;
   margin-bottom: 10px;
 }
 
-.feature p {
-  color: #ddd;
-  font-size: 1em;
+.feature-box h3 {
+  margin: 0 0 10px;
+  color: #fdd835;
+  font-size: 1.2em;
+}
+
+.feature-box p {
+  color: #ccc;
+  font-size: 0.95em;
 }
 
 footer {
   text-align: center;
-  padding: 30px;
+  padding: 30px 20px;
   background-color: #111;
   font-size: 0.9em;
-  color: #777;
+  color: #666;
 }
 
-/* Responsive */
+/* Responsive tweaks */
 @media (max-width: 768px) {
-  .features {
-    flex-direction: column;
-    align-items: center;
-  }
-
   header {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .site-title {
+  .nav-links {
     margin-top: 10px;
-    font-size: 1.8em;
   }
 
-  .logo {
-    height: 50px;
+  .hero {
+    flex-direction: column;
+    text-align: left;
+  }
+
+  .hero h1 {
+    font-size: 2.2em;
+  }
+
+  .hero-image {
+    width: 100%;
   }
 }
