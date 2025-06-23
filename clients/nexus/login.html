@@ -26,55 +26,5 @@
 
     <div id="login-message"></div>
   </div>
-
-  <script>
-    const supabase = createClient(
-      'https://vainwbdealnttojooghw.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU'
-    );
-
-    // DEV fallback for tenant (e.g., nexus), until subdomains are live
-    const getTenant = () => {
-      const hostname = window.location.hostname;
-      if (hostname === "localhost" || hostname === "127.0.0.1") return "nexus";
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get("tenant") || hostname.split(".")[0];
-    };
-
-    document.getElementById("login-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const tenant_id = getTenant();
-
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("username", username)
-        .eq("password", password)
-        .eq("tenant_id", tenant_id);
-
-      const msg = document.getElementById("login-message");
-
-      if (error) {
-        msg.textContent = "❌ Database error: " + error.message;
-        msg.style.color = "crimson";
-      } else if (data.length === 1) {
-        const user = data[0];
-        localStorage.setItem("username", user.username);
-        localStorage.setItem("role", user.role);
-        localStorage.setItem("tenant_id", user.tenant_id);
-
-        msg.textContent = "✅ Login successful. Redirecting...";
-        msg.style.color = "limegreen";
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 1000);
-      } else {
-        msg.textContent = "❌ Invalid username or password.";
-        msg.style.color = "crimson";
-      }
-    });
-  </script>
 </body>
 </html>
