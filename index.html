@@ -1,20 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NexusResQ</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus Res-Q Login</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="login-container">
-    <form class="login-form">
-      <input type="text" placeholder="Username" name="username" required>
-      <input type="password" placeholder="Password" name="password" required>
-      <a href="#" class="forgot-password">Forgot password?</a>
-      <div id="login-error" class="error-message"></div>
-      <button type="submit">Log In</button>
-    </form>
-  </div>
+  <div class="login-wrapper">
+    <div class="login-box">
+      <img src="logo.jpg" alt="Nexus Res-Q Logo" class="logo" />
+      <h1>Sign In.</h1>
+      <form>
+        <label>Email*</label>
+        <input type="email" placeholder="Enter your email" required />
+
+        <label>Password*</label>
+        <input type="password" placeholder="Enter your password" required />
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="remember" />
+          <label for="remember">Remember me</label>
+        </div>
+         <a href="#" class="password-help">Password Help?</a>
+        <button type="submit">Sign In</button>
+      </form>
+    </div>
   <script>
 window.addEventListener('DOMContentLoaded', function() {
   const loginForm = document.querySelector('.login-form');
