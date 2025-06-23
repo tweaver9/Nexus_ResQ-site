@@ -9,18 +9,17 @@
   <div class="dashboard-container">
     <h1 id="welcome-message">Welcome!</h1>
     <p>You are now logged in.</p>
-   <div id="admin-controls" style="display: none;">
-  <h2>Admin Controls</h2>
-  <h3>Add User</h3>
-  <form id="add-user-form">
-    <input type="text" id="new-username" placeholder="Username" required>
-    <input type="password" id="new-password" placeholder="Password" required>
-    <select id="new-role" required>
-      <option value="user">User</option>
-      <option value="admin">Admin</option>
-    </select>
-    <button type="submit">Add User</button>
-    <div id="add-user-error" class="error-message"></div>
+   <!-- Add this to your dashboard where you want the admin panel -->
+<div id="admin-controls" style="display:none;">
+  <button id="manage-users-btn">Manage Users</button>
+</div>
+
+<!-- User Management Modal -->
+<div id="user-modal" style="display:none;">
+  <div id="user-modal-content">
+    <!-- Dynamic content will be injected here -->
+  </div>
+</div>
   </form>
   <h3>Current Users</h3>
   <ul id="user-list"></ul>
@@ -30,31 +29,72 @@
     
     <a href="index.html" onclick="sessionStorage.clear();">Log Out</a>
   </div>
-  <script>
-document.addEventListener('DOMContentLoaded', function() {
+<script>
+document.addEventListener('DOMContentLoaded', () => {
   const role = sessionStorage.getItem('role');
   const username = sessionStorage.getItem('username');
 
-  // Show username
+  // Welcome message
   document.getElementById('welcome-message').textContent = "Welcome, " + (username ? username : "User") + "!";
 
-  // If admin, show admin controls and load users
   if (role === 'admin') {
     document.getElementById('admin-controls').style.display = 'block';
-    loadUsers();
+    document.getElementById('manage-users-btn').onclick = openUserManager;
   }
 
-  // Add User functionality
-  const addUserForm = document.getElementById('add-user-form');
-  if (addUserForm) {
-    addUserForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const newUsername = document.getElementById('new-username').value;
-      const newPassword = document.getElementById('new-password').value;
-      const newRole = document.getElementById('new-role').value;
-      const errorDiv = document.getElementById('add-user-error');
-      errorDiv.textContent = '';
+  // Simple Modal Handler
+  function openModal(html) {
+    const modal = document.getElementById('user-modal');
+    document.getElementById('user-modal-content').innerHTML = html;
+    modal.style.display = 'block';
+    modal.onclick = (e) => {
+      if(e.target === modal) modal.style.display = 'none';
+    };
+  }
 
+  // User Manager
+  async function openUserManager() {
+    // Get all users
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'listUsers', adminRole: role })
+    });
+    const result = await res.json();
+    if (!result.success) return alert(result.message);
+
+    let userListHTML = '<h3>User List</h3><ul>';
+    for(const user of result.users) {
+      userListHTML += `
+        <li>
+          ${user.username} (${user.role}) 
+          <button onclick="viewUser('${user.username}')">View/Modify</button>
+          <button onclick="deleteUser('${user.username}')">Delete</button>
+        </li>`;
+    }
+    userListHTML += '</ul><button onclick="addUserPopup()">Add User</button>';
+
+    openModal(userListHTML);
+  }
+
+  // Expose user functions globally for modal buttons
+  window.addUserPopup = function() {
+    openModal(`
+      <h3>Add User</h3>
+      <form id="addUserForm">
+        <input type="text" id="newUsername" placeholder="Username" required><br>
+        <input type="password" id="newPassword" placeholder="Password" required><br>
+        <select id="newRole"><option value="user">User</option><option value="admin">Admin</option></select><br>
+        <button type="submit">Add</button>
+        <button type="button" onclick="document.getElementById('user-modal').style.display='none'">Cancel</button>
+      </form>
+      <div id="addUserError"></div>
+    `);
+    document.getElementById('addUserForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const newUsername = document.getElementById('newUsername').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const newRole = document.getElementById('newRole').value;
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,53 +102,80 @@ document.addEventListener('DOMContentLoaded', function() {
           action: 'addUser',
           username: newUsername,
           password: newPassword,
-          role: newRole
+          role: newRole,
+          adminRole: sessionStorage.getItem('role')
         })
       });
       const result = await res.json();
       if (result.success) {
-        loadUsers();
-        addUserForm.reset();
+        openUserManager();
       } else {
-        errorDiv.textContent = result.message;
+        document.getElementById('addUserError').textContent = result.message;
       }
-    });
-  }
+    }
+  };
 
-  // Load and manage users
-  async function loadUsers() {
-    const userList = document.getElementById('user-list');
-    userList.innerHTML = '';
+  window.deleteUser = async function(user) {
+    if(!confirm("Delete user: " + user + "?")) return;
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'listUsers' })
+      body: JSON.stringify({ action: 'deleteUser', targetUser: user, adminRole: sessionStorage.getItem('role') })
     });
     const result = await res.json();
-    if (result.success && result.users) {
-      result.users.forEach(user => {
-        const li = document.createElement('li');
-        li.textContent = `${user.username} (${user.role})`;
-        // Prevent admin from deleting themselves
-        if(user.username !== username) {
-          const delBtn = document.createElement('button');
-          delBtn.textContent = 'Delete';
-          delBtn.onclick = async () => {
-            if(confirm(`Delete user "${user.username}"?`)) {
-              await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'deleteUser', username: user.username })
-              });
-              loadUsers();
-            }
-          };
-          li.appendChild(delBtn);
-        }
-        userList.appendChild(li);
+    if(result.success) openUserManager();
+    else alert(result.message);
+  };
+
+  window.viewUser = async function(user) {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'viewUser', targetUser: user, adminRole: sessionStorage.getItem('role') })
+    });
+    const result = await res.json();
+    if (!result.success) return alert(result.message);
+
+    openModal(`
+      <h3>User: ${result.user.username}</h3>
+      <p>Role: ${result.user.role}</p>
+      <p>Last Login: ${result.user.last_login ? new Date(result.user.last_login).toLocaleString() : 'Never'}</p>
+      <button onclick="changePasswordPopup('${result.user.username}')">Change Password</button>
+      <button onclick="document.getElementById('user-modal').style.display='none'">Close</button>
+    `);
+  };
+
+  window.changePasswordPopup = function(user) {
+    openModal(`
+      <h3>Change Password for ${user}</h3>
+      <form id="changePwForm">
+        <input type="password" id="newPw" placeholder="New Password" required>
+        <button type="submit">Change</button>
+        <button type="button" onclick="document.getElementById('user-modal').style.display='none'">Cancel</button>
+      </form>
+      <div id="changePwError"></div>
+    `);
+    document.getElementById('changePwForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'changePassword',
+          targetUser: user,
+          newPassword: document.getElementById('newPw').value,
+          adminRole: sessionStorage.getItem('role')
+        })
       });
+      const result = await res.json();
+      if (result.success) {
+        openUserManager();
+      } else {
+        document.getElementById('changePwError').textContent = result.message;
+      }
     }
-  }
+  };
+
 });
 </script>
 
