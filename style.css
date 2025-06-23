@@ -1,8 +1,17 @@
 body {
   margin: 0;
   font-family: 'Oswald', sans-serif;
-  background-color: #000;
+  background-color: #0d1b2a; /* dark blue */
   color: #f2f2f2;
+}
+
+a {
+  color: #fdd835;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #fff;
 }
 
 header {
@@ -10,49 +19,45 @@ header {
   justify-content: space-between;
   align-items: center;
   padding: 20px 40px;
-  background-color: #111;
+  background-color: #0d1b2a;
+  border-bottom: 1px solid #222;
 }
 
 .logo {
   height: 55px;
 }
 
+.nav-links {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  gap: 40px;
+}
+
 .nav-links a {
-  color: #ccc;
-  margin-left: 30px;
-  text-decoration: none;
   font-weight: 300;
   font-size: 1em;
 }
 
-.nav-links a:hover {
-  color: #fdd835;
-}
-
 .hero {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 60px 40px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.hero-text {
-  flex: 1 1 500px;
-  max-width: 600px;
+  max-width: 900px;
+  margin: 60px auto 40px;
+  padding: 40px;
+  background-color: #142b47;
+  border-radius: 12px;
+  border: 1px solid #2a3d5f;
 }
 
 .hero h1 {
-  font-size: 2.8em;
-  font-weight: 600;
+  font-size: 2.6em;
   color: #fdd835;
   margin-bottom: 20px;
 }
 
 .hero p {
-  font-size: 1.1em;
   color: #ccc;
-  margin-bottom: 30px;
+  font-size: 1.1em;
+  margin-bottom: 25px;
 }
 
 .buttons .btn {
@@ -62,89 +67,68 @@ header {
   font-size: 1em;
   text-decoration: none;
   border-radius: 4px;
+  font-weight: 600;
 }
 
 .primary {
   background-color: #fdd835;
   color: #000;
-  font-weight: 600;
 }
 
 .secondary {
-  background-color: #333;
+  background-color: transparent;
   color: #fdd835;
   border: 1px solid #fdd835;
 }
 
-.hero-image {
-  flex: 1 1 400px;
-  height: 240px;
-  background-color: #1a1a1a;
-  border-radius: 8px;
-  margin-top: 30px;
-}
-
 .features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 30px;
-  padding: 60px 40px;
-  background-color: #0a0a0a;
+  padding: 40px;
+  max-width: 1200px;
+  margin: auto;
 }
 
 .feature-box {
-  background-color: #1a1a1a;
-  border: 1px solid #333;
+  background-color: #11253f;
+  border: 1px solid #2a3d5f;
+  border-radius: 10px;
   padding: 20px;
-  border-radius: 8px;
-  text-align: left;
 }
 
 .feature-box .icon {
-  font-size: 1.5em;
+  font-size: 1.4em;
   margin-bottom: 10px;
 }
 
 .feature-box h3 {
   margin: 0 0 10px;
   color: #fdd835;
-  font-size: 1.2em;
+  font-size: 1.1em;
 }
 
 .feature-box p {
-  color: #ccc;
   font-size: 0.95em;
+  color: #ddd;
 }
 
 footer {
   text-align: center;
   padding: 30px 20px;
-  background-color: #111;
+  background-color: #0d1b2a;
+  color: #888;
   font-size: 0.9em;
-  color: #666;
 }
 
-/* Responsive tweaks */
 @media (max-width: 768px) {
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .nav-links {
-    margin-top: 10px;
-  }
-
-  .hero {
     flex-direction: column;
-    text-align: left;
+    align-items: flex-end;
+    gap: 10px;
   }
 
   .hero h1 {
     font-size: 2.2em;
-  }
-
-  .hero-image {
-    width: 100%;
   }
 }
