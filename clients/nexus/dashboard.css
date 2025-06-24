@@ -81,6 +81,21 @@ html, body {
   margin-left: 7px;
   font-weight: 400;
 }
+.logout-link {
+  color: var(--primary-light);
+  font-size: 1em;
+  font-weight: 600;
+  margin-left: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.14s;
+  vertical-align: middle;
+}
+.logout-link:hover,
+.logout-link:focus {
+  color: #fff600;
+  text-decoration: underline;
+}
 
 /* Header buttons */
 .header-right {
@@ -88,7 +103,7 @@ html, body {
   gap: 12px;
 }
 
-.dashboard-btn, .logout-btn {
+.dashboard-btn {
   font-family: 'Oswald', sans-serif;
   background: var(--button-bg);
   color: var(--button-text);
@@ -106,8 +121,7 @@ html, body {
   max-width: 160px;
   box-sizing: border-box;
 }
-.dashboard-btn:hover, .dashboard-btn:focus,
-.logout-btn:hover, .logout-btn:focus {
+.dashboard-btn:hover, .dashboard-btn:focus, {
   background: var(--button-hover);
   color: var(--button-hover-text);
 }
