@@ -183,7 +183,7 @@ html, body {
 }
 
 /* Responsive Design */
-@media (max-width: 1300px) {
+@media (max-width: 500px) {
   .dashboard-header,
   .dashboard-main,
   .dashboard-grid {
@@ -193,7 +193,7 @@ html, body {
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 600px) {
   .dashboard-grid { grid-template-columns: 1fr; gap: 30px; }
   .dashboard-box { min-height: 230px; max-height: 320px; }
   .dashboard-main { margin: 20px auto 0 auto; padding: 0 6vw; }
