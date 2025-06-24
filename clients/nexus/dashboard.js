@@ -1,3 +1,15 @@
+document.addEventListener('DOMContentLoaded', () => {
+  // Check for required login info
+  const username = sessionStorage.getItem('username');
+  const role = sessionStorage.getItem('role');
+  // You can also check tenant_id if needed
+
+  if (!username || !role) {
+    // Not logged in—redirect to login page
+    window.location.href = "login.html";
+    return;
+  }
+
 // File: dashboard.js
 // Core dashboard logic for Nexus Res-Q
 // Ensure Supabase client script is loaded before this script
