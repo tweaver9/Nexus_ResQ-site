@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Nexus Res-Q | Secure Login</title>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="login.css" />
 </head>
 <body>
@@ -23,18 +22,15 @@
     <a href="client-portal.html">Return to Client Portal</a>
   </div>
 </div>
-
-
     <div id="login-message"></div>
   </div>
-  <!-- Supabase JS Client Library (put before your script) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-
+<!-- Only this Supabase v2 script tag! -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // Initialize Supabase client
+  // Initialize Supabase client for v2
   const supabaseUrl = 'https://vainwbdealnttojooghwi.supabase.co';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   document.getElementById('login-form').addEventListener('submit', async function(event) {
     event.preventDefault();
@@ -42,8 +38,8 @@
     const password = document.getElementById('password').value.trim();
 
     // Query the users table for a matching username/password
-    let { data, error } = await supabase
-      .from('users')    // Use your actual table name!
+    const { data, error } = await supabase
+      .from('users')
       .select('*')
       .eq('username', username)
       .eq('password', password)
@@ -58,7 +54,7 @@
     localStorage.setItem('username', data.username);
     localStorage.setItem('role', data.role || 'user');
 
-    // Redirect to dashboard (customize for your project)
+    // Redirect to dashboard
     window.location.href = "nexus-dashboard.html";
   });
 </script>
