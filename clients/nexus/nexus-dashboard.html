@@ -18,11 +18,12 @@
     <div class="header-center">
       <span class="dashboard-title">Nexus Res-Q Dashboard</span>
       <span class="welcome-banner" id="welcome-message"></span>
+      <span id="logout-link" class="logout-link" onClick="logout()">Log Out</span>
     </div>
     <div class="header-right">
       <button class="dashboard-btn" onclick="location.href='manage-users.html'">Manage Users</button>
       <button class="dashboard-btn" onclick="location.href='view-inspections.html'">View All Inspections</button>
-      <button class="dashboard-btn logout-btn" onclick="logout()">Log Out</button>
+      <button class="dashboard-btn" onclick="location.href='manage-assets.html'">Manage Assets</button>
     </div>
   </header>
 
@@ -70,7 +71,7 @@
 
     // -- LOGOUT FUNCTION --
     function logout() {
-      localStorage.clear();
+      sessionStorage.clear();
       window.location.href = "login.html";
     }
 
