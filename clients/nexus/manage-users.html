@@ -36,6 +36,8 @@ async function loadUsers() {
   container.innerHTML = ""; // Clear old content
 
   const { data, error } = await supabase.from('users').select('*');
+  console.log("Supabase returned:",{ data, error});
+  
   if (error || !data || data.length === 0) {
     container.innerHTML = "<div class='dashboard-placeholder'>No users found.</div>";
     return;
