@@ -28,19 +28,17 @@ body {
   border-radius: 14px;
   box-shadow: var(--box-shadow);
   padding: 40px 38px 30px 38px;
-  max-width: 380px;
+  max-width: 480px;
   width: 100%;
-  margin: 32px 12px;
+  margin: 48px auto 0 auto;
   text-align: center;
 }
 
 .client-logo {
   height: 58px;
   max-width: 130px;
-  margin-left: auto;
-  margin-right; auto;
-  margin-bottom: 18px;
-  margin-top: 0;
+  margin: 0 auto 18px auto;
+  display: block;
   object-fit: contain;
   border-radius: 7px;
   background: #fff;
