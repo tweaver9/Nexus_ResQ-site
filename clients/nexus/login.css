@@ -1,83 +1,104 @@
+/* login.css and dashboard.css shared for Nexus and future clients */
+
 body {
   margin: 0;
-  padding: 0;
   font-family: 'Oswald', sans-serif;
-  background-color: #0d1b2a; /* dark blue brand background */
+  background-color: #0d1b2a;
   color: #f2f2f2;
-}
-
-.container {
-  max-width: 400px;
-  margin: 100px auto;
-  background-color: #142b47;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
   text-align: center;
+  padding: 60px 20px;
 }
 
-.logo {
-  height: 60px;
-  margin-bottom: 20px;
-}
-
-h1 {
-  margin-bottom: 30px;
+h1, .welcome-banner {
   color: #fdd835;
-  font-size: 1.8em;
 }
 
-form input {
-  display: block;
+input, select, button {
+  font-family: 'Oswald', sans-serif;
+}
+
+input[type="text"],
+input[type="password"],
+select {
   width: 100%;
-  padding: 12px;
-  margin: 12px 0;
-  font-size: 1em;
-  border: 1px solid #333;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
   border-radius: 6px;
-  background-color: #1e3d63;
-  color: #fff;
-}
-
-form input::placeholder {
-  color: #aaa;
+  box-sizing: border-box;
 }
 
 button {
   background-color: #fdd835;
   color: #000;
   border: none;
-  padding: 12px;
-  width: 100%;
+  padding: 14px;
   font-size: 1.1em;
+  border-radius: 8px;
   font-weight: bold;
-  margin-top: 10px;
-  border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: background 0.2s ease;
+  width: 100%;
+  margin-top: 10px;
 }
 
 button:hover {
   background-color: #fff176;
 }
 
-.extras {
-  margin-top: 20px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.extras a {
-  color: #fdd835;
-  font-size: 0.9em;
+a.logout-btn {
+  display: inline-block;
+  background-color: #fdd835;
+  color: #000;
   text-decoration: none;
-}
-
-.extras a:hover {
-  text-decoration: underline;
-}
-
-#login-message {
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: bold;
   margin-top: 20px;
-  font-size: 1em;
+}
+
+a.logout-btn:hover {
+  background-color: #fff176;
+}
+
+.dashboard-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 300px;
+  margin: auto;
+}
+
+.welcome-banner {
+  font-size: 1.8em;
+  margin-bottom: 30px;
+}
+
+.role-indicator {
+  font-size: 0.6em;
+  color: #ccc;
+  margin-left: 10px;
+}
+
+/* Optional modal styles */
+#user-modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+#user-modal-content {
+  background-color: #1c2b3a;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  color: #f2f2f2;
 }
