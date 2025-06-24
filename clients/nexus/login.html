@@ -3,60 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Nexus Res-Q | Secure Login</title>
+  <title>Nexus Res-Q Login</title>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="login.css" />
 </head>
 <body>
-<div class="form-container">
-  <img src="nexusresq.jpg" class="client-logo" alt="Nexus Res-Q Logo">
-  <h1>Nexus Res-Q Login</h1>
-  <form id="login-form">
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button type="submit" class="login-btn">Sign In</button>
-  </form>
-  <div class="form-links">
-    <a href="reset-password.html">Forgot Password?</a>
-    <span>&nbsp;|&nbsp;</span>
-    <a href="client-portal.html">Return to Client Portal</a>
+  <div class="form-container">
+    <img src="logo.jpg" alt="Nexus Res-Q Logo" class="client-logo" />
+    <h1>Sign In</h1>
+    <form class="login-form">
+      <input type="text" name="username" placeholder="Username" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <button type="submit" class="login-btn">Sign In</button>
+    </form>
+    <div class="form-links">
+      <a href="reset-password.html">Forgot Password?</a>
+      <span>&nbsp;|&nbsp;</span>
+      <a href="client-portal.html">Return to Client Portal</a>
+    </div>
+    <div id="login-error" style="color: #ffb300; margin-top: 10px;"></div>
   </div>
-</div>
-    <div id="login-message"></div>
-<!-- Only this Supabase v2 script tag! -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  // Initialize Supabase client for v2
-  const supabaseUrl = 'https://vainwbdealnttojooghwi.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
-  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      const loginForm = document.querySelector('.login-form');
+      if (!loginForm) return;
 
-  document.getElementById('login-form').addEventListener('submit', async function(event) {
-    event.preventDefault();
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
+      loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = this.username.value.trim();
+        const password = this.password.value.trim();
+        const errorDiv = document.getElementById('login-error');
+        errorDiv.textContent = ''; // Clear previous error
 
-    // Query the users table for a matching username/password
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('username', username)
-      .eq('password', password)
-      .single();
-
-    if (error || !data) {
-      alert("Incorrect username or password.");
-      return;
-    }
-
-    // Save to localStorage (or sessionStorage)
-    localStorage.setItem('username', data.username);
-    localStorage.setItem('role', data.role || 'user');
-
-    // Redirect to dashboard
-    window.location.href = "nexus-dashboard.html";
-  });
-</script>
-
+        // POST to your backend login endpoint
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: "login", username, password })
+        });
+        const result = await response.json();
+        if(result.success) {
+          sessionStorage.setItem('role', result.role);
+          sessionStorage.setItem('username', result.username);
+          window.location.href = "nexus-dashboard.html";
+        } else {
+          errorDiv.textContent = result.message || "Incorrect username or password.";
+        }
+      });
+    });
+  </script>
 </body>
 </html>
