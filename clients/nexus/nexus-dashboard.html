@@ -2,63 +2,108 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Nexus Res-Q | Admin Dashboard</title>
+  <title>Nexus Res-Q | Client Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Oswald font -->
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="login.css"> <!-- This is your shared CSS file -->
+  <!-- Shared brand CSS for dashboard (see next section) -->
+  <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
-  <div class="header">
-    <div class="welcome-banner" id="welcome-message"></div>
-    <div class="dashboard-buttons" id="button-container">
-      <button onclick="location.href='manage-users.html'">Manage Users</button>
-      <button onclick="location.href='view-inspections.html'">View Inspection Logs</button>
-      <button onclick="location.href='help.html'">Help</button>
-      <button class="logout-btn" onclick="localStorage.clear(); location.href='login.html';">Log Out</button>
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <img src="logo.jpg" alt="Nexus Res-Q Logo" class="client-logo">
     </div>
-  </div>
+    <div class="header-center">
+      <span class="dashboard-title">Nexus Res-Q Dashboard</span>
+      <span class="welcome-banner" id="welcome-message"></span>
+    </div>
+    <div class="header-right">
+      <button class="dashboard-btn" onclick="location.href='manage-users.html'">Manage Users</button>
+      <button class="dashboard-btn" onclick="location.href='view-inspections.html'">View All Inspections</button>
+      <button class="dashboard-btn logout-btn" onclick="logout()">Log Out</button>
+    </div>
+  </header>
 
-  <div class="dashboard-layout">
-    <!-- Left: Recent User Log-Ins -->
-    <div class="dashboard-box" id="user-logins">
-      <h2>Recent User Log-Ins</h2>
-      <div id="user-login-list">
-        <!-- Placeholder data, replace with real data later -->
-        <div class="user-log-item">mike &nbsp; <span style="color:#bbb;font-size:0.95em;">(07/01/25 09:14)</span></div>
-        <div class="user-log-item">steve &nbsp; <span style="color:#bbb;">(07/01/25 09:12)</span></div>
-        <div class="user-log-item">chase &nbsp; <span style="color:#bbb;">(07/01/25 08:58)</span></div>
-        <div class="user-log-item">justin &nbsp; <span style="color:#bbb;">(07/01/25 08:55)</span></div>
-        <!-- ...add up to 10 for demo -->
-      </div>
-    </div>
+  <!-- Dashboard grid area -->
+  <main class="dashboard-main">
+    <div class="dashboard-grid">
+      <!-- Box 1: Recent Activity -->
+      <section class="dashboard-box" id="activity-box">
+        <div class="box-header">Recent Activity</div>
+        <div class="box-content" id="activity-list">
+          <!-- Live JS entries go here -->
+          <div class="dashboard-placeholder">No recent activity.</div>
+        </div>
+      </section>
 
-    <!-- Center: Recent Inspection Reports -->
-    <div class="dashboard-box" id="recent-inspections">
-      <h2>Recent Inspection Reports</h2>
-      <div id="inspection-list">
-        <!-- Placeholder data, replace with real data later -->
-        <div class="inspection-item">Zones: A2, B3, B7 &nbsp; // &nbsp; Submitted by: steve &nbsp; // &nbsp; Date: 07/01/25</div>
-        <div class="inspection-item">Zones: A1, A5 &nbsp; // &nbsp; Submitted by: chase &nbsp; // &nbsp; Date: 07/01/25</div>
-        <div class="inspection-item">Zones: B1 &nbsp; // &nbsp; Submitted by: mike &nbsp; // &nbsp; Date: 06/30/25</div>
-        <!-- ...up to 10 for demo -->
-      </div>
-    </div>
+      <!-- Box 2: Most Recent Inspections Completed -->
+      <section class="dashboard-box" id="inspections-box">
+        <div class="box-header">Most Recent Inspections Completed</div>
+        <div class="box-content" id="inspection-list">
+          <!-- Live JS entries go here -->
+          <div class="dashboard-placeholder">No inspections submitted yet.</div>
+        </div>
+      </section>
 
-    <!-- Right: Recent Activity -->
-    <div class="dashboard-box" id="recent-activity">
-      <h2>Recent Activity</h2>
-      <div id="activity-list" style="color:#888;text-align:center;padding-top:40px;">
-        No recent activity.
-      </div>
+      <!-- Box 3: Assets Failed Inspection -->
+      <section class="dashboard-box" id="failed-assets-box">
+        <div class="box-header">Assets Failed Inspection</div>
+        <div class="box-content" id="failed-assets-list">
+          <!-- Live JS entries go here -->
+          <div class="dashboard-placeholder">No failed assets reported.</div>
+        </div>
+      </section>
     </div>
-  </div>
+  </main>
+
+  <!-- Modal container if needed -->
+  <div id="modal-root" style="display:none;"></div>
 
   <script>
-    // Set welcome message with role indicator
-    const username = localStorage.getItem('username');
-    const role = localStorage.getItem('role');
+    // -- HEADER WELCOME MESSAGE --
+    const username = localStorage.getItem('username') || 'User';
+    const role = localStorage.getItem('role') || 'User';
     document.getElementById("welcome-message").innerHTML =
-      `Welcome, ${username || "User"} <span class="role-indicator">(${role || "User"})</span>`;
+      `Welcome, <b>${username}</b> <span class="role-indicator">(${role})</span>`;
+
+    // -- LOGOUT FUNCTION --
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    // -- PLACEHOLDER: AUTO-UPDATE CONTENTS --
+    function addEntry(listId, text) {
+      const list = document.getElementById(listId);
+      const newDiv = document.createElement('div');
+      newDiv.className = 'box-entry';
+      newDiv.textContent = text;
+      list.prepend(newDiv);
+      // limit to 10
+      while (list.children.length > 10) list.removeChild(list.lastChild);
+    }
+
+    // Demo: fake activity every 15s for demonstration
+    // (Replace with real Supabase/live polling later)
+    setInterval(() => {
+      addEntry('activity-list', 'User steve updated settings at ' + new Date().toLocaleTimeString());
+      addEntry('inspection-list', 'Zone: B3, B4 // Submitted by: chase // ' + new Date().toLocaleDateString());
+      addEntry('failed-assets-list', 'Fire Extinguisher FX-013 failed at ' + new Date().toLocaleTimeString());
+    }, 15000);
+
+    // Optional: clear placeholder text when first entry added
+    function clearPlaceholder(listId) {
+      const list = document.getElementById(listId);
+      const ph = list.querySelector('.dashboard-placeholder');
+      if (ph) list.removeChild(ph);
+    }
+
+    // Example: clear placeholder when adding real entry (call this before addEntry in real use)
+    // clearPlaceholder('activity-list');
+    // clearPlaceholder('inspection-list');
+    // clearPlaceholder('failed-assets-list');
   </script>
 </body>
 </html>
