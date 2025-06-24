@@ -1,186 +1,61 @@
+:root {
+  --primary-dark: #0d1b2a;   /* Nexus blue background */
+  --primary-mid: #142b47;    /* Card background */
+  --primary-light: #fdd835;  /* Nexus yellow accent */
+  --button-bg: #142b47;
+  --button-hover: #fdd835;
+  --button-text: #fff;
+  --button-hover-text: #000;
+  --input-bg: #1e3d63;
+  --input-border: #233c60;
+  --box-shadow: 0 6px 24px rgba(13,27,42,0.21);
+}
+
 body {
   margin: 0;
   padding: 0;
   font-family: 'Oswald', sans-serif;
-  background-color: #0d1b2a;
+  background-color: var(--primary-dark);
   color: #f2f2f2;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-container {
+  background: var(--primary-mid);
+  border-radius: 14px;
+  box-shadow: var(--box-shadow);
+  padding: 40px 38px 30px 38px;
+  max-width: 380px;
+  width: 100%;
+  margin: 32px 12px;
   text-align: center;
 }
 
-h1, .welcome-banner {
-  color: #fdd835;
+.client-logo {
+  height: 58px;
+  max-width: 130px;
+  margin-bottom: 18px;
+  object-fit: contain;
+  border-radius: 7px;
+  background: #fff;
+  padding: 6px 10px;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.09);
 }
 
-input, select, button {
-  font-family: 'Oswald', sans-serif;
+h1 {
+  color: var(--primary-light);
+  font-size: 1.42em;
+  font-weight: 600;
+  margin-bottom: 28px;
+  letter-spacing: 0.03em;
 }
 
-/* Login & dashboard input fields */
-input[type="text"],
-input[type="password"],
-select {
+input[type="text"], input[type="password"], select {
   width: 100%;
-  padding: 12px;
-  margin: 12px 0;
-  font-size: 1em;
-  border: 1px solid #333;
-  border-radius: 6px;
-  background-color: #1e3d63;   /* deep blue */
-  color: #fff;
-  box-sizing: border-box;
-  transition: border 0.2s;
-}
-
-input[type="text"]:focus,
-input[type="password"]:focus,
-select:focus {
-  border: 1.5px solid #fdd835;
-  outline: none;
-}
-
-/* Placeholder style */
-input::placeholder {
-  color: #aaa;
-  opacity: 1;
-}
-
-button, .dashboard-buttons .logout-btn {
-  background-color: #fdd835;
-  color: #000;
-  border: none;
-  padding: 14px;
-  width: 100%;
-  font-size: 1.1em;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  margin: 0;
-  margin-top: 10px;
-  box-sizing: border-box;
-}
-
-button:hover, .dashboard-buttons .logout-btn:hover {
-  background-color: #fff176;
-}
-
-a.logout-btn {
-  /* If you ever use <a> again for logout */
-  display: block;
-  background-color: #fdd835;
-  color: #000;
-  text-decoration: none;
-  font-weight: bold;
-  border-radius: 8px;
-  margin: 0;
-  margin-top: 10px;
-  width: 100%;
-  padding: 14px;
-  box-sizing: border-box;
-}
-
-a.logout-btn:hover {
-  background-color: #fff176;
-}
-
-/* Button bar */
-.dashboard-buttons {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 40px;
-}
-
-.dashboard-buttons button,
-.dashboard-buttons .logout-btn {
-  width: 100%;
-  max-width: 240px;
-  min-width: 160px;
-}
-
-/* Dashboard grid layout */
-.dashboard-layout {
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  gap: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.dashboard-box {
-  background-color: #1c2b3a;
-  border: 1px solid #444;
-  border-radius: 10px;
-  padding: 20px;
-  text-align: left;
-  height: 300px;
-  overflow-y: auto;
-}
-
-.dashboard-box h2 {
-  margin-top: 0;
-  color: #fdd835;
-  font-size: 1.2em;
-  margin-bottom: 15px;
-}
-
-.inspection-item, .user-log-item {
-  border-bottom: 1px solid #333;
-  padding: 8px 0;
-  font-size: 0.97em;
-}
-
-.inspection-item:last-child, .user-log-item:last-child {
-  border-bottom: none;
-}
-
-.welcome-banner {
-  font-size: 1.8em;
-  margin-bottom: 30px;
-}
-
-.role-indicator {
-  font-size: 0.6em;
-  color: #ccc;
-  margin-left: 10px;
-}
-
-/* Modal styles */
-#user-modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.6);
-}
-
-#user-modal-content {
-  background-color: #1c2b3a;
-  margin: 10% auto;
-  padding: 20px;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 500px;
-  color: #f2f2f2;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 900px) {
-  .dashboard-layout {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  .dashboard-box {
-    height: auto;
-    min-height: 180px;
-  }
-  .dashboard-buttons {
-    flex-direction: column;
-    gap: 10px;
-  }
-}
+  padding: 13px 12px;
+  margin: 14px 0 20px 0;
+  font-size: 1.07em;
+  border: 1.6px solid var(--input-border
