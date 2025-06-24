@@ -58,4 +58,62 @@ input[type="text"], input[type="password"], select {
   padding: 13px 12px;
   margin: 14px 0 20px 0;
   font-size: 1.07em;
-  border: 1.6px solid var(--input-border
+  border: 1.6px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: #fff;
+  box-sizing: border-box;
+  transition: border 0.19s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+select:focus {
+  border: 1.7px solid var(--primary-light);
+  outline: none;
+}
+
+input::placeholder {
+  color: #b1bed7;
+  opacity: 1;
+}
+
+button, .login-btn {
+  width: 100%;
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 1.13em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.16s, color 0.16s;
+  margin-top: 10px;
+  box-shadow: 0 1.5px 6px rgba(12,22,44,0.09);
+}
+button:hover, .login-btn:hover,
+button:focus, .login-btn:focus {
+  background: var(--button-hover);
+  color: var(--button-hover-text);
+}
+
+a {
+  color: var(--primary-light);
+  text-decoration: none;
+  font-size: 1em;
+  margin-top: 16px;
+  display: inline-block;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #fff176;
+}
+
+@media (max-width: 600px) {
+  .form-container {
+    padding: 26px 6vw 22px 6vw;
+    max-width: 97vw;
+  }
+}
