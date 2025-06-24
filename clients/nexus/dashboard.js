@@ -120,7 +120,7 @@ function handleSearch(e) {
 // Logout logic
 function handleLogout() {
   // Clear session and redirect
-  localStorage.clear();
+  sessionStorage.clear();
   window.location.href = 'login.html';
 }
 
