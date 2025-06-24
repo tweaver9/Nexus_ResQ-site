@@ -44,6 +44,23 @@ body {
   padding: 6px 10px;
   box-shadow: 0 2px 8px 0 rgba(0,0,0,0.09);
 }
+.form-links {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 1em;
+}
+
+.form-links a {
+  color: var(--primary-light);
+  text-decoration: none;
+  margin: 0 6px;
+  font-weight: 500;
+}
+
+.form-links a:hover {
+  text-decoration: underline;
+  color: #fff176;
+}
 
 h1 {
   color: var(--primary-light);
@@ -136,9 +153,10 @@ a:hover {
     max-width: 98vw;
     word-break: break-word;
   }
-  .form-links a {
-    display: inline-block;
-    margin: 0 5px 8px 5px;
+  .form-links {
+    margin-top: 20px
     font-size: 1em;
+    text-align: center;
+    white-space: normal;
   }
 }
