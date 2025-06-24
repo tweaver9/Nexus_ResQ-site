@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Res-Q Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="dashboard-header">
+    <div class="logo">NEXUS RES-Q</div>
+    <div class="client-info">
+      <span id="client-name">Client Name</span>
+      <button id="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <section class="status-bar">
+    <div class="status-item" id="sync-status">🔄 Sync: Online</div>
+    <div class="status-item" id="last-sync">🕓 Last Sync: Just now</div>
+    <div class="status-item" id="progress-summary">✅ 0/0 Complete</div>
+  </section>
+
+  <section class="search-bar">
+    <input type="text" id="search-input" placeholder="Search by asset ID, zone, or date...">
+  </section>
+
+  <main class="zone-grid">
+    <!-- Zone cards will be injected here dynamically -->
+  </main>
+
+  <section class="activity-feed">
+    <h2>📝 Recent Activity</h2>
+    <ul id="activity-log">
+      <!-- Last 5–10 activities populated via JS -->
+    </ul>
+  </section>
+
+  <footer class="quick-tools">
+    <button class="tool-btn">Export Records</button>
+    <button class="tool-btn">View Photos</button>
+    <button class="tool-btn">Attach Files</button>
+  </footer>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
