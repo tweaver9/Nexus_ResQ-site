@@ -1,12 +1,10 @@
-/* login.css and dashboard.css shared for Nexus and future clients */
-
 body {
   margin: 0;
+  padding: 0;
   font-family: 'Oswald', sans-serif;
   background-color: #0d1b2a;
   color: #f2f2f2;
   text-align: center;
-  padding: 20px;
 }
 
 h1, .welcome-banner {
@@ -17,50 +15,75 @@ input, select, button {
   font-family: 'Oswald', sans-serif;
 }
 
+/* Login & dashboard input fields */
 input[type="text"],
 input[type="password"],
 select {
   width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
+  padding: 12px;
+  margin: 12px 0;
+  font-size: 1em;
+  border: 1px solid #333;
   border-radius: 6px;
+  background-color: #1e3d63;   /* deep blue */
+  color: #fff;
   box-sizing: border-box;
+  transition: border 0.2s;
 }
 
-button {
+input[type="text"]:focus,
+input[type="password"]:focus,
+select:focus {
+  border: 1.5px solid #fdd835;
+  outline: none;
+}
+
+/* Placeholder style */
+input::placeholder {
+  color: #aaa;
+  opacity: 1;
+}
+
+button, .dashboard-buttons .logout-btn {
   background-color: #fdd835;
   color: #000;
   border: none;
-  padding: 12px 24px;
+  padding: 14px;
+  width: 100%;
   font-size: 1.1em;
-  border-radius: 8px;
   font-weight: bold;
+  border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s ease;
-  width: auto;
-  margin: 10px;
+  margin: 0;
+  margin-top: 10px;
+  box-sizing: border-box;
 }
 
-button:hover {
+button:hover, .dashboard-buttons .logout-btn:hover {
   background-color: #fff176;
 }
 
 a.logout-btn {
-  display: inline-block;
+  /* If you ever use <a> again for logout */
+  display: block;
   background-color: #fdd835;
   color: #000;
   text-decoration: none;
-  padding: 14px;
-  border-radius: 8px;
   font-weight: bold;
-  margin-top: 20px;
+  border-radius: 8px;
+  margin: 0;
+  margin-top: 10px;
+  width: 100%;
+  padding: 14px;
+  box-sizing: border-box;
 }
 
 a.logout-btn:hover {
   background-color: #fff176;
 }
 
+/* Button bar */
 .dashboard-buttons {
   display: flex;
   justify-content: center;
@@ -69,18 +92,14 @@ a.logout-btn:hover {
   margin-bottom: 40px;
 }
 
-.welcome-banner {
-  font-size: 1.8em;
-  margin-bottom: 30px;
+.dashboard-buttons button,
+.dashboard-buttons .logout-btn {
+  width: 100%;
+  max-width: 240px;
+  min-width: 160px;
 }
 
-.role-indicator {
-  font-size: 0.6em;
-  color: #ccc;
-  margin-left: 10px;
-}
-
-/* Dashboard layout grid */
+/* Dashboard grid layout */
 .dashboard-layout {
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
@@ -109,14 +128,25 @@ a.logout-btn:hover {
 .inspection-item, .user-log-item {
   border-bottom: 1px solid #333;
   padding: 8px 0;
-  font-size: 0.95em;
+  font-size: 0.97em;
 }
 
 .inspection-item:last-child, .user-log-item:last-child {
   border-bottom: none;
 }
 
-/* Optional modal styles */
+.welcome-banner {
+  font-size: 1.8em;
+  margin-bottom: 30px;
+}
+
+.role-indicator {
+  font-size: 0.6em;
+  color: #ccc;
+  margin-left: 10px;
+}
+
+/* Modal styles */
 #user-modal {
   display: none;
   position: fixed;
@@ -137,4 +167,20 @@ a.logout-btn:hover {
   width: 90%;
   max-width: 500px;
   color: #f2f2f2;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 900px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .dashboard-box {
+    height: auto;
+    min-height: 180px;
+  }
+  .dashboard-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
