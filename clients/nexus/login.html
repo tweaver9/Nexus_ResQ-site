@@ -27,5 +27,41 @@
 
     <div id="login-message"></div>
   </div>
+  <!-- Supabase JS Client Library (put before your script) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+
+<script>
+  // Initialize Supabase client
+  const supabaseUrl = 'https://vainwbdealnttojooghwi.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  document.getElementById('login-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    // Query the users table for a matching username/password
+    let { data, error } = await supabase
+      .from('users')    // Use your actual table name!
+      .select('*')
+      .eq('username', username)
+      .eq('password', password)
+      .single();
+
+    if (error || !data) {
+      alert("Incorrect username or password.");
+      return;
+    }
+
+    // Save to localStorage (or sessionStorage)
+    localStorage.setItem('username', data.username);
+    localStorage.setItem('role', data.role || 'user');
+
+    // Redirect to dashboard (customize for your project)
+    window.location.href = "client-dashboard.html";
+  });
+</script>
+
 </body>
 </html>
