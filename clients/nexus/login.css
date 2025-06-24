@@ -33,15 +33,6 @@ body {
   margin: 48px auto 0 auto;
   text-align: center;
 }
-.fields-box {
-  background: var(--primary-mid);
-  border-radius: 14px;
-  box-shadow: var(--box-shadow);
-  padding: 40px 38px 30px 38px;
-  max-width: 480px;
-  width: 100%;
-  margin: 48px auto 0 auto;
-}
 .client-logo {
   height: 58px;
   max-width: 130px;
