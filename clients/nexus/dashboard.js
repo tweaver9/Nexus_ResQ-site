@@ -1,11 +1,14 @@
 // File: dashboard.js
 // Core dashboard logic for Nexus Res-Q
-// Assumes Supabase client library is loaded separately
+// Ensure Supabase client script is loaded before this script
 
-// Placeholder Supabase initialization (replace with real credentials)
-const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+// Destructure createClient from the global supabase object
+const { createClient } = supabase;
+
+// Supabase initialization (replace with real credentials)
+const supabaseUrl = 'https://your-supabase-project.supabase.co';
+const supabaseKey = 'public-anon-key';
+const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
 // DOM elements
 const syncStatusEl = document.getElementById('sync-status');
@@ -31,7 +34,6 @@ async function initDashboard() {
 
 // Update sync status and last sync timestamp
 async function updateSyncStatus() {
-  const { data: health } = await supabase.rpc('health_check'); // example RPC
   const online = navigator.onLine;
   syncStatusEl.textContent = online ? '🔄 Sync: Online' : '🔄 Sync: Offline';
   const lastSync = localStorage.getItem('lastSync') || 'Never';
@@ -41,7 +43,7 @@ async function updateSyncStatus() {
 // Load zone cards
 async function loadZones() {
   // Fetch zones and progress from Supabase
-  const { data: zones, error } = await supabase
+  const { data: zones, error } = await supabaseClient
     .from('zones')
     .select('id,name,total_assets,completed_assets')
     .order('name', { ascending: true });
@@ -69,12 +71,12 @@ async function loadZones() {
   });
 
   // Update overall progress
-  progressSummaryEl.textContent = `✅ ${grandCompleted}/${grandTotal} Complete`;  
+  progressSummaryEl.textContent = `✅ ${grandCompleted}/${grandTotal} Complete`;
 }
 
 // Load recent activity
 async function loadActivityLog() {
-  const { data: logs, error } = await supabase
+  const { data: logs, error } = await supabaseClient
     .from('activity_log')
     .select('id,message,created_at')
     .order('created_at', { ascending: false })
