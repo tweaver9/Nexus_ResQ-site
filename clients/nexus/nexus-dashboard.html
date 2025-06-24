@@ -99,6 +99,12 @@
       const ph = list.querySelector('.dashboard-placeholder');
       if (ph) list.removeChild(ph);
     }
+document.addEventListener('DOMContentLoaded', function() {
+  const role = sessionStorage.getItem('role');
+  if (role !== 'admin') {
+    document.getElementById('manage-users-btn').style.display = 'none';
+  }
+});
 
     // Example: clear placeholder when adding real entry (call this before addEntry in real use)
     // clearPlaceholder('activity-list');
