@@ -37,7 +37,7 @@ body {
 .client-logo {
   height: 58px;
   max-width: 130px;
-  margin-bottom: 18px;
+  margin: 0 auto 18px auto; 
   object-fit: contain;
   border-radius: 7px;
   background: #fff;
