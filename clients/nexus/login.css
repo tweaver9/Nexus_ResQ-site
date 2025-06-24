@@ -28,7 +28,7 @@ body {
   border-radius: 14px;
   box-shadow: var(--box-shadow);
   padding: 40px 38px 30px 38px;
-  max-width: 480px;
+  max-width: 400px;
   width: 100%;
   margin: 48px auto 0 auto;
   text-align: center;
@@ -53,8 +53,9 @@ h1 {
   letter-spacing: 0.03em;
 }
 
-input[type="text"], input[type="password"], select {
+input[type="text"], input[type="password"], button {
   width: 100%;
+  box-sizing: border-box;
   padding: 13px 12px;
   margin: 14px 0 20px 0;
   font-size: 1.07em;
