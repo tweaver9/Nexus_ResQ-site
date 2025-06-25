@@ -218,7 +218,7 @@
        // 2. Upload logo to Supabase Storage if present
 let logo_url = null;
 if (processedLogoBlob) {
-  const fileName = `logos/${clientName.replace(/\s+/g, '_').toLowerCase()}.webp`;
+  const filePath = `logos/${clientName.replace(/\s+/g, '_').toLowerCase()}.webp`;
   const { data: storageData, error: storageErr } = await supabase
     .storage
     .from('client-logo-bucket')
@@ -229,7 +229,7 @@ if (processedLogoBlob) {
   if (storageErr) {
     throw new Error("Logo upload failed: " + storageErr.message);
   }
-  const { data } = supabase.storage.from('client-logo-bucket').getPublicUrl(fileName);
+  const { data } = supabase.storage.from('client-logo-bucket').getPublicUrl(filePath);
   logo_url = data?.publicUrl || null;
 }
 
