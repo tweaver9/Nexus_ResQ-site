@@ -103,8 +103,9 @@ html, body {
   transition: background 0.14s, color 0.14s;
   outline: none;
   cursor: pointer;
-  min-width: 108px;
-  max-width: 160px;
+  width: 160px;
+  min-width: 0;
+  max-width: none;
   box-sizing: border-box;
   margin: 0;
 }
