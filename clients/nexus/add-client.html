@@ -172,104 +172,105 @@
   });
 </script>
 
-  
-  <script>
-    // === SUPABASE SETUP ===
-    const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+<script>
+  // === SUPABASE SETUP ===
+  const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
+  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    document.getElementById('addClientForm').onsubmit = async function (e) {
-      e.preventDefault();
-      const msg = document.getElementById('formMessage');
-      const loader = document.getElementById('formLoader');
-      msg.style.color = "#fdd835";
-      msg.textContent = "Creating client...";
-      loader.style.display = "inline-block";
+  document.getElementById('addClientForm').onsubmit = async function (e) {
+    e.preventDefault();
+    const msg = document.getElementById('formMessage');
+    const loader = document.getElementById('formLoader');
+    msg.style.color = "#fdd835";
+    msg.textContent = "Creating client...";
+    loader.style.display = "inline-block";
 
-      let isDone = false;
-      let isStillWorkingShown = false;
-      const stillWorking = setTimeout(() => {
-        if (!isDone) {
-          msg.style.color = "#1ecbe1";
-          msg.textContent = "Still working...";
-          isStillWorkingShown = true;
-        }
-      }, 6000); // 6 seconds for "Still working..."
+    let isDone = false;
+    let isStillWorkingShown = false;
+    const stillWorking = setTimeout(() => {
+      if (!isDone) {
+        msg.style.color = "#1ecbe1";
+        msg.textContent = "Still working...";
+        isStillWorkingShown = true;
+      }
+    }, 6000); // 6 seconds for "Still working..."
 
-      //  Give up after 20 seconds
-      const giveUp = setTimeout(() => {
-        if (!isDone) {
-          loader.style.display = "none";
-          msg.style.color = "#ff5050";
-          msg.textContent = "Request timed out. Please try again or check your connection.";
-          isDone = true;
-        }
-      }, 20000);
-
-      try {
-        // 1. Gather form fields
-        const clientName = document.getElementById('clientName').value.trim();
-        const color = document.getElementById('clientColor').value;
-        const adminUsername = document.getElementById('adminUsername').value.trim();
-        const adminPassword = document.getElementById('adminPassword').value;
-        const logoFile = document.getElementById('clientLogo').files[0];
-
-       // 2. Upload logo to Supabase Storage if present
-let logo_url = null;
-if (processedLogoBlob) {
-  const filePath = `logos/${clientName.replace(/\s+/g, '_').toLowerCase()}.webp`;
-  const { data: storageData, error: storageErr } = await supabase
-    .storage
-    .from('client-logo-bucket')
-    .upload(fileName, processedLogoBlob, {
-      contentType: 'image/webp', 
-      upsert: true   //this is key
-    });
-  if (storageErr) {
-    throw new Error("Logo upload failed: " + storageErr.message);
-  }
-  const { data } = supabase.storage.from('client-logo-bucket').getPublicUrl(filePath);
-  logo_url = data?.publicUrl || null;
-}
-
-
-        // 3. Insert client
-        const { data: client, error: clientErr } = await supabase
-          .from('clients')
-          .insert([{ name: clientName, logo_url, color }])
-          .select()
-          .single();
-
-        if (clientErr || !client) {
-          throw new Error(clientErr?.message || "Unknown error creating client");
-        }
-
-        // 4. Insert admin user
-        const { error: userErr } = await supabase
-          .from('users')
-          .insert([{ username: adminUsername, password: adminPassword, role: 'admin', tenant_id: client.id }]);
-        if (userErr) {
-          throw new Error("Client created, but failed to add admin user: " + userErr.message);
-        }
-
-        isDone = true;
-        clearTimeout(stillWorking);
-        clearTimeout(giveUp);
-        loader.style.display = "none";
-        msg.style.color = "#28e640";
-        msg.textContent = "✅ Client onboarded! UUID: " + client.id;
-        this.reset();
-
-      } catch (err) {
-        isDone = true;
-        clearTimeout(stillWorking);
-        clearTimeout(giveUp);
+    const giveUp = setTimeout(() => {
+      if (!isDone) {
         loader.style.display = "none";
         msg.style.color = "#ff5050";
-        msg.textContent = "❌ " + (err.message || err || "Unknown error");
+        msg.textContent = "Request timed out. Please try again or check your connection.";
+        isDone = true;
       }
+    }, 20000);
+
+    try {
+      // 1. Gather form fields
+      const clientName = document.getElementById('clientName').value.trim();
+      const color = document.getElementById('clientColor').value;
+      const adminUsername = document.getElementById('adminUsername').value.trim();
+      const adminPassword = document.getElementById('adminPassword').value;
+
+      // 2. Upload logo to Supabase Storage if present
+      let logo_url = null;
+      if (processedLogoBlob) {
+        const filePath = `logos/${clientName.replace(/\s+/g, '_').toLowerCase()}.webp`;
+        const { data: storageData, error: storageErr } = await supabase
+          .storage
+          .from('client-logo-bucket')
+          .upload(filePath, processedLogoBlob, {
+            contentType: 'image/webp',
+            upsert: true
+          });
+
+        if (storageErr) {
+          throw new Error("Logo upload failed: " + storageErr.message);
+        }
+
+        const { data: urlData } = supabase
+          .storage
+          .from('client-logo-bucket')
+          .getPublicUrl(filePath);
+
+        logo_url = urlData?.publicUrl || null;
+      }
+
+      // 3. Insert client
+      const { data: client, error: clientErr } = await supabase
+        .from('clients')
+        .insert([{ name: clientName, logo_url, color }])
+        .select()
+        .single();
+
+      if (clientErr || !client) {
+        throw new Error(clientErr?.message || "Unknown error creating client");
+      }
+
+      // 4. Insert admin user
+      const { error: userErr } = await supabase
+        .from('users')
+        .insert([{ username: adminUsername, password: adminPassword, role: 'admin', tenant_id: client.id }]);
+
+      if (userErr) {
+        throw new Error("Client created, but failed to add admin user: " + userErr.message);
+      }
+
+      isDone = true;
+      clearTimeout(stillWorking);
+      clearTimeout(giveUp);
+      loader.style.display = "none";
+      msg.style.color = "#28e640";
+      msg.textContent = "✅ Client onboarded! UUID: " + client.id;
+      this.reset();
+
+    } catch (err) {
+      isDone = true;
+      clearTimeout(stillWorking);
+      clearTimeout(giveUp);
+      loader.style.display = "none";
+      msg.style.color = "#ff5050";
+      msg.textContent = "❌ " + (err.message || err || "Unknown error");
     }
-  </script>
-</body>
-</html>
+  }
+</script>
