@@ -223,7 +223,8 @@ if (processedLogoBlob) {
     .storage
     .from('client-logo-bucket')
     .upload(fileName, processedLogoBlob, {
-      contentType: 'image/webp'
+      contentType: 'image/webp', 
+      upsert: true   //this is key
     });
   if (storageErr) {
     throw new Error("Logo upload failed: " + storageErr.message);
