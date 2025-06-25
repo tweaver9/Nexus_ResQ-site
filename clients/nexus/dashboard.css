@@ -116,6 +116,13 @@ html, body {
   background: var(--button-hover);
   color: var(--button-hover-text);
 }
+.desktop-label { display: inline; }
+.mobile-label { display: none; }
+
+@media (max-width: 700px) {
+  .desktop-label { display: none; }
+  .mobile-label { display: inline; }
+}
 
 /* Small logout link if needed */
 .logout-link {
