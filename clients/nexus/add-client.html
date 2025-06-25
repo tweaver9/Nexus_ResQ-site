@@ -229,7 +229,7 @@ if (processedLogoBlob) {
   if (storageErr) {
     throw new Error("Logo upload failed: " + storageErr.message);
   }
-  const { data: publicUrl } = supabase.storage.from('client-logo-bucket').getPublicUrl(fileName);
+  const { data } = supabase.storage.from('client-logo-bucket').getPublicUrl(fileName);
   logo_url = publicUrl?.publicUrl || null;
 }
 
