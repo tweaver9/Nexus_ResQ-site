@@ -116,6 +116,36 @@ html, body {
   background: var(--button-hover);
   color: var(--button-hover-text);
 }
+.add-client-btn {
+  background: #11c442;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 5px 18px;
+  font-size: 0.98em;
+  font-weight: 700;
+  box-shadow: 0 0 0 3px #12ee657a, 0 1px 7px rgba(17, 196, 66, 0.21);
+  margin: 0 7px;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.12s, box-shadow 0.16s;
+  vertical-align: middle;
+  display: inline-block;
+}
+.add-client-btn:hover, .add-client-btn:focus {
+  background: #23e26a;
+  box-shadow: 0 0 0 6px #18e56570, 0 2px 9px rgba(17, 196, 66, 0.33);
+  color: #000;
+}
+
+/* Hide Add Client button on mobile */
+@media (max-width: 700px) {
+  .add-client-btn {
+    display: none !important;
+  }
+}
+
+
 .desktop-label { display: inline; }
 .mobile-label { display: none; }
 
