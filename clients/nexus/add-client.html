@@ -212,29 +212,50 @@
       const adminUsername = document.getElementById('adminUsername').value.trim();
       const adminPassword = document.getElementById('adminPassword').value;
 
-      // 2. Upload logo to Supabase Storage if present
-      let logo_url = null;
-      if (processedLogoBlob) {
-        const filePath = `logos/${clientName.replace(/\s+/g, '_').toLowerCase()}.webp`;
-        const { data: storageData, error: storageErr } = await supabase
-          .storage
-          .from('client-logo-bucket')
-          .upload(filePath, processedLogoBlob, {
-            contentType: 'image/webp',
-            upsert: true
-          });
+ // 2. Upload logo to GitHub (jsDelivr) if present
+let logo_url = null;
+if (processedLogoBlob) {
+  // Convert Blob to Base64
+  const toBase64 = (blob) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
 
-        if (storageErr) {
-          throw new Error("Logo upload failed: " + storageErr.message);
-        }
+  const base64Image = await toBase64(processedLogoBlob);
 
-        const { data: urlData } = supabase
-          .storage
-          .from('client-logo-bucket')
-          .getPublicUrl(filePath);
+  // Generate safe filename and path
+  const fileName = clientName.replace(/\s+/g, '_').toLowerCase() + '.webp';
+  const githubPath = `logos/${fileName}`;
+  const jsDelivrUrl = `https://cdn.jsdelivr.net/gh/tweaver9/Nexus_ResQ-site@latest/${githubPath}`;
 
-        logo_url = urlData?.publicUrl || null;
-      }
+  // --- Replace this with your real GitHub token ---
+  const githubToken = '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';
+  const githubApiUrl = `https://api.github.com/repos/tweaver9/Nexus_ResQ-site/contents/${githubPath}`;
+
+  const githubUpload = await fetch(githubApiUrl, {
+    method: "PUT",
+    headers: {
+      "Authorization": `Bearer ${githubToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: `Add logo for ${clientName}`,
+      content: base64Image,
+      branch: "main"
+    })
+  });
+
+  if (!githubUpload.ok) {
+    const response = await githubUpload.json();
+    throw new Error("GitHub upload failed: " + (response.message || githubUpload.statusText));
+  }
+
+  logo_url = jsDelivrUrl;
+}
+
 
       // 3. Insert client
       const { data: client, error: clientErr } = await supabase
