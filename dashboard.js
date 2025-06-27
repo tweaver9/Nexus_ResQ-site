@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const subdomain = window.location.hostname.split('.')[0];
-  let clientId = sessionStorage.getItem('client_id');
+  let tenantId = sessionStorage.getItem('tenant_id');
 
-  if (!clientId) {
+  if (!tenantId) {
     const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU'; // Replace with your key
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.location.href = "login.html";
       return;
     }
-    clientId = client.id;
-    sessionStorage.setItem('client_id', clientId);
+    tenantId = tenant.id;
+    sessionStorage.setItem('tenant_id', tenantId);
   }
 
   const username = sessionStorage.getItem('username');
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: zones, error } = await supabaseClient
       .from('zones')
       .select('id,name,total_assets,completed_assets')
-      .eq('client_id', clientId)
+      .eq('tenant_id', tenantId)
       .order('name', { ascending: true });
 
     if (error) {
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: logs, error } = await supabaseClient
       .from('activity_log')
       .select('id,message,created_at')
-      .eq('client_id', clientId)
+      .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
       .limit(10);
 
