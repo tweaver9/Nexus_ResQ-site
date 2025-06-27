@@ -1,0 +1,10 @@
+:root {
+  --client-color: #333; /* fallback/default */
+}
+.client-logo { width: 180px; margin: 0 auto 24px; }
+.login-btn, .zone-card button {
+  background: var(--client-color);
+  color: #fff;
+  font-weight: 600;
+}
+/* ...your other styles... */
