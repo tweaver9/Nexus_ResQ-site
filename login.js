@@ -23,8 +23,8 @@ window.addEventListener('DOMContentLoaded', async function() {
     loginForm.style.display = "none";
     return;
   }
-  // Save client_id for later pages
-  sessionStorage.setItem('client_id', client.id);
+  // Save tenant_id for later pages
+  sessionStorage.setItem('tenant_id', tenant.id);
 
   // Set logo and theme color if available
   if (client.logo && logoImg) logoImg.src = client.logo;
@@ -37,12 +37,12 @@ window.addEventListener('DOMContentLoaded', async function() {
     const password = this.password.value.trim();
     errorDiv.textContent = '';
 
-    // Look up user by username AND client_id
+    // Look up user by username AND tenant_id
     const { data: users, error: userError } = await supabase
       .from('users')
       .select('id,username,password,role')
       .eq('username', username)
-      .eq('client_id', client.id)
+      .eq('tenant_id', tenant.id)
       .limit(1);
 
     if (userError || !users || users.length === 0) {
@@ -59,7 +59,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     // Save session data
     sessionStorage.setItem('role', user.role);
     sessionStorage.setItem('username', user.username);
-    // client_id already saved above
+    // tenant_id already saved above
 
     window.location.href = "dashboard.html";
   });
