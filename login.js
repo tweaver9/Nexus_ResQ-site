@@ -8,7 +8,7 @@ window.addEventListener('DOMContentLoaded', async function() {
 
   // Supabase setup
   const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
-  const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your real anon key
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU'; // Replace with your real anon key
   const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   // Fetch branding for this subdomain/client
