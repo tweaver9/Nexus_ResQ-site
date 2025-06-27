@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (!clientId) {
     const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
-    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your key
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU'; // Replace with your key
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
     const { data: client, error } = await supabaseClient
       .from('clients')
