@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Select Your Company</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #0d1b2a;
+      font-family: 'Oswald', sans-serif;
+      color: #f2f2f2;
+      margin: 0;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #fdd835;
+      margin-bottom: 30px;
+    }
+
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 30px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .logo-grid a {
+      background-color: #142b47;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s ease;
+    }
+
+    .logo-grid a:hover {
+      background-color: #1e3d63;
+    }
+
+    .logo-grid img {
+      max-width: 100px;
+      max-height: 80px;
+      object-fit: contain;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>Select Your Company</h1>
+
+  <div class="logo-grid" id="logoGrid">
+    <!-- Dynamic client logos will appear here -->
+  </div>
+
+  <script>
+    // === SUPABASE SETUP ===
+    const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function loadClientLogos() {
+      const grid = document.getElementById('logoGrid');
+      grid.innerHTML = "Loading companies...";
+
+      // Get all clients from Supabase (order alphabetically by name)
+      const { data: clients, error } = await supabase.from('clients').select('*').order('name');
+
+      grid.innerHTML = "";
+
+      // Show client logos from Supabase
+      if (!error && Array.isArray(clients) && clients.length > 0) {
+        clients.forEach(client => {
+          // If logo_url missing, show placeholder logo
+          let logo = client.logo_url
+            ? `<img src="${client.logo_url}" alt="${client.name}" />`
+            : `<div style="width:100px;height:80px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:1.4em;background:#223052;border-radius:8px;">${client.name[0] || "?"}</div>`;
+
+          // Go to login.html?tenant_id=xxx for this client
+          let link = `<a href="login.html?tenant_id=${client.id}" title="${client.name}">
+                        ${logo}
+                      </a>`;
+          grid.insertAdjacentHTML('beforeend', link);
+        });
+      } else {
+        grid.innerHTML = "<div>No clients found.</div>";
+      }
+
+      // Always show the static Nexus Res-Q tile last (owner login)
+      grid.insertAdjacentHTML('beforeend',
+        `<a href="clients/nexus/login.html" title="Nexus Res-Q">
+          <img src="logos/nexusresq.jpg" alt="Nexus Res-Q" />
+        </a>`
+      );
+    }
+
+    loadClientLogos();
+  </script>
+</body>
+</html>
