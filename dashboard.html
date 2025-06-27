@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Client Dashboard | Nexus Res-Q</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <img src="logos/default-logo.png" class="client-logo" />
+    <h1>Dashboard</h1>
+    <button id="logout-btn">Log Out</button>
+  </header>
+  <main>
+    <div id="sync-status"></div>
+    <div id="last-sync"></div>
+    <div id="progress-summary"></div>
+    <div class="zone-grid"></div>
+    <ul id="activity-log"></ul>
+    <input type="text" id="search-input" placeholder="Search Zones...">
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
