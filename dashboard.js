@@ -47,13 +47,12 @@ console.log("About to fetch client info for tenantId:", tenantId);
     if (addClientBtn) {
       if (client && client.id === NEXUS_UUID) {
         console.log("Showing Add Client button");
-        addClientBtn.style.display = 'none'; // Show the button for Nexus only
+        addClientBtn.style.display = ''; // Show the button for Nexus only
       } else {
         console.log("Hiding Add Client button");
-        addClientBtn.style.display = ''; // Hide for all others
+        addClientBtn.style.display = 'none'; // Hide for all others
       }
     }
-  }
   })();
 
   // --- Initialize dashboard ---
@@ -72,9 +71,9 @@ console.log("About to fetch client info for tenantId:", tenantId);
   // Update sync status and last sync timestamp
   async function updateSyncStatus() {
     const online = navigator.onLine;
-    syncStatusEl.textContent = online ? '🔄 Sync: Online' : '🔄 Sync: Offline';
+    syncStatusEl.textContent = online ? 'Sync: Online' : 'Sync: Offline';
     const lastSync = localStorage.getItem('lastSync') || 'Never';
-    lastSyncEl.textContent = `🕓 Last Sync: ${lastSync}`;
+    lastSyncEl.textContent = `Last Sync: ${lastSync}`;
   }
 
   // Load zone cards - filtered by tenant_id!
@@ -110,7 +109,7 @@ console.log("About to fetch client info for tenantId:", tenantId);
     }
 
     // Update overall progress
-    progressSummaryEl.textContent = `✅ ${grandCompleted}/${grandTotal} Complete`;
+    progressSummaryEl.textContent = ` ${grandCompleted}/${grandTotal} Complete`;
   }
 
   // Load recent activity - filtered by tenant_id!
