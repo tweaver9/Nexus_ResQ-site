@@ -5,7 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Add New Client | Nexus Res-Q</title>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="css/add-client.css">
+  <!-- Color Extraction & Manipulation -->
+  <script src="https://cdn.jsdelivr.net/npm/node-vibrant/dist/vibrant.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tinycolor2@1.6.0/dist/tinycolor-min.js"></script>
+  <style>
+    /* If not using separate CSS file, paste add-client.css here */
+  </style>
 </head>
 <body>
   <form class="add-client-form" id="addClientForm" enctype="multipart/form-data" autocomplete="off">
@@ -13,12 +19,15 @@
     <label>Client Name*</label>
     <input type="text" id="clientName" required maxlength="48" autocomplete="off">
 
-    <label>Logo (PNG/JPG, optional)</label>
+    <label>Logo (PNG/JPG/WebP, optional)</label>
     <input type="file" id="clientLogo" accept="image/png, image/jpeg, image/webp">
     <div id="logoPreview" style="margin-top:-8px;"></div>
+    <div id="colorPreview" style="margin: 10px 0 5px 0; text-align:center;"></div>
 
-    <label>Primary Color*</label>
-    <input type="color" id="clientColor" value="#fdd835" required style="width:60px;height:38px;">
+    <!-- Hidden color fields to be auto-filled -->
+    <input type="hidden" id="primaryColor" value="#142b47">
+    <input type="hidden" id="secondaryColor" value="#fdd835">
+    <input type="hidden" id="darkColor" value="#0d1b2a">
 
     <label>Admin Username*</label>
     <input type="text" id="adminUsername" required maxlength="32" autocomplete="off">
@@ -41,6 +50,7 @@
     const preview = document.getElementById("logoPreview");
     preview.innerHTML = "";
     processedLogoBlob = null;
+    document.getElementById("colorPreview").innerHTML = "";
 
     if (!file) return;
 
@@ -51,6 +61,59 @@
     reader.readAsDataURL(file);
 
     img.onload = async () => {
+      // Show preview
+      preview.innerHTML = `<img src="${img.src}" style="max-width:120px;max-height:120px;border-radius:7px;border:1px solid #ccc;margin-top:8px;">`;
+
+      // --- Extract palette using Vibrant.js ---
+      try {
+        const palette = await Vibrant.from(img).getPalette();
+        let primary = palette.Vibrant ? palette.Vibrant.getHex() : '#142b47';
+        let secondary = palette.LightVibrant ? palette.LightVibrant.getHex() : tinycolor(primary).lighten(25).toHexString();
+        let dark = palette.DarkVibrant ? palette.DarkVibrant.getHex() : tinycolor(primary).darken(40).toHexString();
+
+        // If the logo is basically single-color, generate variations:
+        if (
+          primary === secondary ||
+          tinycolor.equals(primary, secondary)
+        ) secondary = tinycolor(primary).lighten(25).toHexString();
+        if (
+          primary === dark ||
+          tinycolor.equals(primary, dark)
+        ) dark = tinycolor(primary).darken(40).toHexString();
+
+        // Guarantee readable text
+        let textColor = tinycolor.mostReadable(dark, ["#fff", "#222"]).toHexString();
+
+        // Show swatch preview
+        document.getElementById("colorPreview").innerHTML = `
+          <div style="margin:10px 0;display:flex;justify-content:center;gap:12px;">
+            <span style="display:inline-block;width:34px;height:22px;background:${primary};border-radius:6px;" title="Primary"></span>
+            <span style="display:inline-block;width:34px;height:22px;background:${secondary};border-radius:6px;" title="Secondary"></span>
+            <span style="display:inline-block;width:34px;height:22px;background:${dark};border-radius:6px;" title="Dark"></span>
+            <span style="display:inline-block;width:34px;height:22px;background:${textColor};border-radius:6px;border:1px solid #eee;" title="Text"></span>
+          </div>
+          <div style="color:${textColor};font-size:0.93em">Preview: main, accent, background, text</div>
+        `;
+
+        // Fill hidden color fields (these get submitted!)
+        document.getElementById('primaryColor').value = primary;
+        document.getElementById('secondaryColor').value = secondary;
+        document.getElementById('darkColor').value = dark;
+
+        // Optionally, update a CSS preview (for "live theme")
+        document.body.style.setProperty('--primary-dark', dark);
+        document.body.style.setProperty('--primary-mid', primary);
+        document.body.style.setProperty('--primary-light', secondary);
+        document.body.style.setProperty('--text-color', textColor);
+
+      } catch (err) {
+        document.getElementById("colorPreview").innerHTML = '<span style="color:#ff5050">Could not extract colors, using defaults.</span>';
+        document.getElementById('primaryColor').value = "#142b47";
+        document.getElementById('secondaryColor').value = "#fdd835";
+        document.getElementById('darkColor').value = "#0d1b2a";
+      }
+
+      // --- Process for logo upload ---
       const canvas = document.createElement("canvas");
       const maxSize = 300;
       const scale = Math.min(maxSize / img.width, maxSize / img.height);
@@ -61,19 +124,15 @@
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
       canvas.toBlob(
-        (blob) => {
-          processedLogoBlob = blob;
-          const url = URL.createObjectURL(blob);
-          preview.innerHTML = `<img src="${url}" style="max-width:120px;max-height:120px;border-radius:7px;border:1px solid #ccc;margin-top:8px;">`;
-        },
+        (blob) => { processedLogoBlob = blob; },
         "image/webp",
         0.85
       );
     };
   });
-</script>
+  </script>
 
-<script>
+  <script>
   // === SUPABASE SETUP ===
   const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
@@ -109,59 +168,60 @@
     try {
       // 1. Gather form fields
       const clientName = document.getElementById('clientName').value.trim();
-      const color = document.getElementById('clientColor').value;
+      const primary_color = document.getElementById('primaryColor').value;
+      const secondary_color = document.getElementById('secondaryColor').value;
+      const dark_color = document.getElementById('darkColor').value;
       const adminUsername = document.getElementById('adminUsername').value.trim();
       const adminPassword = document.getElementById('adminPassword').value;
 
- // 2. Upload logo to GitHub (jsDelivr) if present
-let logo_url = null;
-if (processedLogoBlob) {
-  // Convert Blob to Base64
-  const toBase64 = (blob) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+      // 2. Upload logo to GitHub (jsDelivr) if present
+      let logo_url = null;
+      if (processedLogoBlob) {
+        // Convert Blob to Base64
+        const toBase64 = (blob) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
 
-  const base64Image = await toBase64(processedLogoBlob);
+        const base64Image = await toBase64(processedLogoBlob);
 
-  // Generate safe filename and path
-  const fileName = clientName.replace(/\s+/g, '_').toLowerCase() + '.webp';
-  const githubPath = `logos/${fileName}`;
-  const jsDelivrUrl = `https://cdn.jsdelivr.net/gh/tweaver9/Nexus_ResQ-site/${githubPath}`;
+        // Generate safe filename and path
+        const fileName = clientName.replace(/\s+/g, '_').toLowerCase() + '.webp';
+        const githubPath = `logos/${fileName}`;
+        const jsDelivrUrl = `https://cdn.jsdelivr.net/gh/tweaver9/Nexus_ResQ-site/${githubPath}`;
 
-  // --- Replace this with your real GitHub token ---
-  const githubToken = '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';
-  const githubApiUrl = `https://api.github.com/repos/tweaver9/Nexus_ResQ-site/contents/${githubPath}`;
+        // --- Replace this with your real GitHub token ---
+        const githubToken = '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';
+        const githubApiUrl = `https://api.github.com/repos/tweaver9/Nexus_ResQ-site/contents/${githubPath}`;
 
-  const githubUpload = await fetch(githubApiUrl, {
-    method: "PUT",
-    headers: {
-      "Authorization": `Bearer ${githubToken}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      message: `Add logo for ${clientName}`,
-      content: base64Image,
-      branch: "main"
-    })
-  });
+        const githubUpload = await fetch(githubApiUrl, {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${githubToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: `Add logo for ${clientName}`,
+            content: base64Image,
+            branch: "main"
+          })
+        });
 
-  if (!githubUpload.ok) {
-    const response = await githubUpload.json();
-    throw new Error("GitHub upload failed: " + (response.message || githubUpload.statusText));
-  }
+        if (!githubUpload.ok) {
+          const response = await githubUpload.json();
+          throw new Error("GitHub upload failed: " + (response.message || githubUpload.statusText));
+        }
 
-  logo_url = jsDelivrUrl;
-}
+        logo_url = jsDelivrUrl;
+      }
 
-
-      // 3. Insert client
+      // 3. Insert client (with all colors!)
       const { data: client, error: clientErr } = await supabase
         .from('clients')
-        .insert([{ name: clientName, logo_url, color }])
+        .insert([{ name: clientName, logo_url, primary_color, secondary_color, dark_color }])
         .select()
         .single();
 
@@ -195,4 +255,7 @@ if (processedLogoBlob) {
       msg.textContent = "❌ " + (err.message || err || "Unknown error");
     }
   }
-</script>
+  </script>
+
+</body>
+</html>
