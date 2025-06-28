@@ -31,14 +31,23 @@ console.log("About to fetch client info for tenantId:", tenantId);
   (async () => {
     const { data: client, error: clientErr } = await supabaseClient
       .from('clients')
-      .select('id, logo_url, color, name')
+      .select('id, logo_url, primary_color, secondary_color, dark_color, name')
       .eq('id', tenantId)
       .single();
     console.log("Fetched client:", client, "Error:", clientErr);
     
     if (client && client.logo_url && clientLogoEl) clientLogoEl.src = client.logo_url;
-    if (client && client.color) document.body.style.setProperty('--client-color', client.color);
-    if (client && client.name && dashboardTitleEl) {
+    if (client) {
+      if (client.primary_color)
+       document.body.style.setProperty('--primary-mid', client.primary_color);
+      if (client.seconary_color)
+       document.body.style.setProperty('--primary-light', client.secondary_color);
+      if (client.dark_color)
+       document.body.style.setProperty('--primary-dark', client.dark_color);
+    }
+
+      
+     if (client && client.name && dashboardTitleEl) {
       dashboardTitleEl.textContent = `${client.name.charAt(0).toUpperCase() + client.name.slice(1)} Dashboard`;
     }
 
@@ -153,12 +162,11 @@ if (welcomeEl) {
   // Logout logic
   const logoutLinkEl = document.getElementById('logout-link');
   if (logoutLinkEl) {
-    logoutLinkEl.onclick =
-  function handleLogout() {
+    logoutLinkEl.onclick = function handleLogout() {
     localStorage.clear();
     sessionStorage.clear();
     window.location.href = 'login.html';
-  }
+    };
   }
 
   // Start inspection for a zone
