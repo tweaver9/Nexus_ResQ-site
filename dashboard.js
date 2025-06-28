@@ -44,9 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const NEXUS_UUID = '6dd68681-bed6-40b2-88d4-f9b3cf36ad9e';
     if (addClientBtn) {
       if (client && client.id === NEXUS_UUID) {
-        addClientBtn.style.display = ''; // Show the button for Nexus only
+        addClientBtn.classList.remove('hidden'); // Show the button for Nexus only
       } else {
-        addClientBtn.style.display = 'none'; // Hide for all others
+        addClientBtn.classList.add('hidden'); // Hide for all others
       }
     }
   })();
