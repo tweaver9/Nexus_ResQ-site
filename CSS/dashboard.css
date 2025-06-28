@@ -116,10 +116,7 @@ html, body {
   background: var(--button-hover);
   color: var(--button-hover-text);
 }
-.hidden {
-  display: none !important;
-}
-  
+
 .add-client-btn {
   background: #11c442;
   color: #fff;
