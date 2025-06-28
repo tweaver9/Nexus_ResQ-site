@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   (async () => {
     const { data: client, error: clientErr } = await supabaseClient
       .from('clients')
-      .select('logo_url, color, name')
+      .select('id, logo_url, color, name')
       .eq('id', tenantId)
       .single();
     if (client && client.logo_url && clientLogoEl) clientLogoEl.src = client.logo_url;
@@ -39,13 +39,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (client && client.name && dashboardTitleEl) {
       dashboardTitleEl.textContent = `${client.name.charAt(0).toUpperCase() + client.name.slice(1)} Dashboard`;
     }
-  })();
 
-  // --- Hide Add Client button for non-superadmins ---
-  const NEXUS_UUID = '6dd68681-bed6-40b2-88d4-f9b3cf36ad9e';
-  if (client && client.id !== NEXUS_UUID && addClientBtn) {
-    addClientBtn.classList.remove('hidden');
-  }
+    // --- Show/hide Add Client button for Nexus only ---
+    const NEXUS_UUID = '6dd68681-bed6-40b2-88d4-f9b3cf36ad9e';
+    if (addClientBtn) {
+      if (client && client.id === NEXUS_UUID) {
+        addClientBtn.style.display = ''; // Show the button for Nexus only
+      } else {
+        addClientBtn.style.display = 'none'; // Hide for all others
+      }
+    }
+  })();
 
   // --- Initialize dashboard ---
   initDashboard();
