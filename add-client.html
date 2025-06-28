@@ -172,50 +172,36 @@ setTimeout(() => { document.querySelector(".submit-btn").disabled = false; }, 40
       const adminUsername = document.getElementById('adminUsername').value.trim();
       const adminPassword = document.getElementById('adminPassword').value;
 
-      // 2. Upload logo to GitHub (jsDelivr) if present
-      let logo_url = null;
-      if (processedLogoBlob) {
-        // Convert Blob to Base64
-        const toBase64 = (blob) =>
-          new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
+      // 2. Upload logo to your Node.js backend (if present)
+let logo_url = null;
+if (processedLogoBlob) {
+  // Convert Blob to Base64 (strip the "data:" prefix)
+  const toBase64 = (blob) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
 
-        const base64Image = await toBase64(processedLogoBlob);
+  const base64Image = await toBase64(processedLogoBlob);
 
-        // Generate safe filename and path
-        const fileName = clientName.replace(/\s+/g, '_').toLowerCase() + '.webp';
-        const githubPath = `logos/${fileName}`;
-        const jsDelivrUrl = `https://cdn.jsdelivr.net/gh/tweaver9/Nexus_ResQ-site/${githubPath}`;
+  // Upload to backend API (localhost for dev)
+  const response = await fetch('http://localhost:4000/upload-logo', {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      clientName,
+      base64Image
+    })
+  });
 
-        // --- Replace this with your real GitHub token ---
-        const githubToken = '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';
-        const githubApiUrl = `https://api.github.com/repos/tweaver9/Nexus_ResQ-site/contents/${githubPath}`;
+  const result = await response.json();
+  if (!result.success) throw new Error(result.error);
+  logo_url = result.logoUrl; // This is your jsDelivr URL!
+}
 
-        const githubUpload = await fetch(githubApiUrl, {
-          method: "PUT",
-          headers: {
-            "Authorization": `Bearer ${githubToken}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: `Add logo for ${clientName}`,
-            content: base64Image,
-            branch: "main"
-          })
-        });
-
-        if (!githubUpload.ok) {
-          const response = await githubUpload.json();
-          throw new Error("GitHub upload failed: " + (response.message || githubUpload.statusText));
-        }
-
-        logo_url = jsDelivrUrl;
-      }
-
+ 
       // 3. Insert client (with all colors!)
       const { data: client, error: clientErr } = await supabase
         .from('clients')
