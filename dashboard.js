@@ -43,6 +43,7 @@ console.log("About to fetch client info for tenantId:", tenantId);
     }
 
     // --- Show/hide Add Client button for Nexus only ---
+    try {
     const NEXUS_UUID = '6dd68681-bed6-40b2-88d4-f9b3cf36ad9e';
     if (addClientBtn) {
       if (client && client.id === NEXUS_UUID) {
@@ -53,7 +54,7 @@ console.log("About to fetch client info for tenantId:", tenantId);
         addClientBtn.style.display = ''; // Hide for all others
       }
     }
-  } catch (e) {
+   catch (e) {
    console.error("Error in async branding function:", e);
   }
   })();
