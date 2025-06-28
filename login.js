@@ -14,7 +14,7 @@ window.addEventListener('DOMContentLoaded', async function() {
   // --- 3. Fetch client/tenant row for this subdomain ---
   const { data: client, error: clientErr } = await supabase
     .from('clients')
-    .select('id, logo_url, color')   // use logo_url, not logo
+    .select('id, logo_url, primary_color, secondary_color, dark_color')
     .eq('name', subdomain)
     .single();
 
@@ -31,7 +31,9 @@ window.addEventListener('DOMContentLoaded', async function() {
 
   // --- 5. Set logo and color theme ---
   if (client.logo_url && logoImg) logoImg.src = client.logo_url;
-  if (client.color) document.body.style.setProperty('--client-color', client.color);
+  if (client.primary_color) document.body.style.setProperty('--primary-mid', client.primary_color);
+  if (client.secondary_color) document.body.style.setProperty('--primary-light', client.secondary_color);
+  if (client.dark_color) document.body.style.setProperty('--primary-dark', client.dark_color);
 
   // --- 6. Login form handler ---
   if (loginForm) loginForm.addEventListener('submit', async function(e) {
