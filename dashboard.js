@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Hide Add Client button for non-superadmins ---
   const NEXUS_UUID = '6dd68681-bed6-40b2-88d4-f9b3cf36ad9e';
   if (client && client.id !== NEXUS_UUID && addClientBtn) {
-    addClientBtn.style.display = 'none';
+    addClientBtn.classList.remove('hidden');
   }
 
   // --- Initialize dashboard ---
