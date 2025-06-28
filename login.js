@@ -3,46 +3,49 @@ window.addEventListener('DOMContentLoaded', async function() {
   const logoImg = document.querySelector('.client-logo');
   const errorDiv = document.getElementById('login-error');
 
-  // Tenant detection via subdomain
+  // --- 1. Detect tenant/client by subdomain ---
   const subdomain = window.location.hostname.split('.')[0];
 
-  // Supabase setup
+  // --- 2. Supabase setup ---
   const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU'; // Replace with your real anon key
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
   const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-  // Fetch branding for this subdomain/client
+  // --- 3. Fetch client/tenant row for this subdomain ---
   const { data: client, error: clientErr } = await supabase
     .from('clients')
-    .select('id, logo, color')
+    .select('id, logo_url, color')   // use logo_url, not logo
     .eq('name', subdomain)
     .single();
 
+  console.log("Supabase client for login:", { client, clientErr });
+
   if (!client || clientErr) {
     errorDiv.textContent = "Unknown client. Please use your assigned company link.";
-    loginForm.style.display = "none";
+    if (loginForm) loginForm.style.display = "none";
     return;
   }
-  // Save tenant_id for later pages
-  sessionStorage.setItem('tenant_id', tenant.id);
 
-  // Set logo and theme color if available
-  if (client.logo && logoImg) logoImg.src = client.logo;
+  // --- 4. Save tenant_id (the client's id) for this session ---
+  sessionStorage.setItem('tenant_id', client.id);
+
+  // --- 5. Set logo and color theme ---
+  if (client.logo_url && logoImg) logoImg.src = client.logo_url;
   if (client.color) document.body.style.setProperty('--client-color', client.color);
 
-  // Login form handler
+  // --- 6. Login form handler ---
   if (loginForm) loginForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     const username = this.username.value.trim();
     const password = this.password.value.trim();
     errorDiv.textContent = '';
 
-    // Look up user by username AND tenant_id
+    // --- 7. Query for user with this username + tenant_id (client.id) ---
     const { data: users, error: userError } = await supabase
       .from('users')
       .select('id,username,password,role')
       .eq('username', username)
-      .eq('tenant_id', tenant.id)
+      .eq('tenant_id', client.id)
       .limit(1);
 
     if (userError || !users || users.length === 0) {
@@ -50,13 +53,14 @@ window.addEventListener('DOMContentLoaded', async function() {
       return;
     }
     const user = users[0];
-    // For demo: plain-text password check. Replace with secure hash in production.
+
+    // --- 8. Check password (plaintext for now) ---
     if (user.password !== password) {
       errorDiv.textContent = "Incorrect password.";
       return;
     }
 
-    // Save session data
+    // --- 9. Store session data & redirect to dashboard ---
     sessionStorage.setItem('role', user.role);
     sessionStorage.setItem('username', user.username);
     // tenant_id already saved above
