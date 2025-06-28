@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const clientLogoEl = document.getElementById('client-logo');
   const dashboardTitleEl = document.getElementById('dashboard-title');
   const addClientBtn = document.getElementById('add-client-btn');
-
+console.log("About to fetch client info for tenantId:", tenantId);
   // --- Branding: Fetch client info by tenantId and set logo/color ---
   (async () => {
     const { data: client, error: clientErr } = await supabaseClient
@@ -34,7 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
       .select('id, logo_url, color, name')
       .eq('id', tenantId)
       .single();
-    console.log("Fetched client:", client);
+    console.log("Fetched client:", client, "Error:", clientErr);
+    
     if (client && client.logo_url && clientLogoEl) clientLogoEl.src = client.logo_url;
     if (client && client.color) document.body.style.setProperty('--client-color', client.color);
     if (client && client.name && dashboardTitleEl) {
@@ -45,11 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const NEXUS_UUID = '6dd68681-bed6-40b2-88d4-f9b3cf36ad9e';
     if (addClientBtn) {
       if (client && client.id === NEXUS_UUID) {
+        console.log("Showing Add Client button");
         addClientBtn.style.display = 'none'; // Show the button for Nexus only
       } else {
+        console.log("Hiding Add Client button");
         addClientBtn.style.display = ''; // Hide for all others
       }
     }
+  } catch (e) {
+   console.error("Error in async branding function:", e);
+  }
   })();
 
   // --- Initialize dashboard ---
