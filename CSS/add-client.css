@@ -1,0 +1,111 @@
+:root {
+  --primary-dark: #0d1b2a;
+  --primary-mid: #142b47;
+  --primary-light: #fdd835;
+  --button-bg: #142b47;
+  --button-hover: #fdd835;
+  --button-text: #fff;
+  --button-hover-text: #000;
+  --input-bg: #1e3d63;
+  --input-border: #233c60;
+  --box-shadow: 0 6px 24px rgba(13,27,42,0.17);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--primary-dark);
+  color: #f2f2f2;
+  font-family: 'Oswald', sans-serif;
+  min-height: 100vh;
+}
+
+.add-client-container {
+  background: var(--primary-mid);
+  border-radius: 16px;
+  box-shadow: var(--box-shadow);
+  max-width: 430px;
+  margin: 56px auto 0 auto;
+  padding: 38px 28px 30px 28px;
+  text-align: center;
+}
+
+h1 {
+  color: var(--primary-light);
+  margin-bottom: 18px;
+  font-size: 1.4em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.add-client-form label {
+  display: block;
+  text-align: left;
+  margin: 20px 0 7px 2px;
+  color: #fdd835;
+  font-size: 1.05em;
+  font-weight: 500;
+}
+
+.add-client-form input,
+.add-client-form select {
+  width: 100%;
+  padding: 13px 12px;
+  margin-bottom: 18px;
+  border-radius: 7px;
+  border: 1.5px solid var(--input-border);
+  background: var(--input-bg);
+  color: #fff;
+  font-size: 1em;
+  outline: none;
+  box-sizing: border-box;
+  transition: border 0.18s;
+}
+.add-client-form input:focus,
+.add-client-form select:focus {
+  border: 1.5px solid var(--primary-light);
+}
+.add-client-form input[type="file"] {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #fff;
+}
+
+.add-client-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 8px;
+  font-size: 1.08em;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.16s, color 0.16s;
+  box-shadow: 0 1.5px 6px rgba(12,22,44,0.08);
+}
+.add-client-btn:hover,
+.add-client-btn:focus {
+  background: var(--button-hover);
+  color: var(--button-hover-text);
+}
+
+.status-message {
+  margin-top: 18px;
+  font-size: 1.07em;
+  color: #fdd835;
+  text-shadow: 0 1px 1px #222c;
+}
+
+@media (max-width: 600px) {
+  .add-client-container {
+    margin: 28px auto 0 auto;
+    max-width: 96vw;
+    padding: 12px 2vw 22px 2vw;
+  }
+  h1 {
+    font-size: 1.09em;
+  }
+}
