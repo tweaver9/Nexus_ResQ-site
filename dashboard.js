@@ -151,9 +151,9 @@ if (welcomeEl) {
   }
 
   // Logout logic
-  const logoutLinkE1 = document.getElementById('logout-link');
-  if (logoutLinkE1) {
-    logoutLinkE1.onclick =
+  const logoutLinkEl = document.getElementById('logout-link');
+  if (logoutLinkEl) {
+    logoutLinkEl.onclick =
   function handleLogout() {
     localStorage.clear();
     sessionStorage.clear();
