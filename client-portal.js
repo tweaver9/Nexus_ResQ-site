@@ -36,3 +36,4 @@ async function loadClientLogos() {
 }
 
 window.addEventListener('DOMContentLoaded', loadClientLogos);
+console.log("Supabase clients query:", { clients, error });
