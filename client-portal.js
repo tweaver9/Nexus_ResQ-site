@@ -11,7 +11,7 @@ async function loadClientLogos() {
   // Get all clients from Supabase (order alphabetically by name)
   const { data: clients, error } = await supabase
     .from('clients')
-    .select('name,logo')
+    .select('name,logo_url')
     .order('name');
 
   grid.innerHTML = "";
