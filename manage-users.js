@@ -4,14 +4,26 @@ const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+// Get the current tenant_id from sessionStorage
+const tenantId = sessionStorage.getItem('tenant_id');
+if (!tenantId) {
+  // If no tenant_id, kick to login page
+  window.location.href = "login.html";
+}
+
 // Render user cards in a 2-column grid
 async function loadUsers() {
   const container = document.getElementById('user-list');
   container.innerHTML = ""; // Clear old content
 
-  const { data, error } = await supabase.from('users').select('*');
-  console.log("Supabase returned:",{ data, error});
-  
+  // Only fetch users for the current tenant
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('tenant_id', tenantId);
+
+  console.log("Supabase returned:", { data, error });
+
   if (error || !data || data.length === 0) {
     container.innerHTML = "<div class='dashboard-placeholder'>No users found.</div>";
     return;
@@ -43,7 +55,7 @@ async function loadUsers() {
   container.innerHTML = html;
 }
 
-// Add User
+// Add User (now includes tenant_id!)
 document.getElementById('add-user-form').onsubmit = async function(e) {
   e.preventDefault();
   const username = document.getElementById('new-username').value.trim();
@@ -55,7 +67,7 @@ document.getElementById('add-user-form').onsubmit = async function(e) {
     msgDiv.textContent = "Username and password required.";
     return;
   }
-  const { error } = await supabase.from('users').insert([{ username, password, role }]);
+  const { error } = await supabase.from('users').insert([{ username, password, role, tenant_id: tenantId }]);
   if (error) {
     msgDiv.textContent = "Error adding user.";
   } else {
@@ -68,7 +80,11 @@ document.getElementById('add-user-form').onsubmit = async function(e) {
 // Delete User (called from button)
 window.deleteUser = async function(username) {
   if (!confirm(`Delete user: ${username}?`)) return;
-  const { error } = await supabase.from('users').delete().eq('username', username);
+  // Only delete the user for this tenant
+  const { error } = await supabase.from('users')
+    .delete()
+    .eq('username', username)
+    .eq('tenant_id', tenantId);
   if (error) alert('Failed to delete user.');
   loadUsers();
 }
