@@ -20,8 +20,8 @@ async function loadClientLogos() {
   if (!error && Array.isArray(clients) && clients.length > 0) {
     clients.forEach(client => {
       // Use the correct field for logo (should be "logo")
-      let logo = client.logo
-        ? `<img src="${client.logo}" alt="${client.name}" />`
+      let logo = client.logo_url
+        ? `<img src="${client.logo_url}" alt="${client.name} logo" />`
         : `<div style="width:100px;height:80px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:1.4em;background:#223052;border-radius:8px;">${client.name[0] || "?"}</div>`;
 
       // Link to the correct subdomain for login
