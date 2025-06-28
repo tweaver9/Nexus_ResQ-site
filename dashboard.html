@@ -2,25 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Client Dashboard | Nexus Res-Q</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Nexus Res-Q | Client Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="CSS/dashboard.css">
 </head>
 <body>
-  <header>
-    <img src="logos/default-logo.png" class="client-logo" />
-    <h1>Dashboard</h1>
-    <button id="logout-btn">Log Out</button>
+  <header class="dashboard-header">
+    <div class="header-left">
+      <img src="" alt="Client Logo" class="client-logo" id="client-logo">
+      <span class="dashboard-title" id="dashboard-title">Dashboard</span>
+      <span class="welcome-banner" id="welcome-message"></span>
+      <span id="logout-link" class="logout-link" style="cursor:pointer;">Log Out</span>
+    </div>
+    <div class="header-right">
+      <button class="dashboard-btn" onclick="location.href='manage-users.html'">Manage Users</button>
+      <button class="dashboard-btn" onclick="location.href='view-inspections.html'">
+        <span class="desktop-label">View All Inspections</span>
+        <span class="mobile-label">Inspections</span>
+      </button>
+      <button class="dashboard-btn" onclick="location.href='manage-assets.html'">Manage Assets</button>
+      <button class="add-client-btn" id="add-client-btn" onclick="location.href='add-client.html'">Add Client!</button>
+    </div>
   </header>
-  <main>
-    <div id="sync-status"></div>
-    <div id="last-sync"></div>
-    <div id="progress-summary"></div>
-    <div class="zone-grid"></div>
-    <ul id="activity-log"></ul>
-    <input type="text" id="search-input" placeholder="Search Zones...">
+
+  <main class="dashboard-main">
+    <div class="dashboard-grid">
+      <section class="dashboard-box" id="activity-box">
+        <div class="box-header">Recent Activity</div>
+        <div class="box-content" id="activity-list">
+          <div class="dashboard-placeholder">No recent activity.</div>
+        </div>
+      </section>
+      <section class="dashboard-box" id="inspections-box">
+        <div class="box-header">Most Recent Inspections Completed</div>
+        <div class="box-content" id="inspection-list">
+          <div class="dashboard-placeholder">No inspections submitted yet.</div>
+        </div>
+      </section>
+      <section class="dashboard-box" id="failed-assets-box">
+        <div class="box-header">Assets Failed Inspection</div>
+        <div class="box-content" id="failed-assets-list">
+          <div class="dashboard-placeholder">No failed assets reported.</div>
+        </div>
+      </section>
+    </div>
   </main>
+
+  <div id="modal-root" style="display:none;"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="dashboard.js"></script>
+  <script>
+    // -- SESSION/AUTH/BRANDING --
+    document.addEventListener('DOMContentLoaded', async function() {
+      // --- Secure session check ---
+      const tenantId = sessionStorage.getItem('tenant_id');
+      const username = sessionStorage.getItem('username') || 'User';
+      const role = sessionStorage.getItem('role') || 'User';
+
+      if (!tenantId || !username || !role) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // --- Supabase setup ---
+      const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
+      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+      // --- Fetch client/branding ---
+      const { data: client, error: clientErr } = await supabase
+        .from('clients')
+        .select('logo_url, color, name')
+        .eq('id', tenantId)
+        .single();
+
+      if (client && client.logo_url) document.getElementById('client-logo').src = client.logo_url;
+      if (client && client.color) document.body.style.setProperty('--client-color', client.color);
+      if (client && client.name) document.getElementById('dashboard-title').textContent = `${client.name.charAt(0).toUpperCase() + client.name.slice(1)} Dashboard`;
+
+      // --- Welcome message ---
+      document.getElementById("welcome-message").innerHTML =
+        `Welcome, <b>${username}</b> <span class="role-indicator">(${role})</span>`;
+
+      // --- Hide Add Client button unless superadmin ---
+      if (role !== 'superadmin') {
+        document.getElementById('add-client-btn').style.display = 'none';
+      }
+
+      // --- Log out handler ---
+      document.getElementById('logout-link').onclick = function() {
+        sessionStorage.clear();
+        window.location.href = 'login.html';
+      };
+
+      // --- Your demo/fake data code (keep as is for now) ---
+      function addEntry(listId, text) {
+        const list = document.getElementById(listId);
+        const newDiv = document.createElement('div');
+        newDiv.className = 'box-entry';
+        newDiv.textContent = text;
+        list.prepend(newDiv);
+        // limit to 10
+        while (list.children.length > 10) list.removeChild(list.lastChild);
+      }
+
+      setInterval(() => {
+        addEntry('activity-list', 'User steve updated settings at ' + new Date().toLocaleTimeString());
+        addEntry('inspection-list', 'Zone: B3, B4 // Submitted by: chase // ' + new Date().toLocaleDateString());
+        addEntry('failed-assets-list', 'Fire Extinguisher FX-013 failed at ' + new Date().toLocaleTimeString());
+      }, 15000);
+    });
+  </script>
 </body>
 </html>
