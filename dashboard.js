@@ -1,136 +1,130 @@
-document.addEventListener('DOMContentLoaded', async () => {
-  const subdomain = window.location.hostname.split('.')[0];
-  let tenantId = sessionStorage.getItem('tenant_id');
-
-  if (!tenantId) {
-    const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU'; // Replace with your key
-    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-    const { data: client, error } = await supabaseClient
-      .from('clients')
-      .select('id')
-      .eq('name', subdomain)
-      .single();
-    if (error || !client) {
-      alert("Client not found. Please access from your unique subdomain.");
-      window.location.href = "login.html";
-      return;
-    }
-    tenantId = tenant.id;
-    sessionStorage.setItem('tenant_id', tenantId);
-  }
-
+document.addEventListener('DOMContentLoaded', () => {
+  // Check for required login info
   const username = sessionStorage.getItem('username');
   const role = sessionStorage.getItem('role');
+  // You can also check tenant_id if needed
+
   if (!username || !role) {
+    // Not logged in—redirect to login page
     window.location.href = "login.html";
     return;
   }
 
-  const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
-  const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your key
-  const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+// File: dashboard.js
+// Core dashboard logic for Nexus Res-Q
+// Ensure Supabase client script is loaded before this script
 
-  const syncStatusEl = document.getElementById('sync-status');
-  const lastSyncEl = document.getElementById('last-sync');
-  const progressSummaryEl = document.getElementById('progress-summary');
-  const zoneGridEl = document.querySelector('.zone-grid');
-  const activityLogEl = document.getElementById('activity-log');
-  const searchInputEl = document.getElementById('search-input');
-  const logoutBtn = document.getElementById('logout-btn');
+// Destructure createClient from the global supabase object
+const { createClient } = supabase;
 
-  if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
-  if (searchInputEl) searchInputEl.addEventListener('input', handleSearch);
+// Supabase initialization (replace with real credentials)
+const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
+const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-  await initDashboard();
+// DOM elements
+const syncStatusEl = document.getElementById('sync-status');
+const lastSyncEl = document.getElementById('last-sync');
+const progressSummaryEl = document.getElementById('progress-summary');
+const zoneGridEl = document.querySelector('.zone-grid');
+const activityLogEl = document.getElementById('activity-log');
+const searchInputEl = document.getElementById('search-input');
+const logoutBtn = document.getElementById('logout-btn');
 
-  async function initDashboard() {
-    await updateSyncStatus();
-    await loadZones();
-    await loadActivityLog();
-  }
-
-  async function updateSyncStatus() {
-    const online = navigator.onLine;
-    if (syncStatusEl) syncStatusEl.textContent = online ? '🔄 Sync: Online' : '🔄 Sync: Offline';
-    if (lastSyncEl) {
-      const lastSync = localStorage.getItem('lastSync') || 'Never';
-      lastSyncEl.textContent = `🕓 Last Sync: ${lastSync}`;
-    }
-  }
-
-  async function loadZones() {
-    const { data: zones, error } = await supabaseClient
-      .from('zones')
-      .select('id,name,total_assets,completed_assets')
-      .eq('tenant_id', tenantId)
-      .order('name', { ascending: true });
-
-    if (error) {
-      console.error('Error loading zones:', error);
-      return;
-    }
-
-    if (!zoneGridEl) return;
-    zoneGridEl.innerHTML = '';
-    let grandTotal = 0, grandCompleted = 0;
-
-    zones.forEach(zone => {
-      grandTotal += zone.total_assets;
-      grandCompleted += zone.completed_assets;
-
-      const card = document.createElement('div');
-      card.className = 'zone-card';
-      card.innerHTML = `
-        <h3>${zone.name}</h3>
-        <p>${zone.completed_assets}/${zone.total_assets} Complete</p>
-        <button onclick="startInspection('${zone.id}')">Start Inspection</button>
-      `;
-      zoneGridEl.appendChild(card);
-    });
-
-    if (progressSummaryEl)
-      progressSummaryEl.textContent = `✅ ${grandCompleted}/${grandTotal} Complete`;
-  }
-
-  async function loadActivityLog() {
-    const { data: logs, error } = await supabaseClient
-      .from('activity_log')
-      .select('id,message,created_at')
-      .eq('tenant_id', tenantId)
-      .order('created_at', { ascending: false })
-      .limit(10);
-
-    if (error) {
-      console.error('Error loading activity log:', error);
-      return;
-    }
-
-    if (!activityLogEl) return;
-    activityLogEl.innerHTML = '';
-    logs.forEach(log => {
-      const li = document.createElement('li');
-      const time = new Date(log.created_at).toLocaleTimeString();
-      li.textContent = `${time} – ${log.message}`;
-      activityLogEl.appendChild(li);
-    });
-  }
-
-  function handleSearch(e) {
-    const term = e.target.value.toLowerCase();
-    document.querySelectorAll('.zone-card').forEach(card => {
-      const name = card.querySelector('h3').textContent.toLowerCase();
-      card.style.display = name.includes(term) ? 'block' : 'none';
-    });
-  }
-
-  function handleLogout() {
-    localStorage.clear();
-    sessionStorage.clear();
-    window.location.href = 'login.html';
-  }
-
-  window.startInspection = function (zoneId) {
-    window.location.href = `inspection.html?zone=${zoneId}`;
-  };
+// Initialization
+document.addEventListener('DOMContentLoaded', () => {
+  initDashboard();
+  logoutBtn.addEventListener('click', handleLogout);
+  searchInputEl.addEventListener('input', handleSearch);
 });
+
+async function initDashboard() {
+  await updateSyncStatus();
+  await loadZones();
+  await loadActivityLog();
+}
+
+// Update sync status and last sync timestamp
+async function updateSyncStatus() {
+  const online = navigator.onLine;
+  syncStatusEl.textContent = online ? '🔄 Sync: Online' : '🔄 Sync: Offline';
+  const lastSync = localStorage.getItem('lastSync') || 'Never';
+  lastSyncEl.textContent = `🕓 Last Sync: ${lastSync}`;
+}
+
+// Load zone cards
+async function loadZones() {
+  // Fetch zones and progress from Supabase
+  const { data: zones, error } = await supabaseClient
+    .from('zones')
+    .select('id,name,total_assets,completed_assets')
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error('Error loading zones:', error);
+    return;
+  }
+
+  zoneGridEl.innerHTML = '';
+  let grandTotal = 0, grandCompleted = 0;
+
+  zones.forEach(zone => {
+    grandTotal += zone.total_assets;
+    grandCompleted += zone.completed_assets;
+
+    const card = document.createElement('div');
+    card.className = 'zone-card';
+    card.innerHTML = `
+      <h3>${zone.name}</h3>
+      <p>${zone.completed_assets}/${zone.total_assets} Complete</p>
+      <button onclick="startInspection('${zone.id}')">Start Inspection</button>
+    `;
+    zoneGridEl.appendChild(card);
+  });
+
+  // Update overall progress
+  progressSummaryEl.textContent = `✅ ${grandCompleted}/${grandTotal} Complete`;
+}
+
+// Load recent activity
+async function loadActivityLog() {
+  const { data: logs, error } = await supabaseClient
+    .from('activity_log')
+    .select('id,message,created_at')
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  if (error) {
+    console.error('Error loading activity log:', error);
+    return;
+  }
+
+  activityLogEl.innerHTML = '';
+  logs.forEach(log => {
+    const li = document.createElement('li');
+    const time = new Date(log.created_at).toLocaleTimeString();
+    li.textContent = `${time} – ${log.message}`;
+    activityLogEl.appendChild(li);
+  });
+}
+
+// Search handler (basic client-side filter)
+function handleSearch(e) {
+  const term = e.target.value.toLowerCase();
+  document.querySelectorAll('.zone-card').forEach(card => {
+    const name = card.querySelector('h3').textContent.toLowerCase();
+    card.style.display = name.includes(term) ? 'block' : 'none';
+  });
+}
+
+// Logout logic
+function handleLogout() {
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.href = 'login.html';
+}
+
+// Start inspection for a zone
+function startInspection(zoneId) {
+  window.location.href = `inspection.html?zone=${zoneId}`;
+}
