@@ -53,11 +53,15 @@ console.log("About to fetch client info for tenantId:", tenantId);
         addClientBtn.style.display = 'none'; // Hide for all others
       }
     }
+    // --- Welcome message ---
+const welcomeEl = document.getElementById("welcome-message");
+if (welcomeEl) {
+  welcomeEl.innerHTML = `Welcome, <b>${username}</b> <span class="role-indicator">(${role})</span>`;
+}
   })();
 
   // --- Initialize dashboard ---
   initDashboard();
-  if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
   if (searchInputEl) searchInputEl.addEventListener('input', handleSearch);
 
   // --- FUNCTIONS ---
@@ -147,10 +151,14 @@ console.log("About to fetch client info for tenantId:", tenantId);
   }
 
   // Logout logic
+  const logoutLinkE1 = document.getElementById('logout-link');
+  if (logoutLinkE1) {
+    logoutLinkE1.onclick =
   function handleLogout() {
     localStorage.clear();
     sessionStorage.clear();
     window.location.href = 'login.html';
+  }
   }
 
   // Start inspection for a zone
