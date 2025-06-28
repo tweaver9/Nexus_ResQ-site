@@ -97,12 +97,6 @@
         document.getElementById('secondaryColor').value = secondary;
         document.getElementById('darkColor').value = dark;
 
-        // Optionally, update a CSS preview (for "live theme")
-        document.body.style.setProperty('--primary-dark', dark);
-        document.body.style.setProperty('--primary-mid', primary);
-        document.body.style.setProperty('--primary-light', secondary);
-        document.body.style.setProperty('--text-color', textColor);
-
       } catch (err) {
         document.getElementById("colorPreview").innerHTML = '<span style="color:#ff5050">Could not extract colors, using defaults.</span>';
         document.getElementById('primaryColor').value = "#142b47";
