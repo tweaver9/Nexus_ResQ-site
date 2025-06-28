@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .select('id, logo_url, color, name')
       .eq('id', tenantId)
       .single();
+    console.log("Fetched client:", client);
     if (client && client.logo_url && clientLogoEl) clientLogoEl.src = client.logo_url;
     if (client && client.color) document.body.style.setProperty('--client-color', client.color);
     if (client && client.name && dashboardTitleEl) {
