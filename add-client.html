@@ -37,8 +37,11 @@
     <div id="formLoader" style="text-align:center; margin:8px 0; display:none;">
       <span class="loader-4"></span>
     </div>
+    <button type="button" id="returnToPortalBtn" style="display:none;margin-top:16px;"
+        onclick="window.location.href='client-portal.html'">
+  Return to Client Portal
+</button>
   </form>
-
   <script>
   let processedLogoBlob = null;
 
@@ -131,6 +134,9 @@
 
   document.getElementById('addClientForm').onsubmit = async function (e) {
     e.preventDefault();
+    document.querySelector(".submit-btn").disabled = true;
+setTimeout(() => { document.querySelector(".submit-btn").disabled = false; }, 4000);
+
     const msg = document.getElementById('formMessage');
     const loader = document.getElementById('formLoader');
     msg.style.color = "#fdd835";
@@ -233,9 +239,15 @@
       clearTimeout(stillWorking);
       clearTimeout(giveUp);
       loader.style.display = "none";
-      msg.style.color = "#28e640";
-      msg.textContent = "✅ Client onboarded! UUID: " + client.id;
-      this.reset();
+  msg.style.color = "#28e640";
+  msg.innerHTML = `✅ Client onboarded!<br>
+      UUID: <code style="font-size:1.01em">${client.id}</code><br>
+      <a href="https://${client.name}.nexusresq.com/login.html" target="_blank"
+      style="color:#fdd835;text-decoration:underline;">Test client login &rarr;</a>`;
+
+
+      // --- Show Return to Client Portal button ---
+document.getElementById('returnToPortalBtn').style.display = '';
 
     } catch (err) {
       isDone = true;
