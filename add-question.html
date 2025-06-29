@@ -23,6 +23,11 @@
       background:#223052; border:none; color:#fff;
       margin-bottom:12px; outline:none;
     }
+    .q-form-container .inline-checkboxes label {
+      display: inline-block;
+      margin-right: 16px;
+      font-weight: 400;
+    }
     .q-form-container button {
       margin-top:15px; padding:10px 20px; background:#fdd835; color:#142b47;
       font-weight:600; border:none; border-radius:7px; cursor:pointer;
@@ -52,11 +57,22 @@
       <input id="questionText" type="text" maxlength="140" required placeholder="e.g. Is the extinguisher visible and accessible?">
       <label>Order (number)</label>
       <input id="orderNum" type="number" min="1" max="50" value="1" required>
-      <label>Requires Photo?</label>
-      <select id="requiresPhoto" required>
-        <option value="false">No</option>
-        <option value="true">Yes</option>
-      </select>
+      
+      <label>Answer Options (select at least 2):</label>
+      <div class="inline-checkboxes" id="optionsCheckboxes">
+        <label><input type="checkbox" value="Yes"> Yes</label>
+        <label><input type="checkbox" value="No"> No</label>
+        <label><input type="checkbox" value="Pass"> Pass</label>
+        <label><input type="checkbox" value="Fail"> Fail</label>
+        <label><input type="checkbox" value="N/A"> N/A</label>
+        <label><input type="checkbox" value="Cancel"> Cancel</label>
+      </div>
+      
+      <label><input type="checkbox" id="critical"> Critical Question?</label>
+      <label><input type="checkbox" id="requires_comment"> Requires Comment on Fail?</label>
+      <label><input type="checkbox" id="requires_photo"> Requires Photo on Fail?</label>
+      <label><input type="checkbox" id="allow_photo"> Allow Photo Attachment?</label>
+      <!-- All questions required by default -->
       <button type="submit" id="submitQuestionBtn">Add Question</button>
       <div class="form-message" id="formQuestionMsg"></div>
     </form>
@@ -96,18 +112,38 @@
       const frequency = document.getElementById('frequency').value;
       const question = document.getElementById('questionText').value.trim();
       const order = parseInt(document.getElementById('orderNum').value, 10);
-      const requires_photo = document.getElementById('requiresPhoto').value === "true";
 
-      if (!type_id || !question || !frequency) {
+      // Grab all checked answer options
+      const options = [];
+      document.querySelectorAll('#optionsCheckboxes input[type="checkbox"]:checked').forEach(cb => {
+        options.push(cb.value);
+      });
+
+      const critical = document.getElementById('critical').checked;
+      const requires_comment = document.getElementById('requires_comment').checked;
+      const requires_photo = document.getElementById('requires_photo').checked;
+      const allow_photo = document.getElementById('allow_photo').checked;
+      // required is always true
+
+      if (!type_id || !question || !frequency || options.length < 2) {
         msg.style.color = "#ff5050";
-        msg.textContent = "Fill out all fields.";
+        msg.textContent = "Fill out all fields (at least 2 options).";
         document.getElementById('submitQuestionBtn').disabled = false;
         return;
       }
 
       // Insert to Supabase
       const { error } = await supabase.from('asset_questions').insert([{
-        type_id, frequency, question, order, requires_photo
+        type_id,
+        frequency,
+        question,
+        order,
+        options,
+        critical,
+        requires_comment,
+        requires_photo,
+        allow_photo,
+        required: true
       }]);
       if (error) {
         msg.style.color = "#ff5050";
