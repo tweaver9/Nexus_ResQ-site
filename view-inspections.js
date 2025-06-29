@@ -1,4 +1,4 @@
-// 1. Supabase setup (fill in your keys or use your env variable if safe)
+// 1. Supabase setup
 const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -59,7 +59,6 @@ async function loadAssetTypes() {
 
 // 8. Fetch inspections
 async function loadInspections() {
-  // Adjust fields as needed for your schema!
   const { data, error } = await supabase
     .from('inspections')
     .select(`
@@ -108,11 +107,6 @@ function renderInspections() {
     else if (row.status === "emergency_ok") statusBadge = `<span class="status-badge status-emergencyok">Emerg. OK</span>`;
     else statusBadge = `<span class="status-badge">${row.status}</span>`;
 
-    // Show first 2 answers, truncate if long
-    let answerSummary = (row.answers && Array.isArray(row.answers))
-      ? row.answers.slice(0, 2).map(a => `${a.q}: ${a.a}`).join('; ')
-      : (row.answers ? JSON.stringify(row.answers).slice(0,30) + '...' : '');
-
     inspectionsTableBody.insertAdjacentHTML('beforeend', `
       <tr>
         <td>${row.created_at ? new Date(row.created_at).toLocaleString() : "—"}</td>
@@ -121,15 +115,93 @@ function renderInspections() {
         <td>${areaName}</td>
         <td>${row.inspected_by || "—"}</td>
         <td>${statusBadge}</td>
-        <td>${answerSummary}</td>
-        <td>${row.comments || ""}</td>
         <td>
-          <button class="actions-btn" onclick="viewInspection('${row.id}')">View</button>
+          <button class="actions-btn" onclick="viewInspectionDetails('${row.id}')">
+            <span style="font-size:1.2em;" title="View Details">&#128269;</span>
+          </button>
         </td>
+        <td>${row.comments || ""}</td>
       </tr>
     `);
   });
 }
+
+// --- Modal/Details popup for Results button ---
+window.viewInspectionDetails = async function(inspectionId) {
+  // Fetch the full inspection details (with answers)
+  const { data: inspection, error } = await supabase
+    .from('inspections')
+    .select('*')
+    .eq('id', inspectionId)
+    .single();
+
+  if (error || !inspection) {
+    alert("Could not load inspection details.");
+    return;
+  }
+
+  // Lookup area and asset type names
+  const areaName = (areas.find(a => a.id == inspection.area_id) || {}).name || "—";
+  const typeName = (assetTypes.find(t => t.id == inspection.asset_type) || {}).name || "—";
+  const answers = inspection.answers || [];
+
+  // Build modal HTML
+  let answersHtml = '';
+  if (Array.isArray(answers) && answers.length > 0) {
+    answersHtml = `
+      <table class="answers-table">
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Answer</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${answers.map(a => `<tr><td>${a.q || a.question}</td><td>${a.a || a.answer}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    `;
+  } else {
+    answersHtml = `<div style="color:#fdd835; margin: 6px 0 2px 0;">No answers recorded for this inspection.</div>`;
+  }
+
+  // Modal content
+  const modalHtml = `
+    <div class="modal-content">
+      <span class="close-btn" id="closeModalBtn" title="Close">&times;</span>
+      <h2>Inspection Details</h2>
+      <div class="details-list">
+        <div><b>Date/Time:</b> ${inspection.created_at ? new Date(inspection.created_at).toLocaleString() : "—"}</div>
+        <div><b>Asset ID:</b> ${inspection.asset_id || "—"}</div>
+        <div><b>Type:</b> ${typeName}</div>
+        <div><b>Area:</b> ${areaName}</div>
+        <div><b>Inspected By:</b> ${inspection.inspected_by || "—"}</div>
+        <div><b>Status:</b> <span style="color:#fdd835;">${inspection.status}</span></div>
+        <div><b>Comments:</b> ${inspection.comments || ""}</div>
+      </div>
+      <h3 style="margin-top:16px;">Inspection Answers</h3>
+      ${answersHtml}
+    </div>
+  `;
+
+  const modalRoot = document.getElementById('modal-root');
+  if (modalRoot) {
+    modalRoot.innerHTML = modalHtml;
+    modalRoot.style.display = "flex";
+  }
+
+  // Close logic
+  document.getElementById('closeModalBtn').onclick = function() {
+    modalRoot.style.display = "none";
+    modalRoot.innerHTML = "";
+  };
+  modalRoot.onclick = function(e) {
+    if (e.target === modalRoot) {
+      modalRoot.style.display = "none";
+      modalRoot.innerHTML = "";
+    }
+  };
+};
 
 // 10. Filter listeners
 function attachFilterListeners() {
@@ -137,9 +209,3 @@ function attachFilterListeners() {
   assetTypeFilter.addEventListener('change', renderInspections);
   searchInput.addEventListener('input', renderInspections);
 }
-
-// 11. Actions
-window.viewInspection = function(inspectionId) {
-  // You can open a modal or redirect to an inspection detail page
-  alert("TODO: Show details for inspection " + inspectionId);
-};
