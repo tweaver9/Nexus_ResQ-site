@@ -178,3 +178,23 @@ body {
   .modal-content { padding: 14px 7px 10px 7px; }
 }
 
+#modal-root { ... }
+.modal-content { ... }
+.close-btn { ... }
+.modal-print-btn { ... }
+.print-card { ... }
+.print-card .asset-image { ... }
+.print-card .asset-title { ... }
+.print-card .info-list { ... }
+.print-card .info-list div { ... }
+.print-card .qa-section { ... }
+.print-card .qa-section table { ... }
+.print-card .qa-section th, .print-card .qa-section td { ... }
+.print-card .qa-section th { ... }
+.print-card .qa-section td { ... }
+@media print {
+  body * { visibility: hidden !important; }
+  #modal-root, #modal-root * { visibility: visible !important; }
+  #modal-root { position: static !important; }
+  .close-btn, .modal-print-btn { display: none !important; }
+}
