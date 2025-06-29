@@ -29,20 +29,22 @@ document.addEventListener('DOMContentLoaded', () => {
 console.log("About to fetch client info for tenantId:", tenantId);
   // --- Branding: Fetch client info by tenantId and set logo/color ---
   (async () => {
-   .select('id, logo_url, name')
-    console.log("Fetched client:", client, "Error:", clientErr);
+    const { data: client, error: clientErr } = await supabaseClient
+      .from('clients')
+      .select('id, logo_url, name')
+      .eq('id', tenantId)
+      .single();
+   console.log("Fetched client:", client, "Error:", clientErr);
+  
     
-    if (client && client.logo_url && clientLogoEl) clientLogoEl.src = client.logo_url;
-    //if (client) {
-      //if (client.primary_color)
-       //document.body.style.setProperty('--primary-mid', client.primary_color);
-      //if (client.seconary_color)
-       //document.body.style.setProperty('--primary-light', client.secondary_color);
-     // if (client.dark_color)
-      // document.body.style.setProperty('--primary-dark', client.dark_color);
-    }
+    if (client && client.logo_url && clientLogoEl) {
+      clientLogoEl.src = client.logo_url;
+      clientLogoEl.alt = `${client.name} Logo`;
+      clientLogoEl.style.display = ""; // ensure visible
+  } else if (clientLogoEl) {
+       clientLogoEl.style.display = "none";
+  }
 
-      
      if (client && client.name && dashboardTitleEl) {
       dashboardTitleEl.textContent = `${client.name} Dashboard`;
     }
