@@ -15,7 +15,7 @@ window.addEventListener('DOMContentLoaded', async function() {
   const { data: client, error: clientErr } = await supabase
     .from('clients')
     .select('id, logo_url, primary_color, secondary_color, dark_color')
-    .eq('name', subdomain)
+    .eq('subdomain', clientsubdomain)
     .single();
 
   console.log("Supabase client for login:", { client, clientErr });
