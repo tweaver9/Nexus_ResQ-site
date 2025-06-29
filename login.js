@@ -1,6 +1,6 @@
 window.addEventListener('DOMContentLoaded', async function() {
   const loginForm = document.querySelector('.login-form');
-  const logoImg = document.getElementById('.client-logo');
+  const logoImg = document.getElementById('client-logo');
   const errorDiv = document.getElementById('login-error');
 
   // --- 1. Detect tenant/client by subdomain ---
