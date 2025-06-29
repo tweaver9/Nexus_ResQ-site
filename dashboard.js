@@ -29,11 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 console.log("About to fetch client info for tenantId:", tenantId);
   // --- Branding: Fetch client info by tenantId and set logo/color ---
   (async () => {
-    const { data: client, error: clientErr } = await supabaseClient
-      .from('clients')
-      .select('id, logo_url, primary_color, secondary_color, dark_color, name')
-      .eq('id', tenantId)
-      .single();
+   .select('id, logo_url, name')
     console.log("Fetched client:", client, "Error:", clientErr);
     
     if (client && client.logo_url && clientLogoEl) clientLogoEl.src = client.logo_url;
