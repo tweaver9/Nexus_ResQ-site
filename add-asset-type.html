@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Asset Type | Nexus Res-Q</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="CSS/dashboard.css">
+  <style>
+    .type-form-container {
+      background: #142b47;
+      max-width: 420px;
+      margin: 40px auto 0 auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 40px 0 #0a1322e2;
+      padding: 32px 28px 24px 28px;
+    }
+    .type-form-container h2 { color: #fdd835; margin-bottom: 14px; }
+    .type-form-container label { display:block; margin:13px 0 6px 0;}
+    .type-form-container input {
+      width:100%; font-size:1.03em; padding:7px 10px; border-radius:6px;
+      background:#223052; border:none; color:#fff;
+      margin-bottom:12px; outline:none;
+    }
+    .type-form-container button {
+      margin-top:15px; padding:10px 20px; background:#fdd835; color:#142b47;
+      font-weight:600; border:none; border-radius:7px; cursor:pointer;
+      font-size:1.08em;
+    }
+    .type-form-container button:disabled {background:#888; color:#eee;}
+    .form-message {margin-top:12px;}
+  </style>
+</head>
+<body>
+  <div class="type-form-container">
+    <h2>Add Asset Type</h2>
+    <form id="addTypeForm" autocomplete="off">
+      <label>Name</label>
+      <input id="typeName" type="text" maxlength="40" required placeholder="e.g. Fire Extinguisher">
+      <button type="submit" id="submitTypeBtn">Add Type</button>
+      <div class="form-message" id="formTypeMsg"></div>
+    </form>
+    <div style="margin-top:20px;">
+      <a href="dashboard.html" style="color:#fdd835;text-decoration:underline;">&larr; Back to Dashboard</a>
+      <br>
+      <a href="add-question.html" style="color:#fff; text-decoration:underline; font-size:0.97em;">Add Questions &rarr;</a>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    document.getElementById('addTypeForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const msg = document.getElementById('formTypeMsg');
+      msg.style.color = "#fdd835";
+      msg.textContent = "Adding...";
+      document.getElementById('submitTypeBtn').disabled = true;
+
+      const name = document.getElementById('typeName').value.trim();
+
+      if (!name) {
+        msg.style.color = "#ff5050";
+        msg.textContent = "Please enter a type name.";
+        document.getElementById('submitTypeBtn').disabled = false;
+        return;
+      }
+      const { error } = await supabase.from('asset_types').insert([{ name }]);
+      if (error) {
+        msg.style.color = "#ff5050";
+        msg.textContent = "Error: " + (error.message || "Unknown error");
+      } else {
+        msg.style.color = "#28e640";
+        msg.textContent = "Asset type added!";
+        this.reset();
+      }
+      document.getElementById('submitTypeBtn').disabled = false;
+    }
+  </script>
+</body>
+</html>
