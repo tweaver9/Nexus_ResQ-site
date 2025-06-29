@@ -10,7 +10,7 @@ async function loadClientLogos() {
   // Get all clients from Supabase (order alphabetically by name)
   const { data: clients, error } = await supabase
     .from('clients')
-    .select('id, name, logo_url, primary_color, secondary_color, dark_color')
+    .select('id, name, subdomain, logo_url, primary_color, secondary_color, dark_color')
     .order('name', { ascending: true });
 
   grid.innerHTML = "";
