@@ -14,8 +14,8 @@ window.addEventListener('DOMContentLoaded', async function() {
   // --- 3. Fetch client/tenant row for this subdomain ---
   const { data: client, error: clientErr } = await supabase
     .from('clients')
-    .select('id, logo_url, primary_color, secondary_color, dark_color')
-    .eq('subdomain', clientsubdomain)
+    .select('id, logo_url, name')
+    .eq('subdomain', subdomain)
     .single();
 
   console.log("Supabase client for login:", { client, clientErr });
@@ -29,11 +29,12 @@ window.addEventListener('DOMContentLoaded', async function() {
   // --- 4. Save tenant_id (the client's id) for this session ---
   sessionStorage.setItem('tenant_id', client.id);
 
-  // --- 5. Set logo and color theme ---
+  // --- 5. Set only the client logo (no Nexus logo, no color variables) ---
   if (client.logo_url && logoImg) logoImg.src = client.logo_url;
-  if (client.primary_color) document.body.style.setProperty('--primary-mid', client.primary_color);
-  if (client.secondary_color) document.body.style.setProperty('--primary-light', client.secondary_color);
-  if (client.dark_color) document.body.style.setProperty('--primary-dark', client.dark_color);
+
+  // (Optional: set the login heading if you want)
+  const loginTitleEl = document.getElementById('client-login-title');
+  if (loginTitleEl) loginTitleEl.textContent = `${client.name} Login`;
 
   // --- 6. Login form handler ---
   if (loginForm) loginForm.addEventListener('submit', async function(e) {
