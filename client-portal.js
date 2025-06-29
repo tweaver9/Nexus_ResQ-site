@@ -21,7 +21,7 @@ async function loadClientLogos() {
         ? `<img src="${client.logo_url}" alt="${client.name} logo" />`
         : `<div style="width:100px;height:80px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:1.4em;background:#223052;border-radius:8px;">${client.name[0] || "?"}</div>`;
 
-      let link = `<a href="https://${client.name}.nexusresq.com/login.html" title="${client.name}">
+      let link = `<a href="https://${client.subdomain}.nexusresq.com/login.html" title="${client.name}">
                     ${logo}
                   </a>`;
       grid.insertAdjacentHTML('beforeend', link);
