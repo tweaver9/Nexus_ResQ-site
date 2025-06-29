@@ -37,18 +37,18 @@ console.log("About to fetch client info for tenantId:", tenantId);
     console.log("Fetched client:", client, "Error:", clientErr);
     
     if (client && client.logo_url && clientLogoEl) clientLogoEl.src = client.logo_url;
-    if (client) {
-      if (client.primary_color)
-       document.body.style.setProperty('--primary-mid', client.primary_color);
-      if (client.seconary_color)
-       document.body.style.setProperty('--primary-light', client.secondary_color);
-      if (client.dark_color)
-       document.body.style.setProperty('--primary-dark', client.dark_color);
+    //if (client) {
+      //if (client.primary_color)
+       //document.body.style.setProperty('--primary-mid', client.primary_color);
+      //if (client.seconary_color)
+       //document.body.style.setProperty('--primary-light', client.secondary_color);
+     // if (client.dark_color)
+      // document.body.style.setProperty('--primary-dark', client.dark_color);
     }
 
       
      if (client && client.name && dashboardTitleEl) {
-      dashboardTitleEl.textContent = `${client.name.charAt(0).toUpperCase() + client.name.slice(1)} Dashboard`;
+      dashboardTitleEl.textContent = `${client.name} Dashboard`;
     }
 
     // --- Show/hide Add Client button for Nexus only ---
