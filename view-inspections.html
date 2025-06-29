@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>All Inspections | Nexus Res-Q</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="CSS/view-inspections.css">
+</head>
+<body>
+  <header class="inspections-header">
+    <h1>All Inspections</h1>
+    <div class="header-right">
+      <select id="areaFilter" class="area-filter">
+        <option value="all">All Areas</option>
+        <!-- Populate with areas from Supabase -->
+      </select>
+      <select id="assetTypeFilter" class="area-filter">
+        <option value="all">All Types</option>
+        <!-- Populate with asset types -->
+      </select>
+      <input type="search" id="inspectionSearch" placeholder="Search by Asset ID, User, etc...">
+    </div>
+  </header>
+  <main>
+    <div class="inspections-container">
+      <table class="inspections-table" id="inspectionsTable">
+        <thead>
+          <tr>
+            <th>Date/Time</th>
+            <th>Asset ID</th>
+            <th>Type</th>
+            <th>Area</th>
+            <th>Inspected By</th>
+            <th>Status</th>
+            <th>Answers</th>
+            <th>Comments</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="inspectionsTableBody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+      <div id="noInspectionsMsg" style="margin-top:18px; color:#fdd835; text-align:center; display:none;">
+        No inspections found for this filter.
+      </div>
+    </div>
+  </main>
+  <div id="modal-root" style="display:none;"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="view-inspections.js"></script>
+</body>
+</html>
