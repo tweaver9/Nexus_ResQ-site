@@ -120,3 +120,61 @@ body {
   .inspections-container { padding: 0 2px; }
   .inspections-table { font-size: 0.97em; }
 }
+
+#modal-root {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: #142b47cc;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: #16243c;
+  border-radius: 18px;
+  padding: 34px 38px 28px 38px;
+  box-shadow: 0 6px 36px 0 #000b1e77;
+  max-width: 430px;
+  width: 98vw;
+  color: #fff;
+  position: relative;
+  animation: modalIn 0.19s cubic-bezier(.32,.72,.36,1.18);
+}
+@keyframes modalIn {
+  from { transform: scale(0.95) translateY(60px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+.close-btn {
+  position: absolute;
+  right: 22px;
+  top: 18px;
+  font-size: 2em;
+  color: #fdd835;
+  cursor: pointer;
+}
+.close-btn:hover { color: #fff41a; }
+.details-list > div { margin-bottom: 7px; }
+.answers-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 5px;
+  background: #223052;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px #0002;
+}
+.answers-table th, .answers-table td {
+  padding: 8px 7px;
+  border: 1px solid #223052;
+  color: #f2f2f2;
+}
+.answers-table th {
+  background: #1e2f4b;
+  color: #fdd835;
+  font-weight: 600;
+}
+@media (max-width: 600px) {
+  .modal-content { padding: 14px 7px 10px 7px; }
+}
+
