@@ -201,11 +201,16 @@ if (processedLogoBlob) {
   logo_url = result.logoUrl; // This is your jsDelivr URL!
 }
 
+   function toSlug(str) {
+  return str.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+}
+const subdomain = toSlug(clientName);
+   
  
       // 3. Insert client (with all colors!)
       const { data: client, error: clientErr } = await supabase
         .from('clients')
-        .insert([{ name: clientName, logo_url, primary_color, secondary_color, dark_color }])
+        .insert([{ name: clientName, subdomain, logo_url, primary_color, secondary_color, dark_color }])
         .select()
         .single();
 
