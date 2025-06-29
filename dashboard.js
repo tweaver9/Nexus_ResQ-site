@@ -26,7 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const clientLogoEl = document.getElementById('client-logo');
   const dashboardTitleEl = document.getElementById('dashboard-title');
   const addClientBtn = document.getElementById('add-client-btn');
-console.log("About to fetch client info for tenantId:", tenantId);
+  const adminToolsDiv = document.getElementById('admin-tools'); // New: admin button container
+  const addTypeBtn = document.getElementById('add-type-btn');
+  const addQuestionBtn = document.getElementById('add-question-btn');
+  console.log("About to fetch client info for tenantId:", tenantId);
+
   // --- Branding: Fetch client info by tenantId and set logo/color ---
   (async () => {
     const { data: client, error: clientErr } = await supabaseClient
@@ -34,37 +38,46 @@ console.log("About to fetch client info for tenantId:", tenantId);
       .select('id, logo_url, name')
       .eq('id', tenantId)
       .single();
-   console.log("Fetched client:", client, "Error:", clientErr);
-  
-    
+    console.log("Fetched client:", client, "Error:", clientErr);
+
+    // Set logo (or hide if not found)
     if (client && client.logo_url && clientLogoEl) {
       clientLogoEl.src = client.logo_url;
       clientLogoEl.alt = `${client.name} Logo`;
-      clientLogoEl.style.display = ""; // ensure visible
-  } else if (clientLogoEl) {
-       clientLogoEl.style.display = "none";
-  }
+      clientLogoEl.style.display = "";
+    } else if (clientLogoEl) {
+      clientLogoEl.style.display = "none";
+    }
 
-     if (client && client.name && dashboardTitleEl) {
+    // Set dashboard title
+    if (client && client.name && dashboardTitleEl) {
       dashboardTitleEl.textContent = `${client.name} Dashboard`;
     }
 
     // --- Show/hide Add Client button for Nexus only ---
     const NEXUS_UUID = '6dd68681-bed6-40b2-88d4-f9b3cf36ad9e';
     if (addClientBtn) {
-      if (client && client.id === NEXUS_UUID) {
-        console.log("Showing Add Client button");
-        addClientBtn.style.display = ''; // Show the button for Nexus only
+      if (client && client.id === NEXUS_UUID && role === 'admin') {
+        addClientBtn.style.display = '';
       } else {
-        console.log("Hiding Add Client button");
-        addClientBtn.style.display = 'none'; // Hide for all others
+        addClientBtn.style.display = 'none';
       }
     }
+
+    // --- Show Nexus admin tools only for Nexus admin ---
+    if (adminToolsDiv) {
+      if (client && client.id === NEXUS_UUID && role === 'admin') {
+        adminToolsDiv.style.display = 'flex';
+      } else {
+        adminToolsDiv.style.display = 'none';
+      }
+    }
+
     // --- Welcome message ---
-const welcomeEl = document.getElementById("welcome-message");
-if (welcomeEl) {
-  welcomeEl.innerHTML = `Welcome, <b>${username}</b> <span class="role-indicator">(${role})</span>`;
-}
+    const welcomeEl = document.getElementById("welcome-message");
+    if (welcomeEl) {
+      welcomeEl.innerHTML = `Welcome, <b>${username}</b> <span class="role-indicator">(${role})</span>`;
+    }
   })();
 
   // --- Initialize dashboard ---
@@ -81,6 +94,7 @@ if (welcomeEl) {
 
   // Update sync status and last sync timestamp
   async function updateSyncStatus() {
+    if (!syncStatusEl || !lastSyncEl) return;
     const online = navigator.onLine;
     syncStatusEl.textContent = online ? 'Sync: Online' : 'Sync: Offline';
     const lastSync = localStorage.getItem('lastSync') || 'Never';
@@ -89,6 +103,7 @@ if (welcomeEl) {
 
   // Load zone cards - filtered by tenant_id!
   async function loadZones() {
+    if (!zoneGridEl || !progressSummaryEl) return;
     const { data: zones, error } = await supabaseClient
       .from('zones')
       .select('id,name,total_assets,completed_assets')
@@ -125,6 +140,7 @@ if (welcomeEl) {
 
   // Load recent activity - filtered by tenant_id!
   async function loadActivityLog() {
+    if (!activityLogEl) return;
     const { data: logs, error } = await supabaseClient
       .from('activity_log')
       .select('id,message,created_at')
@@ -150,6 +166,7 @@ if (welcomeEl) {
 
   // Search handler (basic client-side filter)
   function handleSearch(e) {
+    if (!zoneGridEl) return;
     const term = e.target.value.toLowerCase();
     document.querySelectorAll('.zone-card').forEach(card => {
       const name = card.querySelector('h3').textContent.toLowerCase();
@@ -161,9 +178,9 @@ if (welcomeEl) {
   const logoutLinkEl = document.getElementById('logout-link');
   if (logoutLinkEl) {
     logoutLinkEl.onclick = function handleLogout() {
-    localStorage.clear();
-    sessionStorage.clear();
-    window.location.href = 'login.html';
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = 'login.html';
     };
   }
 
