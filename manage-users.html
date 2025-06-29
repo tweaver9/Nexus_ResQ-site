@@ -1,184 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Manage Assets | Nexus Res-Q</title>
+  <title>Manage Users | Nexus Res-Q</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="CSS/dashboard.css">
-  <link rel="stylesheet" href="CSS/manage-assets.css">
-  <style>
-    body {
-      background: #0d1b2a;
-      color: #f2f2f2;
-      font-family: 'Oswald', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .assets-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 24px 36px 0 36px;
-      background: #142b47;
-      border-bottom: 2px solid #223052;
-    }
-    .assets-header h1 {
-      color: #fdd835;
-      font-size: 2.2em;
-      font-weight: 600;
-      margin: 0;
-      letter-spacing: 1px;
-    }
-    .assets-header .header-right {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-    }
-    .area-filter {
-      background: #223052;
-      color: #f2f2f2;
-      border: none;
-      border-radius: 7px;
-      font-size: 1.04em;
-      padding: 7px 18px;
-      outline: none;
-      cursor: pointer;
-    }
-    .assets-container {
-      max-width: 1180px;
-      margin: 32px auto 0 auto;
-      padding: 0 16px 48px 16px;
-    }
-    .assets-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      margin-bottom: 18px;
-    }
-    .assets-toolbar input[type="search"] {
-      font-size: 1em;
-      padding: 6px 12px;
-      border-radius: 7px;
-      border: 1px solid #344267;
-      background: #192841;
-      color: #fff;
-      width: 220px;
-      outline: none;
-    }
-    .assets-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #16243c;
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 6px 32px 0 #0a1322c5;
-      margin-top: 6px;
-    }
-    .assets-table th, .assets-table td {
-      padding: 14px 8px;
-      text-align: left;
-    }
-    .assets-table th {
-      background: #223052;
-      color: #fdd835;
-      font-weight: 600;
-      font-size: 1.08em;
-    }
-    .assets-table tr {
-      border-bottom: 1px solid #223052;
-      transition: background 0.18s;
-    }
-    .assets-table tr:hover {
-      background: #1e2f4b;
-    }
-    .status-badge {
-      display: inline-block;
-      border-radius: 5px;
-      padding: 2px 9px;
-      font-size: 0.95em;
-      font-weight: 600;
-    }
-    .status-inservice { background: #28e64033; color: #28e640; }
-    .status-outofservice { background: #ff505022; color: #ff5050; }
-    .status-failed { background: #ffd83533; color: #fdd835; }
-    .status-emergencyok { background: #38b6ff33; color: #38b6ff; }
-    .status-moved { background: #bbb; color: #444; }
-    .critical-warning { color: #ff5050; font-weight: 700; margin-left: 5px; font-size: 1.12em;}
-    .action-btn {
-      background: #142b47;
-      color: #fdd835;
-      border: none;
-      border-radius: 6px;
-      padding: 5px 15px;
-      font-size: 1em;
-      font-family: inherit;
-      font-weight: 500;
-      cursor: pointer;
-      margin-right: 8px;
-      transition: background 0.15s, color 0.15s;
-    }
-    .action-btn:hover {
-      background: #fdd835;
-      color: #142b47;
-    }
-    @media (max-width: 900px) {
-      .assets-header, .assets-container { padding-left: 6px; padding-right: 6px; }
-      .assets-header h1 { font-size: 1.6em; }
-      .assets-table th, .assets-table td { padding: 7px 3px; }
-    }
-    @media (max-width: 600px) {
-      .assets-header { flex-direction: column; align-items: flex-start; }
-      .header-right { flex-direction: column; align-items: flex-start; gap: 10px;}
-      .assets-container { padding: 0 2px; }
-      .assets-table { font-size: 0.97em; }
-    }
-  </style>
+  <link rel="stylesheet" href="CSS/manage-users.css">
 </head>
 <body>
-  <header class="assets-header">
-    <h1>Manage Assets</h1>
-    <div class="header-right">
-      <select class="area-filter" id="areaFilter">
-        <option value="all">All Areas</option>
-        <!-- JS: populate with area list -->
+  <div class="users-header">
+    <h1>Manage Users</h1>
+    <button id="addUserBtn" class="primary-btn">+ Add User</button>
+  </div>
+  <main class="users-main">
+    <div class="users-toolbar">
+      <input type="search" id="userSearch" placeholder="Search users...">
+      <select id="filterRole">
+        <option value="all">All Roles</option>
+        <option value="admin">Admins</option>
+        <option value="user">Users</option>
+        <!-- JS: add more roles if needed -->
       </select>
-      <button class="action-btn" id="addAssetBtn">+ Add Asset</button>
+      <select id="filterArea">
+        <option value="all">All Areas</option>
+        <!-- JS: dynamically load areas -->
+      </select>
+      <select id="filterDept">
+        <option value="all">All Departments</option>
+        <!-- JS: dynamically load depts -->
+      </select>
     </div>
-  </header>
-  <main>
-    <div class="assets-container">
-      <div class="assets-toolbar">
-        <input type="search" id="assetSearch" placeholder="Search by ID, location, or type...">
-        <span id="criticalAreaWarning" style="display:none;" class="critical-warning">Critical: Area Out of Compliance! <span title="Click for details" style="cursor:pointer;">&#x26A0;</span></span>
-      </div>
-      <table class="assets-table" id="assetsTable">
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Asset ID</th>
-            <th>Type</th>
-            <th>Location</th>
-            <th>Assigned User</th>
-            <th>Last Inspection</th>
-            <th>Hydro Due</th>
-            <th>Annual Due</th>
-            <th>Maintenance</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="assetsTableBody">
-          <!-- JS: populate assets here -->
-        </tbody>
-      </table>
-      <div id="noAssetsMsg" style="margin-top:20px; color:#fdd835; text-align:center; display:none;">No assets found in this area.</div>
+    <div class="user-grid-container" id="user-list">
+      <!-- JS: populate users here -->
     </div>
+    <div id="noUsersMsg" class="empty-msg" style="display:none;">No users found.</div>
   </main>
-  <div id="modal-root" style="display:none;"></div>
+  <!-- Add User Modal -->
+  <div class="modal-backdrop" id="addUserModal" style="display:none;">
+    <div class="modal-content">
+      <h2>Add New User</h2>
+      <form id="add-user-form">
+        <input type="text" id="new-username" placeholder="Username" required>
+        <input type="password" id="new-password" placeholder="Password" required>
+        <select id="new-role">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+        <select id="new-area">
+          <option value="">Assign Area</option>
+          <!-- JS: areas -->
+        </select>
+        <select id="new-dept">
+          <option value="">Assign Department</option>
+          <!-- JS: depts -->
+        </select>
+        <button type="submit" class="primary-btn">Add User</button>
+        <button type="button" class="secondary-btn" id="cancelAddUser">Cancel</button>
+      </form>
+      <div id="add-user-message"></div>
+    </div>
+  </div>
+  <!-- JS & Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    // Placeholder: Here you’ll insert your JS to load/filter/display assets, handle actions, etc.
-    // Wire up area filter, search, row actions, etc.
-  </script>
+  <script src="manage-users.js"></script>
 </body>
 </html>
