@@ -1,6 +1,6 @@
 // client-logo.js
 import { db } from './firebase.js';
-import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase/firestore";
+import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Use Firestore as: db.collection(...), db.doc(...), etc.
 
