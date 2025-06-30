@@ -1,14 +1,13 @@
-// onboard.js
 import { db, storage } from './firebase.js';
 import {
   collection, addDoc, setDoc, doc, getDocs, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 // Use Firestore as: db.collection(...), db.doc(...), etc.
 
 // === SECURITY: Restrict page to Nexus Owners only ===
-if (sessionStorage.role !== 'nexus_owner') {
+if (sessionStorage.role !== 'nexus') {
   document.body.innerHTML = '<div style="color:#fdd835;font-size:1.2em;margin:64px auto;max-width:380px;text-align:center;">Access Denied<br>This page is restricted to Nexus Owners.</div>';
   throw new Error("Not authorized");
 }
