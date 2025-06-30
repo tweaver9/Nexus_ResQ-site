@@ -1,4 +1,3 @@
-// dashboard.js
 import { db } from './firebase.js';
 import {
   collection,
@@ -9,7 +8,7 @@ import {
   getDocs,
   doc,
   getDoc
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ---------- 1. DOM Elements ----------
 const logoImg = document.getElementById('client-logo');
@@ -20,6 +19,7 @@ const logoutLink = document.getElementById('logout-link');
 const activityList = document.getElementById('activity-list');
 const inspectionList = document.getElementById('inspection-list');
 const failedAssetsList = document.getElementById('failed-assets-list');
+const onboardBtn = document.getElementById('onboard-btn');
 
 // ---------- 2. Session Data ----------
 const clientId = sessionStorage.getItem('tenant_id');
@@ -135,20 +135,21 @@ async function loadFailedAssets() {
   }
 }
 
-// ---------- 10. Hide owner-only buttons ----------
-function hideOwnerButtons() {
-  if (role !== 'owner' && role !== 'superadmin') {
-    const btns = ['add-client-btn', 'add-type-btn', 'add-question-btn'];
-    btns.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
+// ---------- 10. Show Nexus-Only Onboard Button ----------
+function showOrHideNexusButtons() {
+  // Only show Onboard if role is exactly "nexus"
+  if (onboardBtn) {
+    if (role === "nexus") {
+      onboardBtn.style.display = "";
+    } else {
+      onboardBtn.style.display = "none";
+    }
   }
 }
 
 // ---------- 11. Run All Loaders ----------
 loadClientInfo();
-hideOwnerButtons();
+showOrHideNexusButtons();
 loadRecentActivity();
 loadRecentInspections();
 loadFailedAssets();
