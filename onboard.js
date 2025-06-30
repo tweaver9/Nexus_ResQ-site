@@ -22,7 +22,10 @@ const clientFormMsg = document.getElementById('clientFormMsg');
 const onboardCreds = document.getElementById('onboardCreds');
 
 function slug(str) {
-  return str.toLowerCase().replace(/[^a-z0-9]+/g, '').substring(0, 16);
+  return str.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/--+/g, '-');
 }
 function makeUsername(first, last, client) {
   return (first[0] || '').toLowerCase() + slug(last) + '.' + slug(client);
@@ -237,13 +240,14 @@ assetTypeQuestionForm.onsubmit = async function(e) {
       assetTypeQuestionMsg.textContent = `Questions for "${assetTypeName}" (${freq}) updated!`;
       await refreshAssetTypeDropdown(assetTypeId);
     } else {
-      // Create new asset type doc
+      // --- THIS BLOCK IS UPDATED FOR DOC ID SLUG ---
+      let docId = slug(assetTypeName);
       let docData = {
-        name: assetTypeName,
+        name: assetTypeName,     // Preserve original input for UI
         frequencies: [freq],
       };
       docData[`questions_${freq.toLowerCase()}`] = questions;
-      await addDoc(collection(db, "assetTypes"), docData);
+      await setDoc(doc(db, "assetTypes", docId), docData);
       assetTypeQuestionMsg.style.color = "#28e640";
       assetTypeQuestionMsg.textContent = `Asset type "${assetTypeName}" created with ${freq} questions.`;
       await refreshAssetTypeDropdown();
@@ -367,5 +371,6 @@ async function refreshClientDropdown(selectedId = null) {
   });
 }
 
+// ===== Initial population =====
   refreshClientDropdown();
   refreshAssetTypeDropdown();
