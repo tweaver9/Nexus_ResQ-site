@@ -22,9 +22,8 @@
         <span class="mobile-label">Inspections</span>
       </button>
       <button class="dashboard-btn" onclick="location.href='manage-assets.html'">Manage Assets</button>
-      <button class="dashboard-btn" id="add-client-btn" onclick="location.href='add-client.html'">Add Client!</button>
-      <button class="dashboard-btn" id="add-type-btn" onclick="location.href='add-asset-type.html'">Add Asset Type</button>
-    <button class="dashboard-btn" id="add-question-btn" onclick="location.href='add-question.html'">Add Question</button>
+      <!-- Nexus-only Onboard button (hidden by default) -->
+      <button class="dashboard-btn" id="onboard-btn" style="display:none;" onclick="location.href='onboard.html'">Onboard</button>
     </div>
   </header>
 
@@ -53,7 +52,6 @@
 
   <div id="modal-root" style="display:none;"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="dashboard.js"></script>
+  <script type="module" src="dashboard.js"></script>
 </body>
 </html>
