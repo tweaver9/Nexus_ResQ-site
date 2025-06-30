@@ -1,105 +1,297 @@
-// manage-users.js (Firebase version)
+// manage-users.js
 import { db } from './firebase.js';
-import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
+import {
+  collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, query, where
+} from "firebase/firestore";
 
-// Get the current tenant_id from sessionStorage
-const tenantId = sessionStorage.getItem('tenant_id');
-if (!tenantId) {
-  window.location.href = "login.html";
+// ========== STATE ==========
+let users = [];
+let areas = [];
+let departments = [];
+let selectedUser = null;
+let inspections = [];
+
+// ========== DOM ==========
+const userList = document.getElementById('userList');
+const noUsersMsg = document.getElementById('noUsersMsg');
+const userSearch = document.getElementById('userSearch');
+const filterRole = document.getElementById('filterRole');
+const filterArea = document.getElementById('filterArea');
+const filterDept = document.getElementById('filterDept');
+const modalRoot = document.getElementById('modal-root');
+const addUserBtn = document.getElementById('addUserBtn');
+
+// ========== HELPERS ==========
+function getTenantId() { return sessionStorage.getItem('tenant_id'); }
+
+// ========== LOAD DATA ==========
+window.addEventListener('DOMContentLoaded', async () => {
+  if (!getTenantId()) { window.location.href = "login.html"; return; }
+  await Promise.all([
+    loadAreas(),
+    loadDepartments(),
+    loadUsers()
+  ]);
+  userSearch.addEventListener('input', renderUsers);
+  filterRole.addEventListener('change', renderUsers);
+  filterArea.addEventListener('change', renderUsers);
+  filterDept.addEventListener('change', renderUsers);
+  addUserBtn.onclick = showAddUserModal;
+});
+
+async function loadAreas() {
+  const snap = await getDocs(collection(db, `clients/${getTenantId()}/locations`));
+  areas = []; snap.forEach(doc => areas.push({ id: doc.id, ...doc.data() }));
+  filterArea.innerHTML = '<option value="all">All Areas</option>' +
+    areas.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
 }
 
-// Render user cards in a 2-column grid
+async function loadDepartments() {
+  const snap = await getDocs(collection(db, `clients/${getTenantId()}/departments`));
+  departments = []; snap.forEach(doc => departments.push({ id: doc.id, ...doc.data() }));
+  filterDept.innerHTML = '<option value="all">All Departments</option>' +
+    departments.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+}
+
+// ----- Load Users -----
 async function loadUsers() {
-  const container = document.getElementById('user-list');
-  container.innerHTML = ""; // Clear old content
-
-  // Only fetch users for the current tenant
-  const usersCol = collection(db, `clients/${tenantId}/users`);
-  const q = query(usersCol);
-  const snapshot = await getDocs(q);
-
-  if (snapshot.empty) {
-    container.innerHTML = "<div class='dashboard-placeholder'>No users found.</div>";
-    return;
-  }
-
-  let html = "";
-  snapshot.forEach(docSnap => {
-    const user = docSnap.data();
-    html += `
-      <div class="user-card">
-        <span class="user-name">${user.username} <span style="color:#b2b2b2; font-size:0.92em;">(${user.role})</span></span>
-        <span style="display: flex; gap:8px;">
-          <button class="edit-icon-btn" onclick="editUser('${docSnap.id}')"
-            title="Edit ${user.username}">
-            <svg viewBox="0 0 20 20">
-              <path d="M14.846 3.146a1.5 1.5 0 0 1 2.121 2.121l-1.586 1.586-2.122-2.12 1.587-1.587zm-2.122 2.12l2.122 2.122L6.76 15.374a2 2 0 0 1-.88.513l-3.27.873.872-3.27a2 2 0 0 1 .513-.88l7.729-7.729z"/>
-            </svg>
-          </button>
-          <button class="edit-icon-btn" onclick="deleteUser('${docSnap.id}', '${user.username}')"
-            title="Delete ${user.username}">
-            <svg viewBox="0 0 20 20">
-              <path d="M6 7V6a4 4 0 0 1 8 0v1h2.25a.75.75 0 1 1 0 1.5h-.278l-.894 8.057A3 3 0 0 1 12.097 19H7.903a3 3 0 0 1-2.981-2.443L4.028 8.5H3.75a.75.75 0 1 1 0-1.5H6Zm1.5-1a2.5 2.5 0 0 1 5 0v1h-5V6ZM5.964 8.5l.872 7.844A1.5 1.5 0 0 0 7.903 17.5h4.194a1.5 1.5 0 0 0 1.495-1.156l.872-7.844H5.964Z"/>
-            </svg>
-          </button>
-        </span>
-      </div>
-    `;
-  });
-  container.innerHTML = html;
+  const snap = await getDocs(collection(db, `clients/${getTenantId()}/users`));
+  users = []; let roles = new Set();
+  snap.forEach(doc => { users.push({ id: doc.id, ...doc.data() }); roles.add(doc.data().role); });
+  filterRole.innerHTML = '<option value="all">All Roles</option>' +
+    Array.from(roles).map(r => `<option value="${r}">${r}</option>`).join('');
+  renderUsers();
 }
 
-// Add User (now includes tenant_id!)
-document.getElementById('add-user-form').onsubmit = async function(e) {
-  e.preventDefault();
-  const username = document.getElementById('new-username').value.trim();
-  const password = document.getElementById('new-password').value.trim();
-  const role = document.getElementById('new-role').value;
-  const msgDiv = document.getElementById('add-user-message');
-  msgDiv.textContent = '';
-  if (!username || !password) {
-    msgDiv.textContent = "Username and password required.";
-    return;
-  }
-  try {
-    await addDoc(collection(db, `clients/${tenantId}/users`), {
-      username,
-      password,
-      role
-    });
-    msgDiv.textContent = "User added!";
-    document.getElementById('add-user-form').reset();
-    loadUsers();
-  } catch (error) {
-    msgDiv.textContent = "Error adding user.";
-  }
+// ========== RENDER USERS ==========
+function renderUsers() {
+  const searchVal = userSearch.value.trim().toLowerCase();
+  const roleVal = filterRole.value;
+  const areaVal = filterArea.value;
+  const deptVal = filterDept.value;
+  let filtered = users.filter(u =>
+    (roleVal === "all" || u.role === roleVal) &&
+    (areaVal === "all" || (u.area || '') === areaVal) &&
+    (deptVal === "all" || (u.department || '') === deptVal) &&
+    (
+      (u.username || '').toLowerCase().includes(searchVal) ||
+      (u.area || '').toLowerCase().includes(searchVal) ||
+      (u.department || '').toLowerCase().includes(searchVal)
+    )
+  );
+  userList.innerHTML = "";
+  if (!filtered.length) { noUsersMsg.style.display = ""; return; }
+  noUsersMsg.style.display = "none";
+  filtered.forEach(u => {
+    userList.insertAdjacentHTML('beforeend', `
+      <div class="user-card" onclick="window.showUserInspections('${u.id}')" style="cursor:pointer;">
+        <div class="user-header">
+          <span><b>${u.username}</b> <span class="user-role">(${u.role})</span></span>
+          <span>
+            <button class="users-action-btn" onclick="event.stopPropagation();window.editUser('${u.id}');">Edit</button>
+            <button class="users-action-btn" onclick="event.stopPropagation();window.removeUser('${u.id}');">Delete</button>
+            <button class="users-action-btn" onclick="event.stopPropagation();window.resetUserPassword('${u.id}');">Reset PW</button>
+          </span>
+        </div>
+        <div class="user-meta">Area: ${u.area || "—"} | Dept: ${u.department || "—"} | Reports to: ${u.reports_to || "—"}</div>
+      </div>
+    `);
+  });
+}
+
+// ========== ADD USER MODAL ==========
+function showAddUserModal() {
+  let areaOptions = areas.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+  let deptOptions = departments.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+  modalRoot.innerHTML = `
+    <div style="background:#223052;padding:32px 26px;border-radius:14px;max-width:420px;margin:60px auto;">
+      <h3 style="color:#fdd835;">Add User</h3>
+      <form id="addUserForm">
+        <label>Username</label>
+        <input type="text" id="newUsername" required>
+        <label>Password</label>
+        <input type="password" id="newPassword" required>
+        <label>Role</label>
+        <input type="text" id="newRole" required placeholder="e.g. user, admin, captain">
+        <label>Area</label>
+        <select id="newArea"><option value="">Unassigned</option>${areaOptions}</select>
+        <label>Department</label>
+        <select id="newDept"><option value="">Unassigned</option>${deptOptions}</select>
+        <label>Reports to</label>
+        <input type="text" id="newReportsTo" placeholder="Optional">
+        <button class="users-action-btn" type="submit">Add</button>
+        <button class="users-action-btn" type="button" id="closeAddUserModal">Cancel</button>
+        <span id="addUserMsg" style="margin-left:10px;color:#fdd835;"></span>
+      </form>
+    </div>
+  `;
+  modalRoot.style.display = "flex";
+  document.getElementById('closeAddUserModal').onclick = () => modalRoot.style.display = "none";
+  document.getElementById('addUserForm').onsubmit = async function (e) {
+    e.preventDefault();
+    const msg = document.getElementById('addUserMsg');
+    msg.textContent = "Adding...";
+    const username = document.getElementById('newUsername').value.trim();
+    const password = document.getElementById('newPassword').value;
+    const role = document.getElementById('newRole').value.trim();
+    const area = document.getElementById('newArea').value.trim();
+    const department = document.getElementById('newDept').value.trim();
+    const reports_to = document.getElementById('newReportsTo').value.trim();
+    if (!username || !password || !role) {
+      msg.textContent = "Fill required fields.";
+      msg.style.color = "#ff5050";
+      return;
+    }
+    try {
+      await addDoc(collection(db, `clients/${getTenantId()}/users`), {
+        username, password, role, area, department, reports_to,
+        mustChangePassword: true,
+        created_at: serverTimestamp()
+      });
+      msg.textContent = "Added!";
+      msg.style.color = "#28e640";
+      await loadUsers();
+      modalRoot.style.display = "none";
+    } catch (error) {
+      msg.textContent = "Error: " + (error.message || "Unknown error");
+      msg.style.color = "#ff5050";
+    }
+  };
+}
+
+// ========== EDIT USER MODAL ==========
+window.editUser = function(userId) {
+  const u = users.find(x => x.id === userId);
+  if (!u) return;
+  let areaOptions = areas.map(a => `<option value="${a.name}"${u.area===a.name?' selected':''}>${a.name}</option>`).join('');
+  let deptOptions = departments.map(d => `<option value="${d.name}"${u.department===d.name?' selected':''}>${d.name}</option>`).join('');
+  modalRoot.innerHTML = `
+    <div style="background:#223052;padding:32px 26px;border-radius:14px;max-width:420px;margin:60px auto;">
+      <h3 style="color:#fdd835;">Edit User</h3>
+      <form id="editUserForm">
+        <label>Username</label>
+        <input type="text" id="editUsername" value="${u.username}" required>
+        <label>Role</label>
+        <input type="text" id="editRole" value="${u.role}" required>
+        <label>Area</label>
+        <select id="editArea"><option value="">Unassigned</option>${areaOptions}</select>
+        <label>Department</label>
+        <select id="editDept"><option value="">Unassigned</option>${deptOptions}</select>
+        <label>Reports to</label>
+        <input type="text" id="editReportsTo" value="${u.reports_to||''}">
+        <button class="users-action-btn" type="submit">Save</button>
+        <button class="users-action-btn" type="button" id="closeEditUserModal">Cancel</button>
+        <span id="editUserMsg" style="margin-left:10px;color:#fdd835;"></span>
+      </form>
+    </div>
+  `;
+  modalRoot.style.display = "flex";
+  document.getElementById('closeEditUserModal').onclick = () => modalRoot.style.display = "none";
+  document.getElementById('editUserForm').onsubmit = async function (e) {
+    e.preventDefault();
+    const msg = document.getElementById('editUserMsg');
+    msg.textContent = "Saving...";
+    const username = document.getElementById('editUsername').value.trim();
+    const role = document.getElementById('editRole').value.trim();
+    const area = document.getElementById('editArea').value.trim();
+    const department = document.getElementById('editDept').value.trim();
+    const reports_to = document.getElementById('editReportsTo').value.trim();
+    if (!username || !role) {
+      msg.textContent = "Fill required fields.";
+      msg.style.color = "#ff5050";
+      return;
+    }
+    try {
+      await updateDoc(doc(db, `clients/${getTenantId()}/users/${userId}`), {
+        username, role, area, department, reports_to
+      });
+      msg.textContent = "Saved!";
+      msg.style.color = "#28e640";
+      await loadUsers();
+      modalRoot.style.display = "none";
+    } catch (error) {
+      msg.textContent = "Error: " + (error.message || "Unknown error");
+      msg.style.color = "#ff5050";
+    }
+  };
 };
 
-// Delete User (called from button)
-window.deleteUser = async function(userDocId, username) {
-  if (!confirm(`Delete user: ${username}?`)) return;
+// ========== REMOVE USER ==========
+window.removeUser = async function(userId) {
+  if (!confirm('Delete this user?')) return;
   try {
-    await deleteDoc(doc(db, `clients/${tenantId}/users`, userDocId));
-  } catch {
+    await updateDoc(doc(db, `clients/${getTenantId()}/users/${userId}`), { deleted: true });
+    await loadUsers();
+  } catch (error) {
     alert('Failed to delete user.');
   }
-  loadUsers();
 };
 
-// Edit User stub (expand later!)
-window.editUser = function(userDocId) {
-  alert('Edit user: ' + userDocId + '\n(Feature coming soon!)');
+// ========== RESET PASSWORD ==========
+window.resetUserPassword = async function(userId) {
+  if (!confirm('Reset this user\'s password to default?')) return;
+  try {
+    await updateDoc(doc(db, `clients/${getTenantId()}/users/${userId}`), {
+      password: 'password', mustChangePassword: true
+    });
+    alert('Password reset to "password". User will be prompted to change on next login.');
+  } catch (error) {
+    alert('Failed to reset password.');
+  }
 };
 
-// Load user grid on page load
-window.addEventListener('DOMContentLoaded', loadUsers);
-
-// Show/Hide Add User modal
-document.getElementById('addUserBtn').onclick = function() {
-  document.getElementById('addUserModal').style.display = 'flex';
+// ========== VIEW USER INSPECTIONS ==========
+window.showUserInspections = async function(userId) {
+  const u = users.find(x => x.id === userId);
+  if (!u) return;
+  const snap = await getDocs(query(collection(db, `clients/${getTenantId()}/inspections`), where('inspected_by', '==', u.username)));
+  inspections = [];
+  snap.forEach(doc => inspections.push({ id: doc.id, ...doc.data() }));
+  // Sort: failed first
+  inspections.sort((a, b) => (b.status === "failed") - (a.status === "failed"));
+  modalRoot.innerHTML = `
+    <div style="background:#223052;padding:28px 22px;border-radius:14px;max-width:500px;margin:60px auto;">
+      <h3 style="color:#fdd835;">${u.username}'s Inspections</h3>
+      <div style="max-height:280px;overflow-y:auto;">
+        <table style="width:100%;margin-top:12px;">
+          <thead><tr><th>Status</th><th>Asset</th><th>Date</th><th>Details</th></tr></thead>
+          <tbody>
+            ${inspections.map(i => `
+              <tr style="${i.status==='failed'?'color:#ff5050;':''}">
+                <td>${i.status || "—"}</td>
+                <td>${i.asset_id || "—"}</td>
+                <td>${i.created_at ? new Date(i.created_at.seconds*1000).toLocaleString() : "—"}</td>
+                <td><button class="users-action-btn" onclick="event.stopPropagation();window.viewInspectionDetail('${i.id}')">View</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <button class="users-action-btn" onclick="modalRoot.style.display='none'">Close</button>
+    </div>
+  `;
+  modalRoot.style.display = "flex";
 };
-document.getElementById('cancelAddUser').onclick = function() {
-  document.getElementById('addUserModal').style.display = 'none';
-  document.getElementById('add-user-form').reset();
-  document.getElementById('add-user-message').textContent = '';
+
+// ========== VIEW SINGLE INSPECTION DETAIL ==========
+window.viewInspectionDetail = async function(inspectionId) {
+  const snap = await getDocs(query(collection(db, `clients/${getTenantId()}/inspections`), where('__name__', '==', inspectionId)));
+  let i = null;
+  snap.forEach(doc => { i = { id: doc.id, ...doc.data() }; });
+  if (!i) return alert('Inspection not found.');
+  modalRoot.innerHTML = `
+    <div style="background:#223052;padding:28px 22px;border-radius:14px;max-width:500px;margin:60px auto;">
+      <h3 style="color:#fdd835;">Inspection Detail</h3>
+      <div><b>Asset:</b> ${i.asset_id || "—"}</div>
+      <div><b>Status:</b> ${i.status || "—"}</div>
+      <div><b>Date:</b> ${i.created_at ? new Date(i.created_at.seconds*1000).toLocaleString() : "—"}</div>
+      <div><b>Comments:</b> ${i.comments || ""}</div>
+      <div style="margin-top:14px;"><b>Answers:</b></div>
+      <ul>
+        ${(i.answers || []).map(a => `<li><b>${a.q || a.question}:</b> ${a.a || a.answer}</li>`).join('')}
+      </ul>
+      <button class="users-action-btn" onclick="modalRoot.style.display='none'">Close</button>
+    </div>
+  `;
+  modalRoot.style.display = "flex";
 };
