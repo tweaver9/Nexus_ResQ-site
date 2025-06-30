@@ -1,221 +1,290 @@
+// manage-assets.js
 import { db } from './firebase.js';
-import { collection, query, where, getDocs, addDoc, orderBy, doc, deleteDoc } from "firebase/firestore";
+import {
+  collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, query, where, orderBy
+} from "firebase/firestore";
 
-const tenantId = sessionStorage.getItem('tenant_id');
-if (!tenantId) window.location.href = "login.html";
+// ========== STATE ==========
+let assetTypes = [];
+let locations = [];
+let assets = [];
+let selectedAssetId = null;
 
-// DOM elements
-const areaFilter = document.getElementById('areaFilter');
-const assetSearch = document.getElementById('assetSearch');
+// ========== DOM ==========
 const assetsTableBody = document.getElementById('assetsTableBody');
 const noAssetsMsg = document.getElementById('noAssetsMsg');
-const addAssetBtn = document.getElementById('addAssetBtn');
+const assetSearch = document.getElementById('assetSearch');
 const modalRoot = document.getElementById('modal-root');
+const addAssetBtn = document.getElementById('addAssetBtn');
+const addTypeBtn = document.getElementById('addTypeBtn');
+const addLocationBtn = document.getElementById('addLocationBtn');
 
-// State
-let areas = [];
-let assets = [];
-
-// --- On load: fetch areas, then assets
-window.addEventListener('DOMContentLoaded', async () => {
-  await loadAreas();
-  await loadAssets();
-  areaFilter.addEventListener('change', renderAssets);
-  assetSearch.addEventListener('input', renderAssets);
-  addAssetBtn.addEventListener('click', openAddAssetModal);
-});
-
-// --- Load all areas for this client
-async function loadAreas() {
-  const areaSnap = await getDocs(collection(db, `clients/${tenantId}/locations`));
-  areas = [];
-  areaSnap.forEach(docSnap => {
-    const a = docSnap.data();
-    areas.push({ id: docSnap.id, name: a.name });
-  });
-  areaFilter.innerHTML = `<option value="all">All Areas</option>` +
-    areas.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+// ========== HELPERS ==========
+function getTenantId() {
+  return sessionStorage.getItem('tenant_id');
 }
 
-// --- Load all assets for this client
+// ========== LOAD DATA ==========
+
+window.addEventListener('DOMContentLoaded', async () => {
+  if (!getTenantId()) {
+    window.location.href = 'login.html';
+    return;
+  }
+  await Promise.all([
+    loadAssetTypes(),
+    loadLocations(),
+    loadAssets()
+  ]);
+  assetSearch.addEventListener('input', renderAssets);
+  addAssetBtn.onclick = showAddAssetModal;
+  addTypeBtn.onclick = showAddTypeModal;
+  addLocationBtn.onclick = showAddLocationModal;
+});
+
+// ----- Load Asset Types -----
+async function loadAssetTypes() {
+  const snap = await getDocs(collection(db, `clients/${getTenantId()}/assetTypes`));
+  assetTypes = [];
+  snap.forEach(doc => assetTypes.push({ id: doc.id, ...doc.data() }));
+}
+// ----- Load Locations -----
+async function loadLocations() {
+  const snap = await getDocs(collection(db, `clients/${getTenantId()}/locations`));
+  locations = [];
+  snap.forEach(doc => locations.push({ id: doc.id, ...doc.data() }));
+}
+// ----- Load Assets -----
 async function loadAssets() {
+  const snap = await getDocs(query(collection(db, `clients/${getTenantId()}/assets`), orderBy('asset_id')));
   assets = [];
-  const assetSnap = await getDocs(
-    collection(db, `clients/${tenantId}/assets`)
-  );
-  assetSnap.forEach(docSnap => {
-    assets.push({ ...docSnap.data(), id: docSnap.id });
-  });
+  snap.forEach(doc => assets.push({ id: doc.id, ...doc.data() }));
   renderAssets();
 }
 
-// --- Render asset rows (with filter and search)
+// ========== RENDER ASSET TABLE ==========
 function renderAssets() {
-  const areaVal = areaFilter.value;
   const searchVal = assetSearch.value.trim().toLowerCase();
-
-  let filtered = assets.filter(row => {
-    if (areaVal !== "all" && row.locationId !== areaVal) return false;
-    if (searchVal) {
-      const all = `${row.assetId||''} ${row.type||''} ${row.location||''} ${row.assigned_user||''}`.toLowerCase();
-      if (!all.includes(searchVal)) return false;
-    }
-    return true;
-  });
-
+  let filtered = assets;
+  if (searchVal) {
+    filtered = filtered.filter(row =>
+      (row.asset_id || '').toLowerCase().includes(searchVal) ||
+      (row.type || '').toLowerCase().includes(searchVal) ||
+      (row.location || '').toLowerCase().includes(searchVal) ||
+      (row.assigned_user || '').toLowerCase().includes(searchVal)
+    );
+  }
   assetsTableBody.innerHTML = "";
-  if (filtered.length === 0) {
+  if (!filtered.length) {
     noAssetsMsg.style.display = "";
     return;
   }
   noAssetsMsg.style.display = "none";
 
   filtered.forEach(row => {
-    const areaName = (areas.find(a => a.id === row.locationId) || {}).name || row.location || "—";
-    let statusClass = "status-inservice";
-    let statusLabel = row.status || "In Service";
-    if (row.status) {
-      if (row.status === "out_of_service") { statusClass = "status-outofservice"; statusLabel = "Out of Service"; }
-      else if (row.status === "failed") { statusClass = "status-failed"; statusLabel = "Failed"; }
-      else if (row.status === "emergency_ok") { statusClass = "status-emergencyok"; statusLabel = "Emerg. OK"; }
-      else if (row.status === "moved") { statusClass = "status-moved"; statusLabel = "Moved"; }
-    }
-
-    // Last inspection and maintenance due placeholders
-    let lastInspection = row.last_inspection ? new Date(row.last_inspection).toLocaleDateString() : "—";
-    let hydroDue = row.hydro_due || "—";
-    let annualDue = row.annual_due || "—";
-    let maintenance = row.maintenance || "—";
-
     assetsTableBody.insertAdjacentHTML('beforeend', `
       <tr>
-        <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
-        <td>${row.assetId || row.id || "—"}</td>
+        <td>${statusBadge(row.status)}</td>
+        <td>${row.asset_id || "—"}</td>
         <td>${row.type || "—"}</td>
-        <td>${areaName}</td>
+        <td>${row.location || "—"}</td>
         <td>${row.assigned_user || "—"}</td>
-        <td>${lastInspection}</td>
-        <td>${hydroDue}</td>
-        <td>${annualDue}</td>
-        <td>${maintenance}</td>
+        <td>${row.last_inspection || "—"}</td>
+        <td>${row.annual_due || "—"}</td>
+        <td>${row.maintenance || "—"}</td>
         <td>
-          <button class="action-btn" onclick="window.editAsset && editAsset('${row.id}')">Edit</button>
-          <button class="action-btn" onclick="window.deleteAsset && deleteAsset('${row.id}', '${row.assetId||row.id}')">Delete</button>
+          <button class="action-btn" onclick="window.editAsset('${row.id}')">Edit</button>
+          <button class="action-btn" onclick="window.deleteAsset('${row.id}')">Delete</button>
         </td>
       </tr>
     `);
   });
 }
 
-// === Add Asset Modal Logic ===
-function openAddAssetModal() {
-  // Modal HTML (use your existing CSS styles)
-  const modalHtml = `
-    <div class="modal-content" style="background:#142b47;padding:32px 22px 20px 22px;max-width:410px;border-radius:14px;margin:auto;">
-      <span class="close-btn" id="closeAddAssetModal" title="Close" style="position:absolute;right:16px;top:14px;font-size:1.8em;cursor:pointer;color:#fdd835;">&times;</span>
-      <h2 style="color:#fdd835;margin-bottom:16px;">Add New Asset</h2>
-      <form id="addAssetForm" autocomplete="off">
-        <label>Asset ID</label>
-        <input id="modalAssetId" type="text" maxlength="40" required placeholder="e.g. Extinguisher001">
-        <label>Type</label>
-        <input id="modalAssetType" type="text" maxlength="30" required placeholder="e.g. Extinguisher">
-        <label>Area/Location</label>
-        <select id="modalLocationId" required>
-          <option value="">Select Area</option>
-          ${areas.map(a => `<option value="${a.id}">${a.name}</option>`).join('')}
-        </select>
-        <label>Assigned User</label>
-        <input id="modalAssignedUser" type="text" maxlength="30" placeholder="Optional">
-        <label>Status</label>
-        <select id="modalStatus">
-          <option value="in_service">In Service</option>
-          <option value="out_of_service">Out of Service</option>
-          <option value="failed">Failed</option>
-          <option value="emergency_ok">Emerg. OK</option>
-          <option value="moved">Moved</option>
-        </select>
-        <label>Hydro Due (date)</label>
-        <input id="modalHydroDue" type="date">
-        <label>Annual Due (date)</label>
-        <input id="modalAnnualDue" type="date">
-        <label>Maintenance</label>
-        <input id="modalMaintenance" type="text" maxlength="50" placeholder="Optional notes">
-        <button type="submit" style="margin-top:18px;">Add Asset</button>
-        <div class="form-message" id="modalAssetMsg" style="margin-top:8px;"></div>
+// ========== STATUS BADGES ==========
+function statusBadge(status) {
+  if (status === "in_service") return `<span class="status-badge status-inservice">In Service</span>`;
+  if (status === "out_of_service") return `<span class="status-badge status-outofservice">Out</span>`;
+  if (status === "failed") return `<span class="status-badge status-failed">Failed</span>`;
+  if (status === "moved") return `<span class="status-badge status-moved">Moved</span>`;
+  return `<span class="status-badge">${status || "—"}</span>`;
+}
+
+// ========== ADD TYPE MODAL ==========
+function showAddTypeModal() {
+  modalRoot.innerHTML = `
+    <div style="background:#223052;padding:32px 26px;border-radius:14px;max-width:360px;margin:60px auto;">
+      <h3 style="color:#fdd835;">Add Asset Type</h3>
+      <form id="addTypeForm">
+        <label>Name</label>
+        <input type="text" id="typeName" required placeholder="e.g. Fire Extinguisher">
+        <button class="assets-action-btn" type="submit">Add</button>
+        <button class="action-btn" type="button" id="closeTypeModal">Cancel</button>
+        <span id="typeFormMsg" style="margin-left:10px;color:#fdd835;"></span>
       </form>
     </div>
   `;
-
-  modalRoot.innerHTML = modalHtml;
   modalRoot.style.display = "flex";
-
-  document.getElementById('closeAddAssetModal').onclick = closeAddAssetModal;
-  document.getElementById('addAssetForm').onsubmit = handleAddAsset;
-  // Close modal on outside click
-  modalRoot.onclick = function(e) {
-    if (e.target === modalRoot) closeAddAssetModal();
-  }
+  document.getElementById('closeTypeModal').onclick = () => modalRoot.style.display = "none";
+  document.getElementById('addTypeForm').onsubmit = async function (e) {
+    e.preventDefault();
+    const msg = document.getElementById('typeFormMsg');
+    msg.textContent = "Adding...";
+    const name = document.getElementById('typeName').value.trim();
+    if (!name) {
+      msg.textContent = "Enter a name.";
+      msg.style.color = "#ff5050";
+      return;
+    }
+    try {
+      await addDoc(collection(db, `clients/${getTenantId()}/assetTypes`), { name, created_at: serverTimestamp() });
+      msg.textContent = "Added!";
+      msg.style.color = "#28e640";
+      await loadAssetTypes();
+      modalRoot.style.display = "none";
+    } catch (error) {
+      msg.textContent = "Error: " + (error.message || "Unknown error");
+      msg.style.color = "#ff5050";
+    }
+  };
 }
 
-function closeAddAssetModal() {
-  modalRoot.style.display = "none";
-  modalRoot.innerHTML = "";
+// ========== ADD LOCATION MODAL ==========
+function showAddLocationModal() {
+  modalRoot.innerHTML = `
+    <div style="background:#223052;padding:32px 26px;border-radius:14px;max-width:360px;margin:60px auto;">
+      <h3 style="color:#fdd835;">Add Location/Zone/Area</h3>
+      <form id="addLocationForm">
+        <label>Type</label>
+        <select id="locationType">
+          <option value="Location">Location</option>
+          <option value="Zone">Zone</option>
+          <option value="Area">Area</option>
+          <option value="Custom">Custom</option>
+        </select>
+        <input type="text" id="customLabel" style="display:none;margin-top:6px;" placeholder="Custom label">
+        <label>Name</label>
+        <input type="text" id="locationName" required placeholder="e.g. Office 1">
+        <button class="assets-action-btn" type="submit">Add</button>
+        <button class="action-btn" type="button" id="closeLocationModal">Cancel</button>
+        <span id="locationFormMsg" style="margin-left:10px;color:#fdd835;"></span>
+      </form>
+    </div>
+  `;
+  modalRoot.style.display = "flex";
+  const locationType = document.getElementById('locationType');
+  const customLabel = document.getElementById('customLabel');
+  locationType.onchange = () => {
+    customLabel.style.display = locationType.value === 'Custom' ? '' : 'none';
+  };
+  document.getElementById('closeLocationModal').onclick = () => modalRoot.style.display = "none";
+  document.getElementById('addLocationForm').onsubmit = async function (e) {
+    e.preventDefault();
+    const msg = document.getElementById('locationFormMsg');
+    msg.textContent = "Adding...";
+    const type = locationType.value;
+    const label = type === "Custom" ? customLabel.value.trim() : type;
+    const name = document.getElementById('locationName').value.trim();
+    if (!label || !name) {
+      msg.textContent = "Fill out all fields.";
+      msg.style.color = "#ff5050";
+      return;
+    }
+    try {
+      await addDoc(collection(db, `clients/${getTenantId()}/locations`), {
+        type: label,
+        name,
+        created_at: serverTimestamp()
+      });
+      msg.textContent = "Added!";
+      msg.style.color = "#28e640";
+      await loadLocations();
+      modalRoot.style.display = "none";
+    } catch (error) {
+      msg.textContent = "Error: " + (error.message || "Unknown error");
+      msg.style.color = "#ff5050";
+    }
+  };
 }
 
-async function handleAddAsset(e) {
-  e.preventDefault();
-  const msg = document.getElementById('modalAssetMsg');
-  msg.style.color = "#fdd835";
-  msg.textContent = "Adding...";
-  const assetId = document.getElementById('modalAssetId').value.trim();
-  const type = document.getElementById('modalAssetType').value.trim();
-  const locationId = document.getElementById('modalLocationId').value;
-  const assigned_user = document.getElementById('modalAssignedUser').value.trim();
-  const status = document.getElementById('modalStatus').value;
-  const hydro_due = document.getElementById('modalHydroDue').value;
-  const annual_due = document.getElementById('modalAnnualDue').value;
-  const maintenance = document.getElementById('modalMaintenance').value.trim();
-
-  if (!assetId || !type || !locationId) {
-    msg.style.color = "#ff5050";
-    msg.textContent = "Asset ID, Type, and Area are required.";
-    return;
-  }
-
-  try {
-    await addDoc(collection(db, `clients/${tenantId}/assets`), {
-      assetId,
-      type,
-      locationId,
-      assigned_user,
-      status,
-      hydro_due,
-      annual_due,
-      maintenance,
-      last_inspection: null // New asset, no inspection yet
-    });
-    msg.style.color = "#28e640";
-    msg.textContent = "Asset added!";
-    setTimeout(() => {
-      closeAddAssetModal();
-      loadAssets();
-    }, 900);
-  } catch (error) {
-    msg.style.color = "#ff5050";
-    msg.textContent = "Error: " + (error.message || "Unknown error");
-  }
+// ========== ADD ASSET MODAL ==========
+function showAddAssetModal() {
+  // Dropdowns for type and location
+  let typeOptions = assetTypes.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+  let locationOptions = locations.map(l => `<option value="${l.name}">${l.name}</option>`).join('');
+  modalRoot.innerHTML = `
+    <div style="background:#223052;padding:32px 26px;border-radius:14px;max-width:440px;margin:60px auto;">
+      <h3 style="color:#fdd835;">Add Asset</h3>
+      <form id="addAssetForm">
+        <label>Asset ID</label>
+        <input type="text" id="assetId" required placeholder="e.g. Extinguisher001">
+        <label>Type</label>
+        <select id="assetType" required>
+          <option value="">Select Type</option>
+          ${typeOptions}
+        </select>
+        <label>Location</label>
+        <select id="assetLocation" required>
+          <option value="">Select Location</option>
+          ${locationOptions}
+        </select>
+        <label>Assigned User</label>
+        <input type="text" id="assignedUser" placeholder="Optional">
+        <label>Status</label>
+        <select id="assetStatus">
+          <option value="in_service">In Service</option>
+          <option value="out_of_service">Out of Service</option>
+          <option value="moved">Moved</option>
+        </select>
+        <button class="assets-action-btn" type="submit">Add</button>
+        <button class="action-btn" type="button" id="closeAssetModal">Cancel</button>
+        <span id="assetFormMsg" style="margin-left:10px;color:#fdd835;"></span>
+      </form>
+    </div>
+  `;
+  modalRoot.style.display = "flex";
+  document.getElementById('closeAssetModal').onclick = () => modalRoot.style.display = "none";
+  document.getElementById('addAssetForm').onsubmit = async function (e) {
+    e.preventDefault();
+    const msg = document.getElementById('assetFormMsg');
+    msg.textContent = "Adding...";
+    const asset_id = document.getElementById('assetId').value.trim();
+    const type = document.getElementById('assetType').value.trim();
+    const location = document.getElementById('assetLocation').value.trim();
+    const assigned_user = document.getElementById('assignedUser').value.trim();
+    const status = document.getElementById('assetStatus').value;
+    if (!asset_id || !type || !location) {
+      msg.textContent = "Fill all required fields.";
+      msg.style.color = "#ff5050";
+      return;
+    }
+    try {
+      await addDoc(collection(db, `clients/${getTenantId()}/assets`), {
+        asset_id, type, location, assigned_user, status, created_at: serverTimestamp()
+      });
+      msg.textContent = "Added!";
+      msg.style.color = "#28e640";
+      await loadAssets();
+      modalRoot.style.display = "none";
+    } catch (error) {
+      msg.textContent = "Error: " + (error.message || "Unknown error");
+      msg.style.color = "#ff5050";
+    }
+  };
 }
 
-// === Edit and Delete stubs (expand as needed) ===
+// ========== EDIT / DELETE ASSET (STUBS) ==========
 window.editAsset = function(assetId) {
-  alert('Edit Asset: ' + assetId + '\n(Feature coming soon!)');
+  // Placeholder: You can pop open an Edit Asset modal here
+  alert(`Edit asset: ${assetId}\n(This feature coming soon)`);
 };
-window.deleteAsset = async function(assetId, assetLabel) {
-  if (!confirm(`Delete asset: ${assetLabel}?`)) return;
+window.deleteAsset = async function(assetId) {
+  if (!confirm('Delete this asset?')) return;
   try {
-    await deleteDoc(doc(db, `clients/${tenantId}/assets`, assetId));
+    await updateDoc(doc(db, `clients/${getTenantId()}/assets/${assetId}`), { deleted: true });
     await loadAssets();
   } catch (error) {
-    alert("Failed to delete asset.");
+    alert('Failed to delete asset.');
   }
 };
+
