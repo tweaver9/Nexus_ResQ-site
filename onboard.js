@@ -1,20 +1,16 @@
-// onboard.js
 import { db, storage } from './firebase.js';
 import {
-  collection, addDoc, doc, getDocs, updateDoc, serverTimestamp
+  collection, addDoc, setDoc, doc, getDocs, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-// === SECURITY: Restrict page to Nexus Owners only ===
-if (!['nexus', 'owner'].includes(sessionStorage.role)) {
+// Restrict to Nexus owners
+if (sessionStorage.role !== 'nexus') {
   document.body.innerHTML = '<div style="color:#fdd835;font-size:1.2em;margin:64px auto;max-width:380px;text-align:center;">Access Denied<br>This page is restricted to Nexus Owners.</div>';
   throw new Error("Not authorized");
 }
 
-// ---------------------
-// 1. CLIENT MANAGEMENT
-// ---------------------
-
+// --------- Add Client -----------
 const clientForm = document.getElementById('addClientForm');
 const clientNameInput = document.getElementById('clientName');
 const clientLogoInput = document.getElementById('clientLogo');
@@ -25,9 +21,6 @@ const adminPasswordInput = document.getElementById('adminPassword');
 const clientFormMsg = document.getElementById('clientFormMsg');
 const onboardCreds = document.getElementById('onboardCreds');
 
-let newClientId = null;
-
-// Username/password generator
 function slug(str) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '').substring(0, 16);
 }
@@ -38,7 +31,6 @@ function makePassword(client) {
   const year = new Date().getFullYear();
   return slug(client).slice(0, 4) + year + '!';
 }
-
 function autoFillAdmin() {
   const f = adminFirstInput.value.trim();
   const l = adminLastInput.value.trim();
@@ -48,7 +40,6 @@ function autoFillAdmin() {
 }
 clientNameInput.oninput = adminFirstInput.oninput = adminLastInput.oninput = autoFillAdmin;
 
-// Handle Add Client Form Submit
 clientForm.onsubmit = async function (e) {
   e.preventDefault();
   clientFormMsg.style.color = "#fdd835";
@@ -69,23 +60,18 @@ clientForm.onsubmit = async function (e) {
     clientForm.querySelector("#submitClientBtn").disabled = false;
     return;
   }
-
   try {
-    // 1. Create client doc in Firestore
+    // 1. Create client
     const clientRef = await addDoc(collection(db, "clients"), {
       name: clientName,
       created_at: serverTimestamp()
     });
-    newClientId = clientRef.id;
-
-    // 2. Process and upload logo
-    const logoUrl = await uploadLogoAndGetUrl(logoFile, newClientId);
-
-    // 3. Update client doc with logo
-    await updateDoc(doc(db, "clients", newClientId), { logo_url: logoUrl });
-
-    // 4. Create admin user in subcollection
-    await addDoc(collection(db, `clients/${newClientId}/users`), {
+    const clientId = clientRef.id;
+    // 2. Upload logo
+    const logoUrl = await uploadLogoAndGetUrl(logoFile, clientId);
+    await updateDoc(doc(db, "clients", clientId), { logo_url: logoUrl });
+    // 3. Add admin user
+    await addDoc(collection(db, `clients/${clientId}/users`), {
       username: adminUsername,
       password: adminPassword,
       first_name: adminFirst,
@@ -94,19 +80,16 @@ clientForm.onsubmit = async function (e) {
       mustChangePassword: true,
       created_at: serverTimestamp()
     });
-
-    // 5. Show credentials, refresh client dropdown
-    onboardCreds.innerHTML = `
-      <b>Client successfully created!</b><br><br>
+    onboardCreds.innerHTML = `<b>Client successfully created!</b><br><br>
       <b>Client Name:</b> ${clientName}<br>
-      <b>Client ID:</b> ${newClientId}<br>
+      <b>Client ID:</b> ${clientId}<br>
       <b>Admin Username:</b> <code>${adminUsername}</code><br>
       <b>Default Password:</b> <code>${adminPassword}</code><br>
       <b>Logo URL:</b> <a href="${logoUrl}" target="_blank" style="color:#fdd835;">View Logo</a>
     `;
     onboardCreds.style.display = "block";
     clientFormMsg.textContent = "";
-    await refreshClientDropdown(newClientId);
+    await refreshClientDropdown(clientId);
     clientForm.reset();
     autoFillAdmin();
   } catch (err) {
@@ -149,119 +132,105 @@ function imageToWebp(img, maxW = 220, maxH = 120) {
   );
 }
 
-// ----------------------
-// 2. GLOBAL ASSET TYPES
-// ----------------------
+// -------- Global Asset Type Section ----------
+const addAssetTypeForm = document.getElementById('addAssetTypeForm');
+const globalAssetTypeName = document.getElementById('globalAssetTypeName');
+const globalAssetTypeQuestions = document.getElementById('globalAssetTypeQuestions');
+const addAssetTypeMsg = document.getElementById('addAssetTypeMsg');
 
-// Add Asset Type globally (all clients can use)
-const assetTypeForm = document.getElementById('addAssetTypeForm');
-if (assetTypeForm) {
-  assetTypeForm.onsubmit = async function (e) {
-    e.preventDefault();
-    const msg = document.getElementById('assetTypeFormMsg');
-    msg.textContent = "Adding...";
-    const name = document.getElementById('globalAssetTypeName').value.trim();
-    if (!name) {
-      msg.style.color = "#ff5050";
-      msg.textContent = "Enter a name.";
-      return;
-    }
-    try {
-      await addDoc(collection(db, "assetTypes"), { name, created_at: serverTimestamp() });
-      msg.style.color = "#28e640";
-      msg.textContent = "Added!";
-      this.reset();
-      await loadAssetTypes(); // Refresh dropdowns after add
-    } catch (error) {
-      msg.style.color = "#ff5050";
-      msg.textContent = "Error: " + (error.message || "Unknown error");
-    }
-  };
-}
+addAssetTypeForm.onsubmit = async function(e) {
+  e.preventDefault();
+  addAssetTypeMsg.style.color = "#fdd835";
+  addAssetTypeMsg.textContent = "Adding asset type...";
+  const name = globalAssetTypeName.value.trim();
+  const questions = globalAssetTypeQuestions.value.trim()
+    ? globalAssetTypeQuestions.value.split(',').map(q => q.trim()).filter(q => q)
+    : [];
+  if (!name) {
+    addAssetTypeMsg.style.color = "#ff5050";
+    addAssetTypeMsg.textContent = "Enter asset type name.";
+    return;
+  }
+  try {
+    await addDoc(collection(db, "assetTypes"), {
+      name,
+      default_questions: questions,
+      created_at: serverTimestamp()
+    });
+    addAssetTypeMsg.style.color = "#28e640";
+    addAssetTypeMsg.textContent = "Global asset type added!";
+    addAssetTypeForm.reset();
+    await refreshAssetTypeDropdown();
+  } catch (err) {
+    addAssetTypeMsg.style.color = "#ff5050";
+    addAssetTypeMsg.textContent = "Error: " + (err.message || "Unknown error");
+  }
+};
 
-// Populate asset types dropdown (for assign asset form)
-const assetTypeSelect = document.getElementById('assetTypeSelect');
-async function loadAssetTypes() {
-  if (!assetTypeSelect) return;
-  assetTypeSelect.innerHTML = '<option value="">(Select Asset Type...)</option>';
-  const snap = await getDocs(collection(db, "assetTypes"));
-  snap.forEach(docSnap => {
-    const t = docSnap.data();
-    assetTypeSelect.innerHTML += `<option value="${docSnap.id}">${t.name || docSnap.id}</option>`;
-  });
-}
-if (assetTypeSelect) loadAssetTypes();
-
-// ---------------------
-// 3. ASSIGN ASSET TO CLIENT
-// ---------------------
-
+// -------- Assign Asset to Client ----------
 const assignAssetForm = document.getElementById('assignAssetForm');
 const clientSelect = document.getElementById('clientSelect');
-async function loadClients() {
-  if (!clientSelect) return;
-  clientSelect.innerHTML = '<option value="">(Select Client...)</option>';
+const assetTypeSelect = document.getElementById('assetTypeSelect');
+const assetIdInput = document.getElementById('assetId');
+const assetLocationInput = document.getElementById('assetLocation');
+const serialNoInput = document.getElementById('serialNo');
+const assignedUserInput = document.getElementById('assignedUser');
+const assignAssetMsg = document.getElementById('assignAssetMsg');
+
+assignAssetForm.onsubmit = async function(e) {
+  e.preventDefault();
+  assignAssetMsg.style.color = "#fdd835";
+  assignAssetMsg.textContent = "Assigning asset...";
+  const clientId = clientSelect.value;
+  const assetTypeId = assetTypeSelect.value;
+  const assetId = assetIdInput.value.trim();
+  const location = assetLocationInput.value.trim();
+  const serialNo = serialNoInput.value.trim();
+  const assignedUser = assignedUserInput.value.trim();
+
+  if (!clientId || !assetTypeId || !assetId || !location) {
+    assignAssetMsg.style.color = "#ff5050";
+    assignAssetMsg.textContent = "Fill out all required fields.";
+    return;
+  }
+  try {
+    await addDoc(collection(db, `clients/${clientId}/assets`), {
+      asset_id: assetId,
+      asset_type_id: assetTypeId,
+      location,
+      serial_no: serialNo,
+      assigned_user: assignedUser,
+      created_at: serverTimestamp()
+    });
+    assignAssetMsg.style.color = "#28e640";
+    assignAssetMsg.textContent = "Asset assigned to client!";
+    assignAssetForm.reset();
+  } catch (err) {
+    assignAssetMsg.style.color = "#ff5050";
+    assignAssetMsg.textContent = "Error: " + (err.message || "Unknown error");
+  }
+};
+
+// ------ Dropdown Populators -------
+async function refreshClientDropdown(selectedId = null) {
+  clientSelect.innerHTML = '<option value="">Select client...</option>';
   const snap = await getDocs(collection(db, "clients"));
   snap.forEach(docSnap => {
     const c = docSnap.data();
     const id = docSnap.id;
-    clientSelect.innerHTML += `<option value="${id}">${c.name || id}</option>`;
+    clientSelect.innerHTML += `<option value="${id}" ${id === selectedId ? 'selected' : ''}>${c.name || id}</option>`;
   });
 }
-if (clientSelect) loadClients();
-
-if (assignAssetForm) {
-  assignAssetForm.onsubmit = async function(e) {
-    e.preventDefault();
-    const msg = document.getElementById('assignAssetMsg');
-    msg.style.color = "#fdd835";
-    msg.textContent = "Adding asset...";
-    const clientId = clientSelect.value;
-    const typeId = assetTypeSelect.value;
-    const assetId = document.getElementById('assetId').value.trim();
-    const location = document.getElementById('assetLocation').value.trim();
-    const serialNo = document.getElementById('serialNo').value.trim();
-    const assignedUser = document.getElementById('assignedUser').value.trim();
-    const supplemental = document.getElementById('supplementalQuestions').value.trim();
-    const supplementalArr = supplemental
-      ? supplemental.split(',').map(q => q.trim()).filter(Boolean)
-      : [];
-    if (!clientId || !typeId || !assetId || !location) {
-      msg.style.color = "#ff5050";
-      msg.textContent = "Please fill all required fields.";
-      return;
-    }
-    try {
-      await addDoc(collection(db, `clients/${clientId}/assets`), {
-        type_id: typeId,
-        asset_id: assetId,
-        location,
-        serial_no: serialNo || null,
-        assigned_to: assignedUser || null,
-        supplemental_questions: supplementalArr,
-        created_at: serverTimestamp()
-      });
-      msg.style.color = "#28e640";
-      msg.textContent = "Asset added!";
-      this.reset();
-    } catch (error) {
-      msg.style.color = "#ff5050";
-      msg.textContent = "Error: " + (error.message || "Unknown error");
-    }
-  };
-}
-
-// ------------
-// 4. UTILS
-// ------------
-
-async function refreshClientDropdown(selectId = null) {
-  if (!clientSelect) return;
-  clientSelect.innerHTML = '<option value="">(Select Client...)</option>';
-  const snap = await getDocs(collection(db, "clients"));
+async function refreshAssetTypeDropdown(selectedId = null) {
+  assetTypeSelect.innerHTML = '<option value="">Select asset type...</option>';
+  const snap = await getDocs(collection(db, "assetTypes"));
   snap.forEach(docSnap => {
-    const c = docSnap.data();
+    const at = docSnap.data();
     const id = docSnap.id;
-    clientSelect.innerHTML += `<option value="${id}" ${id === selectId ? 'selected' : ''}>${c.name || id}</option>`;
+    assetTypeSelect.innerHTML += `<option value="${id}" ${id === selectedId ? 'selected' : ''}>${at.name || id}</option>`;
   });
 }
+
+// Initial dropdown population:
+refreshClientDropdown();
+refreshAssetTypeDropdown();
