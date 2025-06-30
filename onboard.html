@@ -6,12 +6,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="CSS/dashboard.css">
+  <style>
+    .onboard-container {
+      display: flex;
+      max-width: 1200px;
+      margin: 40px auto;
+      gap: 30px;
+    }
+    .onboard-container section {
+      flex: 1 1 400px;
+      background: #142b47;
+      border-radius: 14px;
+      padding: 32px 24px 24px 24px;
+      min-width: 340px;
+    }
+    h2 { color: #fdd835; margin-bottom: 18px;}
+    label { display:block; margin-top: 12px; color: #f2f2f2; }
+    input, select {
+      width: 100%;
+      font-size: 1.03em;
+      padding: 8px 10px;
+      border-radius: 7px;
+      background: #223052;
+      border: none;
+      color: #fff;
+      margin-top: 3px;
+      margin-bottom: 9px;
+      outline: none;
+    }
+    .onboard-btn {
+      margin-top: 18px;
+      padding: 11px 22px;
+      background: #fdd835;
+      color: #142b47;
+      font-weight: 700;
+      border: none;
+      border-radius: 7px;
+      font-size: 1.12em;
+      cursor: pointer;
+    }
+    @media (max-width: 900px) {
+      .onboard-container { flex-direction: column; gap: 0; }
+      .onboard-container section { margin-bottom: 34px; }
+    }
+  </style>
 </head>
 <body>
-  <div class="onboard-container" style="display:flex;max-width:1200px;margin:40px auto;">
-    <!-- LEFT: ADD CLIENT -->
-    <section style="flex:1 1 360px;background:#142b47;border-radius:14px;padding:32px 24px;margin-right:30px;">
-      <h2 style="color:#fdd835;">Add Client</h2>
+  <div class="onboard-container">
+    <!-- LEFT: Add Client -->
+    <section>
+      <h2>Add Client</h2>
       <form id="addClientForm" autocomplete="off" enctype="multipart/form-data">
         <label>Client Name</label>
         <input id="clientName" type="text" required>
@@ -30,9 +74,10 @@
         <div id="onboardCreds" style="margin-top:12px;display:none;"></div>
       </form>
     </section>
-    <!-- RIGHT: ADD/ASSIGN ASSET TO CLIENT -->
-    <section style="flex:1 1 480px;background:#142b47;border-radius:14px;padding:32px 24px;">
-      <h2 style="color:#fdd835;">Assign Asset to Client</h2>
+
+    <!-- RIGHT: Assign Asset -->
+    <section>
+      <h2>Assign Asset to Client</h2>
       <form id="assignAssetForm" autocomplete="off">
         <label>Client</label>
         <select id="clientSelect" required></select>
@@ -51,6 +96,15 @@
         <button type="submit" class="onboard-btn">Add Asset</button>
         <div id="assignAssetMsg" style="margin-top:12px;"></div>
       </form>
+      <!-- Global Asset Type Creator (Nexus owners only) -->
+      <div id="globalAssetTypeBox" style="margin-top:34px;padding:22px 0 0 0;border-top:1px solid #223052;">
+        <h3 style="color:#fdd835;">Add Global Asset Type</h3>
+        <form id="addAssetTypeForm" autocomplete="off">
+          <input type="text" id="globalAssetTypeName" maxlength="50" required placeholder="e.g. Fire Extinguisher">
+          <button type="submit" class="onboard-btn" style="margin-top:10px;">Add Type</button>
+          <span id="assetTypeFormMsg" style="margin-left:10px;color:#fdd835;"></span>
+        </form>
+      </div>
     </section>
   </div>
   <script type="module" src="onboard.js"></script>
