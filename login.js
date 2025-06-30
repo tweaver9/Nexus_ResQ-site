@@ -1,5 +1,5 @@
 import { db } from './firebase.js';
-import { collection, query, where, getDocs, doc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 window.addEventListener('DOMContentLoaded', async function() {
   const loginForm = document.querySelector('.login-form');
