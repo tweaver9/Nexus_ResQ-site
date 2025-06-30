@@ -1,6 +1,9 @@
-// client-logo.js (Firebase version)
-import { db } from './firebase.js';
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+// Initialize Firebase (only once, e.g. in firebase.js)
+const firebaseConfig = { /* your config */ };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Use Firestore as: db.collection(...), db.doc(...), etc.
 
 async function loadClientLogos() {
   const grid = document.getElementById('logoGrid');
