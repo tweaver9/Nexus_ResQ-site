@@ -6,11 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="CSS/dashboard.css">
+  <style>
+    .question-row { display: flex; gap:8px; margin-bottom:7px; }
+    .question-row input { flex:1; }
+    .remove-q-btn { background: #f33; color:#fff; border:none; border-radius:7px; padding: 2px 9px; cursor:pointer;}
+    .question-list-title {color:#fdd835; margin-top:22px; margin-bottom:5px; font-size:1.1em;}
+    .freq-tag { display:inline-block; background:#223052; color:#fdd835; border-radius:7px; padding:1px 7px; margin:0 4px 0 0;}
+    .current-questions-list { margin-bottom:17px; }
+  </style>
 </head>
 <body>
-  <div class="onboard-container" style="display:flex;max-width:1200px;margin:40px auto;">
+  <div class="onboard-container" style="display:flex;max-width:1250px;margin:40px auto;gap:30px;">
     <!-- LEFT: ADD CLIENT -->
-    <section style="flex:1 1 360px;background:#142b47;border-radius:14px;padding:32px 24px;margin-right:30px;">
+    <section style="flex:1 1 360px;background:#142b47;border-radius:14px;padding:32px 24px;">
       <h2 style="color:#fdd835;">Add Client</h2>
       <form id="addClientForm" autocomplete="off" enctype="multipart/form-data">
         <label>Client Name</label>
@@ -30,35 +38,37 @@
         <div id="onboardCreds" style="margin-top:12px;display:none;"></div>
       </form>
     </section>
-    <!-- RIGHT: ASSIGN ASSET TO CLIENT -->
-    <section style="flex:1 1 480px;background:#142b47;border-radius:14px;padding:32px 24px;">
-      <h2 style="color:#fdd835;">Assign Asset to Client</h2>
-      <form id="assignAssetForm" autocomplete="off">
-        <label>Client</label>
-        <select id="clientSelect" required></select>
+
+    <!-- RIGHT: GLOBAL ASSET TYPE MANAGER -->
+    <section style="flex:2 2 580px;background:#142b47;border-radius:14px;padding:32px 24px;">
+      <h2 style="color:#fdd835;">Manage Asset Types & Questions</h2>
+      <form id="assetTypeQuestionForm" autocomplete="off">
+        <!-- Asset Type Select/Create -->
         <label>Asset Type</label>
-        <select id="assetTypeSelect" required></select>
-        <label>Asset ID</label>
-        <input id="assetId" type="text" required>
-        <label>Location</label>
-        <input id="assetLocation" type="text" required>
-        <label>Serial Number (optional)</label>
-        <input id="serialNo" type="text">
-        <label>Assigned User (optional)</label>
-        <input id="assignedUser" type="text">
-        <button type="submit" class="onboard-btn">Add Asset</button>
-        <div id="assignAssetMsg" style="margin-top:12px;"></div>
+        <div style="display:flex;gap:8px;">
+          <select id="assetTypeSelect" style="flex:2"></select>
+          <input id="newAssetTypeInput" type="text" placeholder="Or enter new asset type" style="flex:3">
+        </div>
+        <!-- Frequency Select/Create -->
+        <label style="margin-top:10px;">Frequency</label>
+        <div style="display:flex;gap:8px;">
+          <select id="frequencySelect" style="flex:2">
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="annual">Annual</option>
+            <option value="">(Other...)</option>
+          </select>
+          <input id="newFrequencyInput" type="text" placeholder="Or enter custom frequency" style="flex:3;">
+        </div>
+        <!-- Questions Line-by-Line -->
+        <label style="margin-top:10px;">Questions for this Frequency</label>
+        <div id="questionsList"></div>
+        <button type="button" id="addQuestionBtn" style="margin-bottom:10px;">Add Question</button>
+        <button type="submit" class="onboard-btn" style="margin-left:14px;">Save/Update</button>
+        <div id="assetTypeQuestionMsg" style="margin-top:12px;"></div>
       </form>
-      <hr style="margin:32px 0 16px 0;border:none;border-top:1px solid #223052;">
-      <h3 style="color:#fdd835;">Add Global Asset Type</h3>
-      <form id="addAssetTypeForm" autocomplete="off">
-        <label>Asset Type Name</label>
-        <input id="globalAssetTypeName" type="text" required>
-        <label>Default Questions<br><span style="font-size:0.9em;color:#aaa">(comma separated)</span></label>
-        <input id="globalAssetTypeQuestions" type="text" placeholder="e.g. Is cabinet locked?, Is tag present?">
-        <button type="submit" class="onboard-btn">Add Global Asset Type</button>
-        <div id="addAssetTypeMsg" style="margin-top:12px;"></div>
-      </form>
+      <!-- Show current frequencies/questions for selected asset type -->
+      <div id="currentQuestionsContainer"></div>
     </section>
   </div>
   <script type="module" src="onboard.js"></script>
