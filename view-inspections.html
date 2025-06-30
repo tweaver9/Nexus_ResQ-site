@@ -13,11 +13,11 @@
     <div class="header-right">
       <select id="areaFilter" class="area-filter">
         <option value="all">All Areas</option>
-        <!-- Populate with areas from Supabase -->
+        <!-- Populated by JS -->
       </select>
       <select id="assetTypeFilter" class="area-filter">
         <option value="all">All Types</option>
-        <!-- Populate with asset types -->
+        <!-- Populated by JS -->
       </select>
       <input type="search" id="inspectionSearch" placeholder="Search by Asset ID, User, etc...">
     </div>
@@ -48,7 +48,7 @@
     </div>
   </main>
   <div id="modal-root" style="display:none;"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="view-inspections.js"></script>
+  <!-- Firebase app initialization and Firestore are imported in your JS file -->
+  <script type="module" src="view-inspections.js"></script>
 </body>
 </html>
