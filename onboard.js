@@ -366,7 +366,6 @@ async function refreshClientDropdown(selectedId = null) {
     clientSelect.innerHTML += `<option value="${id}" ${id === selectedId ? 'selected' : ''}>${c.name || id}</option>`;
   });
 }
-document.addEventListener("DOMContentLoaded", () => {
   refreshClientDropdown();
   refreshAssetTypeDropdown();
 });
