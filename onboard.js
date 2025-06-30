@@ -2,7 +2,7 @@
 import { db, storage } from './firebase.js';
 import {
   collection, addDoc, setDoc, doc, getDocs, updateDoc, serverTimestamp
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Use Firestore as: db.collection(...), db.doc(...), etc.
