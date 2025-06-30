@@ -1,16 +1,16 @@
 import { db, storage } from './firebase.js';
 import {
-  collection, addDoc, setDoc, doc, getDocs, updateDoc, serverTimestamp
+  collection, addDoc, setDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-// Restrict to Nexus owners
+// ========== SECURITY ==========
 if (sessionStorage.role !== 'nexus') {
   document.body.innerHTML = '<div style="color:#fdd835;font-size:1.2em;margin:64px auto;max-width:380px;text-align:center;">Access Denied<br>This page is restricted to Nexus Owners.</div>';
   throw new Error("Not authorized");
 }
 
-// --------- Add Client -----------
+// ======= CLIENT CREATION =======
 const clientForm = document.getElementById('addClientForm');
 const clientNameInput = document.getElementById('clientName');
 const clientLogoInput = document.getElementById('clientLogo');
@@ -61,16 +61,15 @@ clientForm.onsubmit = async function (e) {
     return;
   }
   try {
-    // 1. Create client
     const clientRef = await addDoc(collection(db, "clients"), {
       name: clientName,
       created_at: serverTimestamp()
     });
     const clientId = clientRef.id;
-    // 2. Upload logo
+    // Upload logo
     const logoUrl = await uploadLogoAndGetUrl(logoFile, clientId);
     await updateDoc(doc(db, "clients", clientId), { logo_url: logoUrl });
-    // 3. Add admin user
+    // Add admin user
     await addDoc(collection(db, `clients/${clientId}/users`), {
       username: adminUsername,
       password: adminPassword,
@@ -132,56 +131,191 @@ function imageToWebp(img, maxW = 220, maxH = 120) {
   );
 }
 
-// -------- Global Asset Type Section ----------
-// Add asset type with frequency and multiline questions
+// ============ ASSET TYPE & FREQUENCY QUESTIONS =============
+const assetTypeSelect = document.getElementById('assetTypeSelect');
+const newAssetTypeInput = document.getElementById('newAssetTypeInput');
+const frequencySelect = document.getElementById('frequencySelect');
+const newFrequencyInput = document.getElementById('newFrequencyInput');
+const questionsList = document.getElementById('questionsList');
+const addQuestionBtn = document.getElementById('addQuestionBtn');
+const assetTypeQuestionForm = document.getElementById('assetTypeQuestionForm');
+const assetTypeQuestionMsg = document.getElementById('assetTypeQuestionMsg');
+const currentQuestionsContainer = document.getElementById('currentQuestionsContainer');
 
-const addAssetTypeForm = document.getElementById('addAssetTypeForm');
-const globalAssetTypeName = document.getElementById('globalAssetTypeName');
-const globalFrequencySelect = document.getElementById('globalFrequencySelect');
-const globalAssetTypeQuestions = document.getElementById('globalAssetTypeQuestions');
-const addAssetTypeMsg = document.getElementById('addAssetTypeMsg');
+// Track questions in local UI state
+let currentQuestions = [];
 
-addAssetTypeForm.onsubmit = async function(e) {
+function renderQuestionsList() {
+  questionsList.innerHTML = '';
+  currentQuestions.forEach((q, idx) => {
+    const row = document.createElement('div');
+    row.className = 'question-row';
+    row.innerHTML = `
+      <input type="text" value="${q}" placeholder="Inspection question" />
+      <button type="button" class="remove-q-btn" data-idx="${idx}">&times;</button>
+    `;
+    row.querySelector('input').oninput = e => currentQuestions[idx] = e.target.value;
+    row.querySelector('.remove-q-btn').onclick = () => {
+      currentQuestions.splice(idx, 1);
+      renderQuestionsList();
+    };
+    questionsList.appendChild(row);
+  });
+}
+function addEmptyQuestion() {
+  currentQuestions.push('');
+  renderQuestionsList();
+}
+addQuestionBtn.onclick = addEmptyQuestion;
+// Start with 5 empty lines
+for (let i = 0; i < 5; ++i) addEmptyQuestion();
+
+// If asset type/frequency changes, clear questions
+function resetQuestionsForm() {
+  currentQuestions = [];
+  for (let i = 0; i < 5; ++i) currentQuestions.push('');
+  renderQuestionsList();
+}
+assetTypeSelect.onchange = resetQuestionsForm;
+frequencySelect.onchange = resetQuestionsForm;
+newAssetTypeInput.oninput = resetQuestionsForm;
+newFrequencyInput.oninput = resetQuestionsForm;
+
+// -------- Asset Type + Frequency submit --------
+assetTypeQuestionForm.onsubmit = async function(e) {
   e.preventDefault();
-  addAssetTypeMsg.style.color = "#fdd835";
-  addAssetTypeMsg.textContent = "Adding asset type...";
-  const name = globalAssetTypeName.value.trim();
-  let frequency = globalFrequencySelect.value;
-  const questions = globalAssetTypeQuestions.value
-    .split('\n')
-    .map(q => q.trim())
-    .filter(q => q);
+  assetTypeQuestionMsg.style.color = "#fdd835";
+  assetTypeQuestionMsg.textContent = "Saving...";
 
-  if (!name || !frequency || questions.length === 0) {
-    addAssetTypeMsg.style.color = "#ff5050";
-    addAssetTypeMsg.textContent = "Please enter a name, select frequency, and add at least one question.";
+  // 1. Figure out asset type (existing or new)
+  let assetTypeName = newAssetTypeInput.value.trim() || assetTypeSelect.value;
+  if (!assetTypeName) {
+    assetTypeQuestionMsg.style.color = "#ff5050";
+    assetTypeQuestionMsg.textContent = "Asset type required.";
+    return;
+  }
+  // 2. Frequency
+  let freq = newFrequencyInput.value.trim() || frequencySelect.value;
+  if (!freq) {
+    assetTypeQuestionMsg.style.color = "#ff5050";
+    assetTypeQuestionMsg.textContent = "Frequency required.";
+    return;
+  }
+  // 3. Questions
+  const questions = currentQuestions.map(q => q.trim()).filter(q => q);
+  if (!questions.length) {
+    assetTypeQuestionMsg.style.color = "#ff5050";
+    assetTypeQuestionMsg.textContent = "Please enter at least one question.";
     return;
   }
 
   try {
-    // Store each frequency block as its own array in doc (e.g. questions_monthly)
-    let freqField = {};
-    freqField[`questions_${frequency}`] = questions;
-    await addDoc(collection(db, "assetTypes"), {
-      name,
-      frequencies: [frequency],
-      ...freqField,
-      created_at: serverTimestamp()
+    // Try to find existing assetType by name
+    let assetTypeDoc = null, assetTypeId = null;
+    const snap = await getDocs(collection(db, "assetTypes"));
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      if (d.name && d.name.toLowerCase() === assetTypeName.toLowerCase()) {
+        assetTypeDoc = docSnap;
+        assetTypeId = docSnap.id;
+      }
     });
-    addAssetTypeMsg.style.color = "#28e640";
-    addAssetTypeMsg.textContent = "Global asset type added!";
-    addAssetTypeForm.reset();
-    await refreshAssetTypeDropdown();
+
+    if (assetTypeDoc) {
+      // Update existing: set/merge frequency
+      let freqKey = `questions_${freq.toLowerCase()}`;
+      let update = {};
+      update[freqKey] = questions;
+      // Merge/append frequency to .frequencies array if not present
+      const atDocRef = doc(db, "assetTypes", assetTypeId);
+      const currDoc = (await getDoc(atDocRef)).data();
+      let newFreqArr = Array.isArray(currDoc.frequencies) ? currDoc.frequencies.slice() : [];
+      if (!newFreqArr.includes(freq)) newFreqArr.push(freq);
+      update['frequencies'] = newFreqArr;
+      await updateDoc(atDocRef, update);
+      assetTypeQuestionMsg.style.color = "#28e640";
+      assetTypeQuestionMsg.textContent = `Questions for "${assetTypeName}" (${freq}) updated!`;
+      await refreshAssetTypeDropdown(assetTypeId);
+    } else {
+      // Create new asset type doc
+      let docData = {
+        name: assetTypeName,
+        frequencies: [freq],
+      };
+      docData[`questions_${freq.toLowerCase()}`] = questions;
+      await addDoc(collection(db, "assetTypes"), docData);
+      assetTypeQuestionMsg.style.color = "#28e640";
+      assetTypeQuestionMsg.textContent = `Asset type "${assetTypeName}" created with ${freq} questions.`;
+      await refreshAssetTypeDropdown();
+    }
+    // After save, refresh current questions view
+    await showCurrentQuestions(assetTypeName);
+    resetQuestionsForm();
   } catch (err) {
-    addAssetTypeMsg.style.color = "#ff5050";
-    addAssetTypeMsg.textContent = "Error: " + (err.message || "Unknown error");
+    assetTypeQuestionMsg.style.color = "#ff5050";
+    assetTypeQuestionMsg.textContent = "Error: " + (err.message || "Unknown error");
   }
 };
 
-// -------- Assign Asset to Client ----------
+// ---- Show all questions for asset type ----
+async function showCurrentQuestions(assetTypeName) {
+  if (!assetTypeName) {
+    currentQuestionsContainer.innerHTML = '';
+    return;
+  }
+  // Find doc by name (case-insensitive)
+  let docSnap = null, docData = null;
+  const snap = await getDocs(collection(db, "assetTypes"));
+  snap.forEach(ds => {
+    let d = ds.data();
+    if (d.name && d.name.toLowerCase() === assetTypeName.toLowerCase()) {
+      docSnap = ds;
+      docData = d;
+    }
+  });
+  if (!docData) {
+    currentQuestionsContainer.innerHTML = '';
+    return;
+  }
+  let html = `<div class="question-list-title">Current Frequencies & Questions for "${assetTypeName}":</div>`;
+  for (const freq of docData.frequencies || []) {
+    let fq = freq.toLowerCase();
+    let qArr = docData[`questions_${fq}`];
+    if (Array.isArray(qArr)) {
+      html += `<div class="freq-tag">${freq}</div>`;
+      html += `<div class="current-questions-list">`;
+      qArr.forEach((q, i) => {
+        html += `<div style="color:#eee;margin-left:16px;">${i+1}. ${q}</div>`;
+      });
+      html += `</div>`;
+    }
+  }
+  currentQuestionsContainer.innerHTML = html;
+}
+// When assetType changes, show current
+assetTypeSelect.onchange = async () => {
+  let name = assetTypeSelect.value;
+  if (name) await showCurrentQuestions(name);
+};
+newAssetTypeInput.oninput = async () => {
+  let name = newAssetTypeInput.value.trim();
+  if (name) await showCurrentQuestions(name);
+};
+
+// Populate asset type dropdown
+async function refreshAssetTypeDropdown(selectedId = null) {
+  assetTypeSelect.innerHTML = '<option value="">Select asset type...</option>';
+  const snap = await getDocs(collection(db, "assetTypes"));
+  snap.forEach(docSnap => {
+    const at = docSnap.data();
+    const id = docSnap.id;
+    assetTypeSelect.innerHTML += `<option value="${at.name}">${at.name}</option>`;
+  });
+}
+
+// ========== ASSIGN ASSET TO CLIENT ===========
 const assignAssetForm = document.getElementById('assignAssetForm');
 const clientSelect = document.getElementById('clientSelect');
-const assetTypeSelect = document.getElementById('assetTypeSelect');
 const assetIdInput = document.getElementById('assetId');
 const assetLocationInput = document.getElementById('assetLocation');
 const serialNoInput = document.getElementById('serialNo');
@@ -193,13 +327,13 @@ assignAssetForm.onsubmit = async function(e) {
   assignAssetMsg.style.color = "#fdd835";
   assignAssetMsg.textContent = "Assigning asset...";
   const clientId = clientSelect.value;
-  const assetTypeId = assetTypeSelect.value;
+  let assetTypeName = assetTypeSelect.value || newAssetTypeInput.value.trim();
   const assetId = assetIdInput.value.trim();
   const location = assetLocationInput.value.trim();
   const serialNo = serialNoInput.value.trim();
   const assignedUser = assignedUserInput.value.trim();
 
-  if (!clientId || !assetTypeId || !assetId || !location) {
+  if (!clientId || !assetTypeName || !assetId || !location) {
     assignAssetMsg.style.color = "#ff5050";
     assignAssetMsg.textContent = "Fill out all required fields.";
     return;
@@ -207,7 +341,7 @@ assignAssetForm.onsubmit = async function(e) {
   try {
     await addDoc(collection(db, `clients/${clientId}/assets`), {
       asset_id: assetId,
-      asset_type_id: assetTypeId,
+      asset_type: assetTypeName,
       location,
       serial_no: serialNo,
       assigned_user: assignedUser,
@@ -222,7 +356,7 @@ assignAssetForm.onsubmit = async function(e) {
   }
 };
 
-// ------ Dropdown Populators -------
+// --------- Dropdowns for client list ----------
 async function refreshClientDropdown(selectedId = null) {
   clientSelect.innerHTML = '<option value="">Select client...</option>';
   const snap = await getDocs(collection(db, "clients"));
@@ -232,16 +366,7 @@ async function refreshClientDropdown(selectedId = null) {
     clientSelect.innerHTML += `<option value="${id}" ${id === selectedId ? 'selected' : ''}>${c.name || id}</option>`;
   });
 }
-async function refreshAssetTypeDropdown(selectedId = null) {
-  assetTypeSelect.innerHTML = '<option value="">Select asset type...</option>';
-  const snap = await getDocs(collection(db, "assetTypes"));
-  snap.forEach(docSnap => {
-    const at = docSnap.data();
-    const id = docSnap.id;
-    assetTypeSelect.innerHTML += `<option value="${id}" ${id === selectedId ? 'selected' : ''}>${at.name || id}</option>`;
-  });
-}
 
-// Initial dropdown population:
+// ===== Initial population =====
 refreshClientDropdown();
 refreshAssetTypeDropdown();
