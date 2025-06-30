@@ -133,8 +133,11 @@ function imageToWebp(img, maxW = 220, maxH = 120) {
 }
 
 // -------- Global Asset Type Section ----------
+// Add asset type with frequency and multiline questions
+
 const addAssetTypeForm = document.getElementById('addAssetTypeForm');
 const globalAssetTypeName = document.getElementById('globalAssetTypeName');
+const globalFrequencySelect = document.getElementById('globalFrequencySelect');
 const globalAssetTypeQuestions = document.getElementById('globalAssetTypeQuestions');
 const addAssetTypeMsg = document.getElementById('addAssetTypeMsg');
 
@@ -143,18 +146,26 @@ addAssetTypeForm.onsubmit = async function(e) {
   addAssetTypeMsg.style.color = "#fdd835";
   addAssetTypeMsg.textContent = "Adding asset type...";
   const name = globalAssetTypeName.value.trim();
-  const questions = globalAssetTypeQuestions.value.trim()
-    ? globalAssetTypeQuestions.value.split(',').map(q => q.trim()).filter(q => q)
-    : [];
-  if (!name) {
+  let frequency = globalFrequencySelect.value;
+  const questions = globalAssetTypeQuestions.value
+    .split('\n')
+    .map(q => q.trim())
+    .filter(q => q);
+
+  if (!name || !frequency || questions.length === 0) {
     addAssetTypeMsg.style.color = "#ff5050";
-    addAssetTypeMsg.textContent = "Enter asset type name.";
+    addAssetTypeMsg.textContent = "Please enter a name, select frequency, and add at least one question.";
     return;
   }
+
   try {
+    // Store each frequency block as its own array in doc (e.g. questions_monthly)
+    let freqField = {};
+    freqField[`questions_${frequency}`] = questions;
     await addDoc(collection(db, "assetTypes"), {
       name,
-      default_questions: questions,
+      frequencies: [frequency],
+      ...freqField,
       created_at: serverTimestamp()
     });
     addAssetTypeMsg.style.color = "#28e640";
