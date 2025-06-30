@@ -3,7 +3,9 @@ import { db, storage } from './firebase.js';
 import {
   collection, addDoc, setDoc, doc, getDocs, updateDoc, serverTimestamp
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// Use Firestore as: db.collection(...), db.doc(...), etc.
 
 // === SECURITY: Restrict page to Nexus Owners only ===
 if (sessionStorage.role !== 'nexus_owner') {
