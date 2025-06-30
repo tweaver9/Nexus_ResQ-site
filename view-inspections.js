@@ -1,24 +1,23 @@
-// 1. Supabase setup
-const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+// view-inspections.js (Firebase version)
+import { db } from './firebase.js';
+import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from "firebase/firestore";
 
-// 2. Get tenant_id from sessionStorage
+// 1. Get tenant_id from sessionStorage
 const tenantId = sessionStorage.getItem('tenant_id');
 
-// 3. DOM references
+// 2. DOM references
 const inspectionsTableBody = document.getElementById('inspectionsTableBody');
 const noInspectionsMsg = document.getElementById('noInspectionsMsg');
 const areaFilter = document.getElementById('areaFilter');
 const assetTypeFilter = document.getElementById('assetTypeFilter');
 const searchInput = document.getElementById('inspectionSearch');
 
-// 4. State for filters (JS only)
+// 3. State for filters
 let inspections = [];
 let areas = [];
 let assetTypes = [];
 
-// 5. On load: fetch all data
+// 4. On load: fetch all data
 window.addEventListener('DOMContentLoaded', async () => {
   if (!tenantId) {
     window.location.href = "login.html";
@@ -30,59 +29,62 @@ window.addEventListener('DOMContentLoaded', async () => {
   attachFilterListeners();
 });
 
-// 6. Fetch areas
+// 5. Fetch areas
 async function loadAreas() {
-  const { data } = await supabase
-    .from('areas')
-    .select('id, name')
-    .eq('tenant_id', tenantId)
-    .order('name', { ascending: true });
-  if (data) {
-    areas = data;
-    areaFilter.innerHTML = `<option value="all">All Areas</option>` +
-      areas.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
-  }
+  areas = [];
+  const areaSnap = await getDocs(collection(db, `clients/${tenantId}/locations`));
+  areaSnap.forEach(docSnap => {
+    const area = docSnap.data();
+    areas.push({ id: docSnap.id, name: area.name });
+  });
+  areaFilter.innerHTML = `<option value="all">All Areas</option>` +
+    areas.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
 }
 
-// 7. Fetch asset types
+// 6. Fetch asset types
 async function loadAssetTypes() {
-  const { data } = await supabase
-    .from('asset_types')
-    .select('id, name')
-    .order('name', { ascending: true });
-  if (data) {
-    assetTypes = data;
-    assetTypeFilter.innerHTML = `<option value="all">All Types</option>` +
-      assetTypes.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
-  }
+  assetTypes = [];
+  const typeSnap = await getDocs(collection(db, `clients/${tenantId}/assetTypes`));
+  typeSnap.forEach(docSnap => {
+    const type = docSnap.data();
+    assetTypes.push({ id: docSnap.id, name: type.name });
+  });
+  assetTypeFilter.innerHTML = `<option value="all">All Types</option>` +
+    assetTypes.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
 }
 
-// 8. Fetch inspections
+// 7. Fetch inspections
 async function loadInspections() {
-  const { data } = await supabase
-    .from('inspections')
-    .select(`
-      id, created_at, asset_id, asset_type_id, area_id, inspected_by, status, answers, comments, location, hydro_due
-    `)
-    .eq('tenant_id', tenantId)
-    .order('created_at', { ascending: false });
-  inspections = data || [];
+  inspections = [];
+  const q = query(
+    collection(db, `clients/${tenantId}/inspections`),
+    orderBy('timestamp', 'desc'),
+    limit(100)
+  );
+  const snap = await getDocs(q);
+  snap.forEach(docSnap => {
+    const d = docSnap.data();
+    inspections.push({
+      ...d,
+      id: docSnap.id,
+      timestamp: d.timestamp ? new Date(d.timestamp) : null
+    });
+  });
   renderInspections();
 }
 
-// 9. Render function
+// 8. Render function
 function renderInspections() {
   const areaVal = areaFilter.value;
   const typeVal = assetTypeFilter.value;
   const searchVal = searchInput.value.toLowerCase();
 
   let filtered = inspections.filter(row => {
-    if (areaVal !== "all" && row.area_id != areaVal) return false;
-    if (typeVal !== "all" && row.asset_type != typeVal) return false;
+    if (areaVal !== "all" && row.locationId != areaVal) return false;
+    if (typeVal !== "all" && row.assetTypeId != typeVal) return false;
     if (searchVal) {
-      // Search in asset id, inspected_by, or comments
       return (
-        (row.asset_id && row.asset_id.toLowerCase().includes(searchVal)) ||
+        (row.assetId && row.assetId.toLowerCase().includes(searchVal)) ||
         (row.inspected_by && row.inspected_by.toLowerCase().includes(searchVal)) ||
         (row.comments && row.comments.toLowerCase().includes(searchVal))
       );
@@ -98,25 +100,25 @@ function renderInspections() {
   noInspectionsMsg.style.display = "none";
 
   filtered.forEach(row => {
-    const areaName = (areas.find(a => a.id == row.area_id) || {}).name || "—";
-    const typeName = (assetTypes.find(t => t.id == row.asset_type_id) || {}).name || "—";
+    const areaName = (areas.find(a => a.id == row.locationId) || {}).name || "—";
+    const typeName = (assetTypes.find(t => t.id == row.assetTypeId) || {}).name || "—";
     let statusBadge = '';
     if (row.status === "passed") statusBadge = `<span class="status-badge status-passed">Passed</span>`;
     else if (row.status === "failed") statusBadge = `<span class="status-badge status-failed">Failed</span>`;
     else if (row.status === "out_of_service") statusBadge = `<span class="status-badge status-outofservice">Out of Service</span>`;
     else if (row.status === "emergency_ok") statusBadge = `<span class="status-badge status-emergencyok">Emerg. OK</span>`;
-    else statusBadge = `<span class="status-badge">${row.status}</span>`;
+    else statusBadge = `<span class="status-badge">${row.status || ''}</span>`;
 
     inspectionsTableBody.insertAdjacentHTML('beforeend', `
       <tr>
-        <td>${row.created_at ? new Date(row.created_at).toLocaleString() : "—"}</td>
-        <td>${row.asset_id || "—"}</td>
+        <td>${row.timestamp ? row.timestamp.toLocaleString() : "—"}</td>
+        <td>${row.assetId || "—"}</td>
         <td>${typeName}</td>
         <td>${areaName}</td>
         <td>${row.inspected_by || "—"}</td>
         <td>${statusBadge}</td>
         <td>
-          <button class="actions-btn" onclick="viewInspectionDetails('${row.id}')">
+          <button class="actions-btn" onclick="window.viewInspectionDetails('${row.id}')">
             <span style="font-size:1.2em;" title="View Details">&#128269;</span>
           </button>
         </td>
@@ -126,23 +128,20 @@ function renderInspections() {
   });
 }
 
-// --- Modal/Details popup for Results button ---
+// 9. Modal/Details popup for Results button
 window.viewInspectionDetails = async function(inspectionId) {
   // Fetch the full inspection details (with answers)
-  const { data: inspection, error } = await supabase
-    .from('inspections')
-    .select('*')
-    .eq('id', inspectionId)
-    .single();
-
-  if (error || !inspection) {
+  const docRef = doc(db, `clients/${tenantId}/inspections`, inspectionId);
+  const docSnap = await getDoc(docRef);
+  if (!docSnap.exists()) {
     alert("Could not load inspection details.");
     return;
   }
+  const inspection = docSnap.data();
 
   // Lookup area and asset type names
-  const areaName = (areas.find(a => a.id == inspection.area_id) || {}).name || "—";
-  const typeName = (assetTypes.find(t => t.id == inspection.asset_type) || {}).name || "—";
+  const areaName = (areas.find(a => a.id == inspection.locationId) || {}).name || "—";
+  const typeName = (assetTypes.find(t => t.id == inspection.assetTypeId) || {}).name || "—";
   const answers = inspection.answers || [];
 
   // Build modal "driver's license" style HTML
@@ -178,11 +177,11 @@ window.viewInspectionDetails = async function(inspectionId) {
         </div>
         <div class="asset-title">${typeName}</div>
         <div class="info-list">
-          <div><b>Asset ID:</b> ${inspection.asset_id || "—"}</div>
+          <div><b>Asset ID:</b> ${inspection.assetId || "—"}</div>
           <div><b>Location:</b> ${inspection.location || "—"}</div>
           <div><b>Hydro Due:</b> ${inspection.hydro_due || "—"}</div>
           <div><b>Inspected By:</b> ${inspection.inspected_by || "—"}</div>
-          <div><b>Date/Time:</b> ${inspection.created_at ? new Date(inspection.created_at).toLocaleString() : "—"}</div>
+          <div><b>Date/Time:</b> ${inspection.timestamp ? new Date(inspection.timestamp).toLocaleString() : "—"}</div>
           <div><b>Area:</b> ${areaName}</div>
           <div><b>Status:</b> <span style="color:#fdd835;">${inspection.status}</span></div>
           <div><b>Comments:</b> ${inspection.comments || ""}</div>
@@ -224,11 +223,11 @@ window.viewInspectionDetails = async function(inspectionId) {
 function printInspectionCard(inspection, areaName, typeName) {
   const assetImageSrc = getAssetTypeImage(typeName);
   const info = [
-    `<div><b>Asset ID:</b> ${inspection.asset_id || "—"}</div>`,
+    `<div><b>Asset ID:</b> ${inspection.assetId || "—"}</div>`,
     `<div><b>Location:</b> ${inspection.location || "—"}</div>`,
     `<div><b>Hydro Due:</b> ${inspection.hydro_due || "—"}</div>`,
     `<div><b>Inspected By:</b> ${inspection.inspected_by || "—"}</div>`,
-    `<div><b>Date/Time:</b> ${inspection.created_at ? new Date(inspection.created_at).toLocaleString() : "—"}</div>`,
+    `<div><b>Date/Time:</b> ${inspection.timestamp ? new Date(inspection.timestamp).toLocaleString() : "—"}</div>`,
     `<div><b>Area:</b> ${areaName}</div>`,
     `<div><b>Status:</b> <span style="color:#fdd835;">${inspection.status}</span></div>`,
     `<div><b>Comments:</b> ${inspection.comments || ""}</div>`
@@ -266,7 +265,7 @@ function printInspectionCard(inspection, areaName, typeName) {
   setTimeout(() => win.print(), 400);
 }
 
-// Utility to pick asset type image/icon (swap URLs for your own)
+// Utility to pick asset type image/icon
 function getAssetTypeImage(typeName) {
   if (!typeName) return "";
   if (typeName.toLowerCase().includes('hydrant')) return "https://cdn.jsdelivr.net/gh/tweaver9/Nexus_ResQ-site/icons/hydrant.png";
