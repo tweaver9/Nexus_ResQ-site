@@ -368,4 +368,3 @@ async function refreshClientDropdown(selectedId = null) {
   
   refreshClientDropdown();
   refreshAssetTypeDropdown();
-);
