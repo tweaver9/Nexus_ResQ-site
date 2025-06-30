@@ -62,7 +62,7 @@ async function loadInspections() {
   const { data } = await supabase
     .from('inspections')
     .select(`
-      id, created_at, asset_id, asset_type, area_id, inspected_by, status, answers, comments, location, hydro_due
+      id, created_at, asset_id, asset_type_id, area_id, inspected_by, status, answers, comments, location, hydro_due
     `)
     .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false });
@@ -99,7 +99,7 @@ function renderInspections() {
 
   filtered.forEach(row => {
     const areaName = (areas.find(a => a.id == row.area_id) || {}).name || "—";
-    const typeName = (assetTypes.find(t => t.id == row.asset_type) || {}).name || "—";
+    const typeName = (assetTypes.find(t => t.id == row.asset_type_id) || {}).name || "—";
     let statusBadge = '';
     if (row.status === "passed") statusBadge = `<span class="status-badge status-passed">Passed</span>`;
     else if (row.status === "failed") statusBadge = `<span class="status-badge status-failed">Failed</span>`;
