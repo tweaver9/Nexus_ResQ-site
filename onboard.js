@@ -366,7 +366,7 @@ async function refreshClientDropdown(selectedId = null) {
     clientSelect.innerHTML += `<option value="${id}" ${id === selectedId ? 'selected' : ''}>${c.name || id}</option>`;
   });
 }
-
-// ===== Initial population =====
-refreshClientDropdown();
-refreshAssetTypeDropdown();
+document.addEventListener("DOMContentLoaded", () => {
+  refreshClientDropdown();
+  refreshAssetTypeDropdown();
+});
