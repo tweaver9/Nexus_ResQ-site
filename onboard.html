@@ -2,178 +2,56 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Nexus Res-Q | Onboard Clients</title>
+  <title>Nexus Res-Q | Onboarding</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="CSS/dashboard.css">
-  <style>
-    body {
-      margin: 0;
-      background: #0d1b2a;
-      color: #f2f2f2;
-      font-family: 'Oswald', sans-serif;
-    }
-    .onboard-wrapper {
-      display: flex;
-      min-height: 100vh;
-      max-width: 1100px;
-      margin: 0 auto;
-      gap: 0;
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 6px 48px 0 #0a1322dd;
-      margin-top: 40px;
-      background: #16243c;
-    }
-    .onboard-left, .onboard-right {
-      flex: 1 1 0;
-      padding: 38px 32px 32px 32px;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      min-width: 320px;
-    }
-    .onboard-left {
-      border-right: 1.5px solid #223052;
-      background: #182c4c;
-    }
-    .onboard-right {
-      background: #192841;
-    }
-    .onboard-left h2, .onboard-right h2 {
-      color: #fdd835;
-      font-size: 2em;
-      margin-bottom: 16px;
-      font-weight: 600;
-    }
-    .onboard-form label {
-      font-size: 1.07em;
-      margin-top: 13px;
-      margin-bottom: 4px;
-      display: block;
-      font-weight: 400;
-    }
-    .onboard-form input[type="text"], .onboard-form input[type="file"], .onboard-form input[type="password"] {
-      width: 100%;
-      font-size: 1.06em;
-      padding: 7px 12px;
-      border-radius: 7px;
-      background: #223052;
-      border: none;
-      color: #fff;
-      margin-bottom: 10px;
-      outline: none;
-      margin-top: 2px;
-    }
-    .onboard-form button, .onboard-btn {
-      background: #fdd835;
-      color: #142b47;
-      font-weight: 700;
-      border: none;
-      border-radius: 8px;
-      font-size: 1.09em;
-      padding: 10px 22px;
-      margin-top: 18px;
-      cursor: pointer;
-      transition: background 0.16s, color 0.16s;
-    }
-    .onboard-form button:disabled {
-      background: #888;
-      color: #eee;
-    }
-    #onboardCreds {
-      background: #223052;
-      color: #fdd835;
-      margin-top: 16px;
-      border-radius: 8px;
-      padding: 18px 12px;
-      text-align: left;
-      font-size: 1.08em;
-      display: none;
-      word-break: break-all;
-    }
-    .onboard-tools-title {
-      color: #fdd835;
-      font-size: 1.3em;
-      font-weight: 600;
-      margin-bottom: 14px;
-      letter-spacing: 1px;
-    }
-    .onboard-dropdown {
-      width: 100%;
-      background: #223052;
-      color: #f2f2f2;
-      border: none;
-      border-radius: 7px;
-      font-size: 1.05em;
-      padding: 8px 16px;
-      margin-bottom: 16px;
-      margin-top: 0;
-      outline: none;
-    }
-    .onboard-btn {
-      width: 100%;
-      margin-bottom: 14px;
-      box-shadow: 0 2px 12px #1e274733;
-    }
-    #onboardFormsContainer {
-      margin-top: 26px;
-    }
-    @media (max-width: 900px) {
-      .onboard-wrapper {
-        flex-direction: column;
-        min-width: 0;
-      }
-      .onboard-left, .onboard-right {
-        min-width: 0;
-        border-right: none;
-        border-bottom: 1.5px solid #223052;
-        padding: 26px 12px;
-      }
-      .onboard-right {
-        border-bottom: none;
-      }
-    }
-  </style>
 </head>
 <body>
-  <div class="onboard-wrapper">
-    <!-- LEFT: Add Client -->
-    <div class="onboard-left">
-      <h2>Add Client</h2>
-      <form id="addClientForm" class="onboard-form" autocomplete="off">
+  <div class="onboard-container" style="display:flex;max-width:1200px;margin:40px auto;">
+    <!-- LEFT: ADD CLIENT -->
+    <section style="flex:1 1 360px;background:#142b47;border-radius:14px;padding:32px 24px;margin-right:30px;">
+      <h2 style="color:#fdd835;">Add Client</h2>
+      <form id="addClientForm" autocomplete="off" enctype="multipart/form-data">
         <label>Client Name</label>
-        <input id="clientName" type="text" required maxlength="42" placeholder="e.g. Acme Inc.">
-        <label>Logo (WebP, PNG, or JPG)</label>
+        <input id="clientName" type="text" required>
+        <label>Logo</label>
         <input id="clientLogo" type="file" accept="image/*" required>
         <label>Admin First Name</label>
-        <input id="adminFirstName" type="text" required maxlength="32" autocomplete="off" style="background:#202a44;">
+        <input id="adminFirstName" type="text" required>
         <label>Admin Last Name</label>
-        <input id="adminLastName" type="text" required maxlength="32" autocomplete="off">
+        <input id="adminLastName" type="text" required>
         <label>Admin Username</label>
-        <input id="adminUsername" type="text" required maxlength="38" autocomplete="off" readonly style="background:#202a44;">
-        <label>Default Password</label>
-        <input id="adminPassword" type="text" required maxlength="48" autocomplete="off" readonly style="background:#202a44;">
-        <button type="submit" id="submitClientBtn">Create Client</button>
-        <div class="form-message" id="clientFormMsg"></div>
+        <input id="adminUsername" type="text" readonly>
+        <label>Admin Default Password</label>
+        <input id="adminPassword" type="text" readonly>
+        <button type="submit" id="submitClientBtn" class="onboard-btn">Create Client</button>
+        <div id="clientFormMsg" style="margin-top:12px;"></div>
+        <div id="onboardCreds" style="margin-top:12px;display:none;"></div>
       </form>
-      <div id="onboardCreds"></div>
-    </div>
-
-    <!-- RIGHT: Onboarding Tools -->
-    <div class="onboard-right">
-      <div class="onboard-tools-title">Onboarding Tools</div>
-      <label for="onboardClientSelect" style="font-weight:600;">Select Client</label>
-      <select id="onboardClientSelect" class="onboard-dropdown">
-        <!-- Populated by JS -->
-      </select>
-      <button class="onboard-btn" id="addLocationBtn" disabled>Add Location/Zone/Area</button>
-      <button class="onboard-btn" id="addAssetTypeBtn" disabled>Add Asset Type</button>
-      <button class="onboard-btn" id="addRoleBtn" disabled>Add Role</button>
-      <button class="onboard-btn" id="addAssetBtn" disabled>Add Asset</button>
-      <button class="onboard-btn" id="moveAssetBtn" disabled>Move Asset</button>
-      <div id="onboardFormsContainer"></div>
-    </div>
+    </section>
+    <!-- RIGHT: ADD/ASSIGN ASSET TO CLIENT -->
+    <section style="flex:1 1 480px;background:#142b47;border-radius:14px;padding:32px 24px;">
+      <h2 style="color:#fdd835;">Assign Asset to Client</h2>
+      <form id="assignAssetForm" autocomplete="off">
+        <label>Client</label>
+        <select id="clientSelect" required></select>
+        <label>Asset Type</label>
+        <select id="assetTypeSelect" required></select>
+        <label>Asset ID</label>
+        <input id="assetId" type="text" required>
+        <label>Location</label>
+        <input id="assetLocation" type="text" required>
+        <label>Serial Number (optional)</label>
+        <input id="serialNo" type="text">
+        <label>Assigned User (optional)</label>
+        <input id="assignedUser" type="text">
+        <label>Supplemental Questions <span style="font-size:0.88em;color:#aaa">(optional, comma separated)</span></label>
+        <input id="supplementalQuestions" type="text" placeholder="e.g. Is cabinet locked?, Is tag present?">
+        <button type="submit" class="onboard-btn">Add Asset</button>
+        <div id="assignAssetMsg" style="margin-top:12px;"></div>
+      </form>
+    </section>
   </div>
   <script type="module" src="onboard.js"></script>
 </body>
