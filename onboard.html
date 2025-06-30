@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Onboarding! | Nexus Res-Q</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="CSS/dashboard.css">
+  <style>
+    body {
+      background: #0d1b2a;
+      color: #f2f2f2;
+      font-family: 'Oswald', sans-serif;
+      margin: 0;
+      min-height: 100vh;
+    }
+    .onboard-main {
+      display: flex;
+      flex-direction: row;
+      gap: 0;
+      min-height: 100vh;
+    }
+    .onboard-left {
+      flex: 0 0 370px;
+      background: #142b47;
+      padding: 46px 30px 36px 36px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      box-shadow: 2px 0 24px #000a;
+      border-right: 2px solid #223052;
+    }
+    .onboard-right {
+      flex: 1;
+      padding: 46px 50px 36px 50px;
+      background: #0d1b2a;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .form-section-title {
+      color: #fdd835;
+      font-size: 1.35em;
+      font-weight: 600;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+    }
+    .onboard-btn {
+      background: #fdd835;
+      color: #142b47;
+      font-weight: 700;
+      font-size: 1.08em;
+      border: none;
+      border-radius: 7px;
+      padding: 12px 24px;
+      margin: 0 14px 14px 0;
+      cursor: pointer;
+      transition: background 0.16s;
+    }
+    .onboard-btn:disabled {
+      background: #888;
+      color: #eee;
+      cursor: not-allowed;
+    }
+    .onboard-steps {
+      font-size: 0.96em;
+      color: #ccc;
+      margin-bottom: 22px;
+      padding-left: 0;
+    }
+    .onboard-steps li {
+      margin-bottom: 7px;
+      list-style: disc inside;
+    }
+    .credentials-box {
+      background: #223052;
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 7px;
+      margin-top: 14px;
+      font-size: 1.06em;
+      box-shadow: 0 2px 12px #0003;
+      word-break: break-all;
+    }
+    @media (max-width: 900px) {
+      .onboard-main { flex-direction: column; }
+      .onboard-left, .onboard-right { min-width: 0; padding: 26px 12px; }
+      .onboard-left { border-right: none; border-bottom: 2px solid #223052; }
+    }
+  </style>
+</head>
+<body>
+  <div class="onboard-main">
+    <!-- LEFT: Add Client Form -->
+    <div class="onboard-left">
+      <div class="form-section-title">Add Client</div>
+      <ul class="onboard-steps">
+        <li>Generate unique Client ID</li>
+        <li>Enter Client Name</li>
+        <li>Upload Logo (auto-resized to webp)</li>
+        <li>Admin First &amp; Last Name</li>
+        <li>Auto-username + default password</li>
+        <li>Submit to create client</li>
+      </ul>
+      <form id="addClientForm" autocomplete="off">
+        <label>Client Name</label>
+        <input type="text" id="clientName" maxlength="48" required placeholder="e.g. Acme Industrial">
+        <label>Logo Upload</label>
+        <input type="file" id="clientLogo" accept="image/*" required>
+        <label>Admin First Name</label>
+        <input type="text" id="adminFirstName" maxlength="28" required>
+        <label>Admin Last Name</label>
+        <input type="text" id="adminLastName" maxlength="28" required>
+        <label>Admin Username</label>
+        <input type="text" id="adminUsername" readonly style="background:#333; color:#ffb300;">
+        <label>Default Password</label>
+        <input type="text" id="adminPassword" readonly style="background:#333; color:#ffb300;">
+        <button class="onboard-btn" type="submit" id="submitClientBtn">Create Client</button>
+        <div id="clientFormMsg" style="margin-top:10px;color:#fdd835;min-height:22px;"></div>
+      </form>
+      <div id="onboardCreds" class="credentials-box" style="display:none;">
+        <!-- After submit: show credentials here -->
+      </div>
+    </div>
+    <!-- RIGHT: Onboarding tools -->
+    <div class="onboard-right">
+      <div class="form-section-title">Client Onboarding Tools</div>
+      <div style="margin-bottom:16px;">
+        <label>Select Client:&nbsp;
+          <select id="onboardClientSelect" style="font-size:1.07em;padding:6px 18px;border-radius:7px;">
+            <option value="">(Select or create client...)</option>
+            <!-- Populated by JS -->
+          </select>
+        </label>
+      </div>
+      <div style="margin-bottom:18px;">
+        <button class="onboard-btn" id="addLocationBtn" disabled>Add Location/Zone/Area</button>
+        <button class="onboard-btn" id="addAssetTypeBtn" disabled>Add Asset Type</button>
+        <button class="onboard-btn" id="addRoleBtn" disabled>Add Role</button>
+        <button class="onboard-btn" id="addAssetBtn" disabled>Add Asset</button>
+        <button class="onboard-btn" id="moveAssetBtn" disabled>Move Asset</button>
+      </div>
+      <div id="onboardFormsContainer">
+        <!-- Modal or form for add location, asset type, role, asset, move asset will appear here -->
+      </div>
+    </div>
+  </div>
+  <script type="module" src="onboard.js"></script>
+</body>
+</html>
