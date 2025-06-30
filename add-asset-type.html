@@ -46,38 +46,6 @@
       <a href="add-question.html" style="color:#fff; text-decoration:underline; font-size:0.97em;">Add Questions &rarr;</a>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-    document.getElementById('addTypeForm').onsubmit = async function(e) {
-      e.preventDefault();
-      const msg = document.getElementById('formTypeMsg');
-      msg.style.color = "#fdd835";
-      msg.textContent = "Adding...";
-      document.getElementById('submitTypeBtn').disabled = true;
-
-      const name = document.getElementById('typeName').value.trim();
-
-      if (!name) {
-        msg.style.color = "#ff5050";
-        msg.textContent = "Please enter a type name.";
-        document.getElementById('submitTypeBtn').disabled = false;
-        return;
-      }
-      const { error } = await supabase.from('asset_types').insert([{ name }]);
-      if (error) {
-        msg.style.color = "#ff5050";
-        msg.textContent = "Error: " + (error.message || "Unknown error");
-      } else {
-        msg.style.color = "#28e640";
-        msg.textContent = "Asset type added!";
-        this.reset();
-      }
-      document.getElementById('submitTypeBtn').disabled = false;
-    }
-  </script>
+  <script type="module" src="add-asset-type.js"></script>
 </body>
 </html>
