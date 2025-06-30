@@ -365,7 +365,7 @@ async function refreshClientDropdown(selectedId = null) {
     const id = docSnap.id;
     clientSelect.innerHTML += `<option value="${id}" ${id === selectedId ? 'selected' : ''}>${c.name || id}</option>`;
   });
-}
+  
   refreshClientDropdown();
   refreshAssetTypeDropdown();
 });
