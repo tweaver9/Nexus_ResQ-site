@@ -1,191 +1,154 @@
-document.addEventListener('DOMContentLoaded', () => {
-  // --- Multi-tenant session check ---
-  const username = sessionStorage.getItem('username');
-  const role = sessionStorage.getItem('role');
-  const tenantId = sessionStorage.getItem('tenant_id');
+// dashboard.js
+import { db } from './firebase.js';
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
+  doc,
+  getDoc
+} from "firebase/firestore";
 
-  if (!username || !role || !tenantId) {
-    window.location.href = "login.html";
-    return;
+// ---------- 1. DOM Elements ----------
+const logoImg = document.getElementById('client-logo');
+const dashboardTitle = document.getElementById('dashboard-title');
+const welcomeMessage = document.getElementById('welcome-message');
+const logoutLink = document.getElementById('logout-link');
+
+const activityList = document.getElementById('activity-list');
+const inspectionList = document.getElementById('inspection-list');
+const failedAssetsList = document.getElementById('failed-assets-list');
+
+// ---------- 2. Session Data ----------
+const clientId = sessionStorage.getItem('tenant_id');
+const username = sessionStorage.getItem('username');
+const role = sessionStorage.getItem('role');
+
+// ---------- 3. Redirect if not logged in ----------
+if (!clientId || !username) {
+  window.location.href = "login.html";
+}
+
+// ---------- 4. Load client info (logo, name) ----------
+async function loadClientInfo() {
+  try {
+    const clientDocRef = doc(db, "clients", clientId);
+    const clientSnap = await getDoc(clientDocRef);
+    if (clientSnap.exists()) {
+      const client = clientSnap.data();
+      if (client.logo_url) logoImg.src = client.logo_url;
+      if (client.name) dashboardTitle.textContent = client.name + " Dashboard";
+    } else {
+      dashboardTitle.textContent = "Client Dashboard";
+    }
+  } catch {
+    dashboardTitle.textContent = "Client Dashboard";
   }
+}
 
-  // --- Supabase setup ---
-  const { createClient } = supabase;
-  const supabaseUrl = 'https://vainwbdealnttojooghw.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaW53YmRlYWxudHRvam9vZ2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTc3MjAsImV4cCI6MjA2NTkzMzcyMH0.xewtWdupuo6TdQBHwGsd1_Jj6v5nmLbVsv_rc-RqqAU';
-  const supabaseClient = createClient(supabaseUrl, supabaseKey);
+// ---------- 5. Welcome Message ----------
+welcomeMessage.textContent = `Welcome, ${username}!`;
 
-  // --- DOM elements ---
-  const syncStatusEl = document.getElementById('sync-status');
-  const lastSyncEl = document.getElementById('last-sync');
-  const progressSummaryEl = document.getElementById('progress-summary');
-  const zoneGridEl = document.querySelector('.zone-grid');
-  const activityLogEl = document.getElementById('activity-log');
-  const searchInputEl = document.getElementById('search-input');
-  const logoutBtn = document.getElementById('logout-btn');
-  const clientLogoEl = document.getElementById('client-logo');
-  const dashboardTitleEl = document.getElementById('dashboard-title');
-  const addClientBtn = document.getElementById('add-client-btn');
-  const adminToolsDiv = document.getElementById('admin-tools'); // New: admin button container
-  const addTypeBtn = document.getElementById('add-type-btn');
-  const addQuestionBtn = document.getElementById('add-question-btn');
-  console.log("About to fetch client info for tenantId:", tenantId);
+// ---------- 6. Log Out Button ----------
+logoutLink.addEventListener('click', () => {
+  sessionStorage.clear();
+  window.location.href = "login.html";
+});
 
-  // --- Branding: Fetch client info by tenantId and set logo/color ---
-  (async () => {
-    const { data: client, error: clientErr } = await supabaseClient
-      .from('clients')
-      .select('id, logo_url, name')
-      .eq('id', tenantId)
-      .single();
-    console.log("Fetched client:", client, "Error:", clientErr);
+// ---------- 7. Load Recent Activity (last 5) ----------
+async function loadRecentActivity() {
+  try {
+    // Example: 'activity' subcollection under client
+    const actionsCol = collection(db, `clients/${clientId}/activity`);
+    const q = query(actionsCol, orderBy("timestamp", "desc"), limit(5));
+    const snapshot = await getDocs(q);
 
-    // Set logo (or hide if not found)
-    if (client && client.logo_url && clientLogoEl) {
-      clientLogoEl.src = client.logo_url;
-      clientLogoEl.alt = `${client.name} Logo`;
-      clientLogoEl.style.display = "";
-    } else if (clientLogoEl) {
-      clientLogoEl.style.display = "none";
-    }
-
-    // Set dashboard title
-    if (client && client.name && dashboardTitleEl) {
-      dashboardTitleEl.textContent = `${client.name} Dashboard`;
-    }
-
-    // --- Show/hide Add Client button for Nexus only ---
-    const NEXUS_UUID = '6dd68681-bed6-40b2-88d4-f9b3cf36ad9e';
-    if (addClientBtn) {
-      if (client && client.id === NEXUS_UUID && role === 'admin') {
-        addClientBtn.style.display = '';
-      } else {
-        addClientBtn.style.display = 'none';
-      }
-    }
-
-    // --- Show Nexus admin tools only for Nexus admin ---
-    if (adminToolsDiv) {
-      if (client && client.id === NEXUS_UUID && role === 'admin') {
-        adminToolsDiv.style.display = 'flex';
-      } else {
-        adminToolsDiv.style.display = 'none';
-      }
-    }
-
-    // --- Welcome message ---
-    const welcomeEl = document.getElementById("welcome-message");
-    if (welcomeEl) {
-      welcomeEl.innerHTML = `Welcome, <b>${username}</b> <span class="role-indicator">(${role})</span>`;
-    }
-  })();
-
-  // --- Initialize dashboard ---
-  initDashboard();
-  if (searchInputEl) searchInputEl.addEventListener('input', handleSearch);
-
-  // --- FUNCTIONS ---
-
-  async function initDashboard() {
-    await updateSyncStatus();
-    await loadZones();
-    await loadActivityLog();
-  }
-
-  // Update sync status and last sync timestamp
-  async function updateSyncStatus() {
-    if (!syncStatusEl || !lastSyncEl) return;
-    const online = navigator.onLine;
-    syncStatusEl.textContent = online ? 'Sync: Online' : 'Sync: Offline';
-    const lastSync = localStorage.getItem('lastSync') || 'Never';
-    lastSyncEl.textContent = `Last Sync: ${lastSync}`;
-  }
-
-  // Load zone cards - filtered by tenant_id!
-  async function loadZones() {
-    if (!zoneGridEl || !progressSummaryEl) return;
-    const { data: zones, error } = await supabaseClient
-      .from('zones')
-      .select('id,name,total_assets,completed_assets')
-      .eq('tenant_id', tenantId)
-      .order('name', { ascending: true });
-
-    if (error) {
-      console.error('Error loading zones:', error);
+    activityList.innerHTML = '';
+    if (snapshot.empty) {
+      activityList.innerHTML = `<div class="dashboard-placeholder">No recent activity.</div>`;
       return;
     }
-
-    zoneGridEl.innerHTML = '';
-    let grandTotal = 0, grandCompleted = 0;
-
-    if (zones) {
-      zones.forEach(zone => {
-        grandTotal += zone.total_assets;
-        grandCompleted += zone.completed_assets;
-
-        const card = document.createElement('div');
-        card.className = 'zone-card';
-        card.innerHTML = `
-          <h3>${zone.name}</h3>
-          <p>${zone.completed_assets}/${zone.total_assets} Complete</p>
-          <button onclick="startInspection('${zone.id}')">Start Inspection</button>
-        `;
-        zoneGridEl.appendChild(card);
-      });
-    }
-
-    // Update overall progress
-    progressSummaryEl.textContent = ` ${grandCompleted}/${grandTotal} Complete`;
+    snapshot.forEach(doc => {
+      const a = doc.data();
+      const line = document.createElement('div');
+      line.className = "activity-row";
+      line.textContent = `${a.user || 'System'}: ${a.action || 'Action'} (${a.timestamp ? new Date(a.timestamp).toLocaleString() : ''})`;
+      activityList.appendChild(line);
+    });
+  } catch (e) {
+    activityList.innerHTML = `<div class="dashboard-placeholder">Error loading activity.</div>`;
   }
+}
 
-  // Load recent activity - filtered by tenant_id!
-  async function loadActivityLog() {
-    if (!activityLogEl) return;
-    const { data: logs, error } = await supabaseClient
-      .from('activity_log')
-      .select('id,message,created_at')
-      .eq('tenant_id', tenantId)
-      .order('created_at', { ascending: false })
-      .limit(10);
+// ---------- 8. Load Most Recent Inspections (last 5) ----------
+async function loadRecentInspections() {
+  try {
+    const inspectionsCol = collection(db, `clients/${clientId}/inspections`);
+    const q = query(inspectionsCol, orderBy("timestamp", "desc"), limit(5));
+    const snapshot = await getDocs(q);
 
-    if (error) {
-      console.error('Error loading activity log:', error);
+    inspectionList.innerHTML = '';
+    if (snapshot.empty) {
+      inspectionList.innerHTML = `<div class="dashboard-placeholder">No inspections submitted yet.</div>`;
       return;
     }
-
-    activityLogEl.innerHTML = '';
-    if (logs) {
-      logs.forEach(log => {
-        const li = document.createElement('li');
-        const time = new Date(log.created_at).toLocaleTimeString();
-        li.textContent = `${time} – ${log.message}`;
-        activityLogEl.appendChild(li);
-      });
-    }
+    snapshot.forEach(doc => {
+      const i = doc.data();
+      const line = document.createElement('div');
+      line.className = "inspection-row";
+      line.textContent = `#${i.assetName || i.assetId || 'Unknown Asset'} by ${i.user || 'Unknown'} (${i.timestamp ? new Date(i.timestamp).toLocaleString() : ''})`;
+      inspectionList.appendChild(line);
+    });
+  } catch (e) {
+    inspectionList.innerHTML = `<div class="dashboard-placeholder">Error loading inspections.</div>`;
   }
+}
 
-  // Search handler (basic client-side filter)
-  function handleSearch(e) {
-    if (!zoneGridEl) return;
-    const term = e.target.value.toLowerCase();
-    document.querySelectorAll('.zone-card').forEach(card => {
-      const name = card.querySelector('h3').textContent.toLowerCase();
-      card.style.display = name.includes(term) ? 'block' : 'none';
+// ---------- 9. Load Assets Failed Inspection (last 5) ----------
+async function loadFailedAssets() {
+  try {
+    const inspectionsCol = collection(db, `clients/${clientId}/inspections`);
+    const q = query(
+      inspectionsCol,
+      where("result", "==", "fail"),
+      orderBy("timestamp", "desc"),
+      limit(5)
+    );
+    const snapshot = await getDocs(q);
+
+    failedAssetsList.innerHTML = '';
+    if (snapshot.empty) {
+      failedAssetsList.innerHTML = `<div class="dashboard-placeholder">No failed assets reported.</div>`;
+      return;
+    }
+    snapshot.forEach(doc => {
+      const i = doc.data();
+      const line = document.createElement('div');
+      line.className = "failed-row";
+      line.textContent = `#${i.assetName || i.assetId || 'Unknown Asset'} (${i.user || 'Unknown'}) at ${i.timestamp ? new Date(i.timestamp).toLocaleString() : ''}`;
+      failedAssetsList.appendChild(line);
+    });
+  } catch (e) {
+    failedAssetsList.innerHTML = `<div class="dashboard-placeholder">Error loading failed assets.</div>`;
+  }
+}
+
+// ---------- 10. Hide owner-only buttons ----------
+function hideOwnerButtons() {
+  if (role !== 'owner' && role !== 'superadmin') {
+    const btns = ['add-client-btn', 'add-type-btn', 'add-question-btn'];
+    btns.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
     });
   }
+}
 
-  // Logout logic
-  const logoutLinkEl = document.getElementById('logout-link');
-  if (logoutLinkEl) {
-    logoutLinkEl.onclick = function handleLogout() {
-      localStorage.clear();
-      sessionStorage.clear();
-      window.location.href = 'login.html';
-    };
-  }
-
-  // Start inspection for a zone
-  window.startInspection = function(zoneId) {
-    window.location.href = `inspection.html?zone=${zoneId}`;
-  };
-});
+// ---------- 11. Run All Loaders ----------
+loadClientInfo();
+hideOwnerButtons();
+loadRecentActivity();
+loadRecentInspections();
+loadFailedAssets();
