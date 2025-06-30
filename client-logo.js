@@ -1,7 +1,6 @@
-// Initialize Firebase (only once, e.g. in firebase.js)
-const firebaseConfig = { /* your config */ };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// client-logo.js
+import { db } from './firebase.js';
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
 // Use Firestore as: db.collection(...), db.doc(...), etc.
 
