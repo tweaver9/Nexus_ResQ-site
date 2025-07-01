@@ -65,7 +65,9 @@ window.addEventListener('DOMContentLoaded', async function() {
   sessionStorage.setItem('role', user.role);
   sessionStorage.setItem('username', user.username);
   sessionStorage.setItem('tenant_id', clientId);
-  sessionStorage.setItem('userDocId', userDoc.id); // this will help when updating
+  sessionStorage.setItem('userDocId', userDoc.id);
+  sessionStorage.setItem('first_name', user.first_name || "");
+  sessionStorage.setItem('clientLogoUrl', client.logo_url || "");// this will help when updating
   // Redirect to change-password page
   window.location.href = "change-password.html";
   return;
@@ -73,9 +75,10 @@ window.addEventListener('DOMContentLoaded', async function() {
       // --- 8. Store session data & redirect to dashboard ---
       sessionStorage.setItem('role', user.role);
       sessionStorage.setItem('username', user.username);
-      // tenant_id already saved above
-
+      sessionStorage.setItem('first_name', user.first_name || "");
+      sessionStorage.setItem('clientLogoUrl', client.logo_url || "");
       window.location.href = "dashboard.html";
+      // tenant_id already saved above
     } catch (err) {
       errorDiv.textContent = "Login error. Please try again.";
     }
