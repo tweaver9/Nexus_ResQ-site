@@ -59,7 +59,17 @@ window.addEventListener('DOMContentLoaded', async function() {
         errorDiv.textContent = "Incorrect password.";
         return;
       }
-
+      //7.5 mustChangePassword enforcement -----
+      if (user.mustChangePassword) {
+  // Save what you need for the reset page
+  sessionStorage.setItem('role', user.role);
+  sessionStorage.setItem('username', user.username);
+  sessionStorage.setItem('tenant_id', clientId);
+  sessionStorage.setItem('userDocId', userDoc.id); // this will help when updating
+  // Redirect to change-password page
+  window.location.href = "change-password.html";
+  return;
+}
       // --- 8. Store session data & redirect to dashboard ---
       sessionStorage.setItem('role', user.role);
       sessionStorage.setItem('username', user.username);
