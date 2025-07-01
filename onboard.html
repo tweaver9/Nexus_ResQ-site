@@ -2,75 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nexus Res-Q Onboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      background-color: #0d1b2a;
-      font-family: 'Oswald', sans-serif;
-      color: #f2f2f2;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
-    }
-    button {
-      cursor: pointer;
-    }
-    .manage-btn {
-      background-color: #36ff71;
-      border: none;
-      border-radius: 9px;
-      padding: 10px 20px;
-      font-weight: 600;
-      color: #102914;
-      font-size: 1.1em;
-      box-shadow: 0 0 8px #36ff7150;
-      transition: background 0.2s;
-    }
-    .manage-btn:hover {
-      background-color: #2cd65b;
-    }
-    .cm-tab-btn {
-      background: none;
-      color: #36ff71;
-      border: none;
-      font-size: 1.18em;
-      font-family: 'Oswald', sans-serif;
-      cursor: pointer;
-      padding: 8px 28px 7px 28px;
-      border-radius: 9px 9px 0 0;
-      transition: background 0.13s, color 0.13s;
-      box-shadow: 0 2px 8px #36ff7142 inset;
-      margin: 0;
-      user-select: none;
-    }
-    .cm-tab-btn:hover, .cm-tab-btn.active {
-      background: #122e1b;
-      color: #aaffc3;
-    }
-    .neon-tab {
-      box-shadow: 0 0 8px #36ff7150;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexus Res-Q | Onboarding</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="CSS/onboard.css" />
 </head>
 <body>
+  <div class="layout">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Nexus Res-Q</h2>
+        <select id="clientSelector">
+          <option value="">Select Client</option>
+          <!-- JS will populate -->
+        </select>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-btn" data-section="clients">Clients</button>
+        <button class="nav-btn" data-section="locations">Locations</button>
+        <button class="nav-btn" data-section="templates">Templates</button>
+        <button class="nav-btn" data-section="logs">Logs</button>
+        <button class="nav-btn" data-section="assignments">Assignments</button>
+      </nav>
+    </aside>
 
-  <h1>Welcome to Nexus Res-Q Owner Dashboard</h1>
-  <button id="manageClientsBtn" class="manage-btn" style="margin-top:40px;">Manage Clients</button>
+    <!-- Main Content -->
+    <main class="main-content">
+      <div id="contentArea">
+        <h1>Welcome to the Owner Dashboard</h1>
+        <p>Select a section from the sidebar to begin managing client data.</p>
+      </div>
+    </main>
 
-  <!-- The Client Manager Modal is injected and managed dynamically by onboard.js -->
+  </div>
 
   <script type="module" src="onboard.js"></script>
-  <script>
-    // Setup tab button active border styling (mirrors onboard.js)
-    document.addEventListener('click', e => {
-      if (e.target.classList.contains('cm-tab-btn')) {
-        document.querySelectorAll('.cm-tab-btn').forEach(btn => btn.style.borderBottom = '');
-        e.target.style.borderBottom = '3px solid #36ff71';
-      }
-    });
-  </script>
-
 </body>
 </html>
