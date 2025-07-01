@@ -7,19 +7,99 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="CSS/dashboard.css">
   <style>
-    .question-row { display: flex; gap:8px; margin-bottom:7px; }
-    .question-row input { flex:1; }
-    .remove-q-btn { background: #f33; color:#fff; border:none; border-radius:7px; padding: 2px 9px; cursor:pointer;}
-    .question-list-title {color:#fdd835; margin-top:22px; margin-bottom:5px; font-size:1.1em;}
-    .freq-tag { display:inline-block; background:#223052; color:#fdd835; border-radius:7px; padding:1px 7px; margin:0 4px 0 0;}
-    .current-questions-list { margin-bottom:17px; }
+    body {
+      background: #0d1b2a;
+      font-family: 'Oswald', sans-serif;
+    }
+    .onboard-container {
+      display: flex;
+      max-width: 600px;
+      margin: 48px auto;
+      gap: 0;
+      flex-direction: column;
+      align-items: center;
+    }
+    section {
+      width: 100%;
+      background: #142b47;
+      border-radius: 14px;
+      padding: 40px 28px;
+      box-shadow: 0 8px 40px #0d1b2a66;
+      margin-bottom: 28px;
+    }
+    h2 {
+      color: #fdd835;
+      margin-bottom: 22px;
+      font-size: 2em;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    label {
+      color: #fff;
+      margin-top: 12px;
+      font-weight: 600;
+      display: block;
+    }
+    input[type="text"], input[type="file"] {
+      margin-bottom: 11px;
+      font-size: 1.1em;
+      border-radius: 8px;
+      border: none;
+      padding: 10px 14px;
+      width: 100%;
+      outline: none;
+      background: #223052;
+      color: #fff;
+      margin-top: 3px;
+    }
+    .onboard-btn, .manage-btn {
+      background: #0e1911cc;
+      color: #36ff71;
+      border: 2px solid #36ff71;
+      font-size: 1.19em;
+      font-family: 'Oswald', sans-serif;
+      border-radius: 8px;
+      box-shadow: 0 0 15px #36ff71ad, 0 0 2px #fff;
+      padding: 13px 38px;
+      margin-top: 22px;
+      margin-bottom: 8px;
+      transition: background .14s, color .14s, box-shadow .14s;
+      cursor: pointer;
+      width: 100%;
+    }
+    .onboard-btn:hover, .manage-btn:hover {
+      background: #181e1d;
+      color: #90ffbb;
+      box-shadow: 0 0 30px #36ff71c5, 0 0 7px #fff;
+    }
+    #clientFormMsg {
+      color: #36ff71;
+      font-size: 1.07em;
+      min-height: 18px;
+    }
+    /* Modal styles (ready for next step) */
+    #clientManagerModal {
+      display: none; position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(10,10,10,0.94); z-index: 800; align-items: center; justify-content: center;
+    }
+    #clientManagerModalContent {
+      background: #171e16;
+      border-radius: 18px;
+      box-shadow: 0 8px 40px #36ff71a5;
+      padding: 34px 48px;
+      min-width: 400px; max-width: 92vw; max-height: 90vh;
+      overflow-y: auto;
+      color: #fff;
+    }
+    @media (max-width: 800px) {
+      section { padding: 26px 7vw; }
+    }
   </style>
 </head>
 <body>
-  <div class="onboard-container" style="display:flex;max-width:1250px;margin:40px auto;gap:30px;">
-    <!-- LEFT: ADD CLIENT -->
-    <section style="flex:1 1 360px;background:#142b47;border-radius:14px;padding:32px 24px;">
-      <h2 style="color:#fdd835;">Add Client</h2>
+  <div class="onboard-container">
+    <section>
+      <h2>Add Client</h2>
       <form id="addClientForm" autocomplete="off" enctype="multipart/form-data">
         <label>Client Name</label>
         <input id="clientName" type="text" required>
@@ -34,42 +114,18 @@
         <label>Admin Default Password</label>
         <input id="adminPassword" type="text" readonly>
         <button type="submit" id="submitClientBtn" class="onboard-btn">Create Client</button>
-        <div id="clientFormMsg" style="margin-top:12px;"></div>
+        <div id="clientFormMsg"></div>
         <div id="onboardCreds" style="margin-top:12px;display:none;"></div>
       </form>
+      <!-- NEW: Manage Clients button (for Nexus Owners only, show/hide in JS) -->
+      <button id="manageClientsBtn" class="manage-btn" style="margin-top:38px;">Manage Clients</button>
     </section>
-
-    <!-- RIGHT: GLOBAL ASSET TYPE MANAGER -->
-    <section style="flex:2 2 580px;background:#142b47;border-radius:14px;padding:32px 24px;">
-      <h2 style="color:#fdd835;">Manage Asset Types & Questions</h2>
-      <form id="assetTypeQuestionForm" autocomplete="off">
-        <!-- Asset Type Select/Create -->
-        <label>Asset Type</label>
-        <div style="display:flex;gap:8px;">
-          <select id="assetTypeSelect" style="flex:2"></select>
-          <input id="newAssetTypeInput" type="text" placeholder="Or enter new asset type" style="flex:3">
-        </div>
-        <!-- Frequency Select/Create -->
-        <label style="margin-top:10px;">Frequency</label>
-        <div style="display:flex;gap:8px;">
-          <select id="frequencySelect" style="flex:2">
-            <option value="monthly">Monthly</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="annual">Annual</option>
-            <option value="">(Other...)</option>
-          </select>
-          <input id="newFrequencyInput" type="text" placeholder="Or enter custom frequency" style="flex:3;">
-        </div>
-        <!-- Questions Line-by-Line -->
-        <label style="margin-top:10px;">Questions for this Frequency</label>
-        <div id="questionsList"></div>
-        <button type="button" id="addQuestionBtn" style="margin-bottom:10px;">Add Question</button>
-        <button type="submit" class="onboard-btn" style="margin-left:14px;">Save/Update</button>
-        <div id="assetTypeQuestionMsg" style="margin-top:12px;"></div>
-      </form>
-      <!-- Show current frequencies/questions for selected asset type -->
-      <div id="currentQuestionsContainer"></div>
-    </section>
+  </div>
+  <!-- Modal for Client Manager (content generated in JS) -->
+  <div id="clientManagerModal">
+    <div id="clientManagerModalContent">
+      <!-- Modal content will be injected here by JS -->
+    </div>
   </div>
   <script type="module" src="onboard.js"></script>
 </body>
