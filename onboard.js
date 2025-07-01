@@ -51,6 +51,7 @@ clientForm.onsubmit = async function (e) {
   clientForm.querySelector("#submitClientBtn").disabled = true;
 
   const clientName = clientNameInput.value.trim();
+  const clientSubdomain = slug(clientName);  // <-- This is the subdomain!
   const logoFile = clientLogoInput.files[0];
   const adminFirst = adminFirstInput.value.trim();
   const adminLast = adminLastInput.value.trim();
@@ -65,11 +66,12 @@ clientForm.onsubmit = async function (e) {
   }
 
   try {
-    // 1. Add client doc
+    // 1. Add client doc (with auto subdomain)
     let clientRef;
     try {
       clientRef = await addDoc(collection(db, "clients"), {
         name: clientName,
+        subdomain: clientSubdomain,         // <<<<<<<<------ Added here!
         created_at: serverTimestamp()
       });
       console.log('Client doc created:', clientRef.id);
@@ -114,6 +116,7 @@ clientForm.onsubmit = async function (e) {
     // 5. Success!
     onboardCreds.innerHTML = `<b>Client successfully created!</b><br><br>
       <b>Client Name:</b> ${clientName}<br>
+      <b>Subdomain:</b> ${clientSubdomain}<br>
       <b>Client ID:</b> ${clientId}<br>
       <b>Admin Username:</b> <code>${adminUsername}</code><br>
       <b>Default Password:</b> <code>${adminPassword}</code><br>
