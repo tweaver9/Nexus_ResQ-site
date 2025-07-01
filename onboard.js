@@ -348,16 +348,6 @@ async function renderUsersPanel(clientId) {
     panel.innerHTML = html;
   }
 }
-
-async function renderAssetsPanel(clientId) {
-  const panel = document.getElementById('cmTabPanel');
-  panel.innerHTML = `<div style="color:#36ff71;text-align:center;margin:70px 0 40px 0;">Asset management coming soon.<br>Here you’ll be able to view, bulk add, bulk delete, and edit all assets for this client.</div>`;
-}
-async function renderLocationsPanel(clientId) {
-  const panel = document.getElementById('cmTabPanel');
-  panel.innerHTML = `<div style="color:#36ff71;text-align:center;margin:70px 0 40px 0;">Location management coming soon.<br>You’ll add/edit/delete locations for the selected client.</div>`;
-}
-
 // ------- USER MODALS: Add/Edit/Delete -------
 window.showAddUserModal = function(clientId) {
   let modal = document.getElementById('addUserModal');
@@ -639,104 +629,307 @@ async function renderAssetsPanel(clientId) {
 }
 window.renderAssetsPanel = renderAssetsPanel; // so you can call after CRUD
 
-// Placeholder modals for add/edit/delete/bulk
-window.editAsset = function(clientId, assetId) {
-  alert("Edit Asset modal coming soon.\nClient: " + clientId + "\nAsset: " + assetId);
-};
-window.deleteAsset = async function(clientId, assetId) {
-  if (!confirm("Delete this asset?")) return;
-  await updateDoc(doc(db, `clients/${clientId}/assets/${assetId}`), { deleted: true });
-  renderAssetsPanel(clientId);
-};
-window.showBulkAddAssetsModal = function(clientId) {
-  alert("Bulk Add modal coming soon for client: " + clientId);
-};
-window.showBulkDeleteAssetsModal = async function(clientId) {
-  const checked = Array.from(document.querySelectorAll('.assetCheckbox:checked')).map(cb => cb.value);
-  if (!checked.length) return alert("Select assets to delete.");
-  if (!confirm("Delete selected assets?")) return;
-  for (const assetId of checked) {
-    await updateDoc(doc(db, `clients/${clientId}/assets/${assetId}`), { deleted: true });
+// ============ ASSET ADD/EDIT MODALS =============
+
+// --- Add Asset Modal ---
+window.showAddAssetModal = function(clientId) {
+  let modal = document.getElementById('addAssetModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'addAssetModal';
+    modal.style = `
+      position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:1210;
+      background:rgba(10,30,12,0.96);display:flex;align-items:center;justify-content:center;`;
+    document.body.appendChild(modal);
   }
-  renderAssetsPanel(clientId);
+  modal.innerHTML = `
+    <div style="background:#101b13;border-radius:20px;box-shadow:0 0 44px #36ff719a;padding:38px 42px;min-width:350px;max-width:92vw;">
+      <h2 style="color:#36ff71;text-align:center;margin-bottom:19px;">Add Asset</h2>
+      <form id="addAssetForm">
+        <label style="color:#36ff71;">Asset Name</label>
+        <input id="addAssetName" type="text" required style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;">
+        <label style="color:#36ff71;">Type</label>
+        <input id="addAssetType" type="text" required style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;">
+        <label style="color:#36ff71;">Location</label>
+        <input id="addAssetLocation" type="text" required style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;">
+        <label style="color:#36ff71;">Assigned User</label>
+        <input id="addAssetAssignedUser" type="text" style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;">
+        <label style="color:#36ff71;">Status</label>
+        <input id="addAssetStatus" type="text" style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;">
+        <button type="submit" class="manage-btn" style="width:100%;margin-top:8px;">Add Asset</button>
+        <div id="addAssetMsg" style="margin-top:13px;text-align:center;"></div>
+      </form>
+      <button onclick="window.closeAddAssetModal()" class="manage-btn" style="margin:18px auto 0 auto;display:block;width:80%;">Cancel</button>
+    </div>
+  `;
+  modal.style.display = "flex";
+  document.getElementById('addAssetForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const msg = document.getElementById('addAssetMsg');
+    msg.style.color = "#fdd835";
+    msg.textContent = "Adding...";
+    const name = document.getElementById('addAssetName').value.trim();
+    const type = document.getElementById('addAssetType').value.trim();
+    const location = document.getElementById('addAssetLocation').value.trim();
+    const assigned_user = document.getElementById('addAssetAssignedUser').value.trim();
+    const status = document.getElementById('addAssetStatus').value.trim();
+    if (!name || !type || !location) {
+      msg.textContent = "Name, Type, and Location are required.";
+      msg.style.color = "#ff5050";
+      return;
+    }
+    try {
+      await addDoc(collection(db, `clients/${clientId}/assets`), {
+        name, type, location, assigned_user, status,
+        created_at: serverTimestamp()
+      });
+      msg.textContent = "Asset added!";
+      msg.style.color = "#36ff71";
+      setTimeout(() => {
+        window.closeAddAssetModal();
+        renderAssetsPanel(clientId);
+      }, 850);
+    } catch (err) {
+      msg.textContent = "Error: " + (err.message || "Unknown error");
+      msg.style.color = "#ff5050";
+    }
+  };
+};
+window.closeAddAssetModal = function() {
+  let modal = document.getElementById('addAssetModal');
+  if (modal) modal.style.display = "none";
+};
+document.addEventListener('keydown', e => {
+  if (e.key === "Escape") window.closeAddAssetModal();
+});
+document.body.addEventListener('mousedown', e => {
+  const modal = document.getElementById('addAssetModal');
+  if (modal && e.target === modal) window.closeAddAssetModal();
+});
+
+// --- Edit Asset Modal ---
+window.editAsset = async function(clientId, assetId) {
+  const assetDoc = await getDoc(doc(db, `clients/${clientId}/assets/${assetId}`));
+  if (!assetDoc.exists() || assetDoc.data().deleted) {
+    alert("Asset not found.");
+    return;
+  }
+  const asset = assetDoc.data();
+  let modal = document.getElementById('editAssetModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'editAssetModal';
+    modal.style = `
+      position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:1210;
+      background:rgba(10,30,12,0.96);display:flex;align-items:center;justify-content:center;`;
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `
+    <div style="background:#101b13;border-radius:20px;box-shadow:0 0 44px #36ff719a;padding:38px 42px;min-width:350px;max-width:92vw;">
+      <h2 style="color:#36ff71;text-align:center;margin-bottom:19px;">Edit Asset</h2>
+      <form id="editAssetForm">
+        <label style="color:#36ff71;">Asset Name</label>
+        <input id="editAssetName" type="text" required style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;" value="${asset.name||''}">
+        <label style="color:#36ff71;">Type</label>
+        <input id="editAssetType" type="text" required style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;" value="${asset.type||''}">
+        <label style="color:#36ff71;">Location</label>
+        <input id="editAssetLocation" type="text" required style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;" value="${asset.location||''}">
+        <label style="color:#36ff71;">Assigned User</label>
+        <input id="editAssetAssignedUser" type="text" style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;" value="${asset.assigned_user||''}">
+        <label style="color:#36ff71;">Status</label>
+        <input id="editAssetStatus" type="text" style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;" value="${asset.status||''}">
+        <button type="submit" class="manage-btn" style="width:100%;margin-top:8px;">Update Asset</button>
+        <div id="editAssetMsg" style="margin-top:13px;text-align:center;"></div>
+      </form>
+      <button onclick="window.closeEditAssetModal()" class="manage-btn" style="margin:18px auto 0 auto;display:block;width:80%;">Cancel</button>
+    </div>
+  `;
+  modal.style.display = "flex";
+  document.getElementById('editAssetForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const msg = document.getElementById('editAssetMsg');
+    msg.style.color = "#fdd835";
+    msg.textContent = "Updating...";
+    const name = document.getElementById('editAssetName').value.trim();
+    const type = document.getElementById('editAssetType').value.trim();
+    const location = document.getElementById('editAssetLocation').value.trim();
+    const assigned_user = document.getElementById('editAssetAssignedUser').value.trim();
+    const status = document.getElementById('editAssetStatus').value.trim();
+    if (!name || !type || !location) {
+      msg.textContent = "Name, Type, and Location are required.";
+      msg.style.color = "#ff5050";
+      return;
+    }
+    try {
+      await updateDoc(doc(db, `clients/${clientId}/assets/${assetId}`), {
+        name, type, location, assigned_user, status,
+        updated_at: serverTimestamp()
+      });
+      msg.textContent = "Asset updated!";
+      msg.style.color = "#36ff71";
+      setTimeout(() => {
+        window.closeEditAssetModal();
+        renderAssetsPanel(clientId);
+      }, 850);
+    } catch (err) {
+      msg.textContent = "Error: " + (err.message || "Unknown error");
+      msg.style.color = "#ff5050";
+    }
+  };
+};
+window.closeEditAssetModal = function() {
+  let modal = document.getElementById('editAssetModal');
+  if (modal) modal.style.display = "none";
+};
+document.addEventListener('keydown', e => {
+  if (e.key === "Escape") window.closeEditAssetModal();
+});
+document.body.addEventListener('mousedown', e => {
+  const modal = document.getElementById('editAssetModal');
+  if (modal && e.target === modal) window.closeEditAssetModal();
+});
+
+
+// ============ LOCATION ADD/EDIT MODALS =============
+
+// --- Add Location Modal ---
+window.showAddLocationModal = function(clientId) {
+  let modal = document.getElementById('addLocationModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'addLocationModal';
+    modal.style = `
+      position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:1211;
+      background:rgba(10,30,12,0.96);display:flex;align-items:center;justify-content:center;`;
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `
+    <div style="background:#101b13;border-radius:20px;box-shadow:0 0 44px #36ff719a;padding:38px 42px;min-width:300px;max-width:92vw;">
+      <h2 style="color:#36ff71;text-align:center;margin-bottom:19px;">Add Location</h2>
+      <form id="addLocationForm">
+        <label style="color:#36ff71;">Location Name</label>
+        <input id="addLocationName" type="text" required style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;">
+        <button type="submit" class="manage-btn" style="width:100%;margin-top:8px;">Add Location</button>
+        <div id="addLocationMsg" style="margin-top:13px;text-align:center;"></div>
+      </form>
+      <button onclick="window.closeAddLocationModal()" class="manage-btn" style="margin:18px auto 0 auto;display:block;width:80%;">Cancel</button>
+    </div>
+  `;
+  modal.style.display = "flex";
+  document.getElementById('addLocationForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const msg = document.getElementById('addLocationMsg');
+    msg.style.color = "#fdd835";
+    msg.textContent = "Adding...";
+    const name = document.getElementById('addLocationName').value.trim();
+    if (!name) {
+      msg.textContent = "Location name required.";
+      msg.style.color = "#ff5050";
+      return;
+    }
+    try {
+      await addDoc(collection(db, `clients/${clientId}/locations`), {
+        name,
+        created_at: serverTimestamp()
+      });
+      msg.textContent = "Location added!";
+      msg.style.color = "#36ff71";
+      setTimeout(() => {
+        window.closeAddLocationModal();
+        renderLocationsPanel(clientId);
+      }, 800);
+    } catch (err) {
+      msg.textContent = "Error: " + (err.message || "Unknown error");
+      msg.style.color = "#ff5050";
+    }
+  };
+};
+window.closeAddLocationModal = function() {
+  let modal = document.getElementById('addLocationModal');
+  if (modal) modal.style.display = "none";
+};
+document.addEventListener('keydown', e => {
+  if (e.key === "Escape") window.closeAddLocationModal();
+});
+document.body.addEventListener('mousedown', e => {
+  const modal = document.getElementById('addLocationModal');
+  if (modal && e.target === modal) window.closeAddLocationModal();
+});
+
+// --- Edit Location Modal ---
+window.editLocation = async function(clientId, locId) {
+  const locDoc = await getDoc(doc(db, `clients/${clientId}/locations/${locId}`));
+  if (!locDoc.exists() || locDoc.data().deleted) {
+    alert("Location not found.");
+    return;
+  }
+  const location = locDoc.data();
+  let modal = document.getElementById('editLocationModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'editLocationModal';
+    modal.style = `
+      position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:1211;
+      background:rgba(10,30,12,0.96);display:flex;align-items:center;justify-content:center;`;
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `
+    <div style="background:#101b13;border-radius:20px;box-shadow:0 0 44px #36ff719a;padding:38px 42px;min-width:300px;max-width:92vw;">
+      <h2 style="color:#36ff71;text-align:center;margin-bottom:19px;">Edit Location</h2>
+      <form id="editLocationForm">
+        <label style="color:#36ff71;">Location Name</label>
+        <input id="editLocationName" type="text" required style="width:100%;padding:9px 11px;margin-bottom:8px;background:#172719;color:#fff;border-radius:7px;border:1.5px solid #36ff71;" value="${location.name||''}">
+        <button type="submit" class="manage-btn" style="width:100%;margin-top:8px;">Update Location</button>
+        <div id="editLocationMsg" style="margin-top:13px;text-align:center;"></div>
+      </form>
+      <button onclick="window.closeEditLocationModal()" class="manage-btn" style="margin:18px auto 0 auto;display:block;width:80%;">Cancel</button>
+    </div>
+  `;
+  modal.style.display = "flex";
+  document.getElementById('editLocationForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const msg = document.getElementById('editLocationMsg');
+    msg.style.color = "#fdd835";
+    msg.textContent = "Updating...";
+    const name = document.getElementById('editLocationName').value.trim();
+    if (!name) {
+      msg.textContent = "Location name required.";
+      msg.style.color = "#ff5050";
+      return;
+    }
+    try {
+      await updateDoc(doc(db, `clients/${clientId}/locations/${locId}`), {
+        name,
+        updated_at: serverTimestamp()
+      });
+      msg.textContent = "Location updated!";
+      msg.style.color = "#36ff71";
+      setTimeout(() => {
+        window.closeEditLocationModal();
+        renderLocationsPanel(clientId);
+      }, 800);
+    } catch (err) {
+      msg.textContent = "Error: " + (err.message || "Unknown error");
+      msg.style.color = "#ff5050";
+    }
+  };
+};
+window.closeEditLocationModal = function() {
+  let modal = document.getElementById('editLocationModal');
+  if (modal) modal.style.display = "none";
+};
+document.addEventListener('keydown', e => {
+  if (e.key === "Escape") window.closeEditLocationModal();
+});
+document.body.addEventListener('mousedown', e => {
+  const modal = document.getElementById('editLocationModal');
+  if (modal && e.target === modal) window.closeEditLocationModal();
 };
 
-
-async function renderLocationsPanel(clientId) {
-  const panel = document.getElementById('cmTabPanel');
-  panel.innerHTML = `<div style="color:#36ff71;text-align:center;">Loading locations...</div>`;
-  let html = "";
-
-  // For "all", show locations grouped by client
-  if (clientId === "all") {
-    const snap = await getDocs(collection(db, "clients"));
-    for (const docSnap of snap.docs) {
-      const c = docSnap.data();
-      const locations = await getDocs(collection(db, `clients/${docSnap.id}/locations`));
-      if (!locations.size) continue;
-      html += `<div style="margin:24px 0 8px 0;font-weight:600;color:#50ff9a;">${c.name || docSnap.id}</div>`;
-      html += "<table style='width:100%;margin-bottom:22px;color:#fff;background:#101914;border-radius:7px;box-shadow:0 0 10px #33ff8092;'><thead><tr>" +
-        "<th>Location</th><th># of Assets</th><th>Actions</th></tr></thead><tbody>";
-      for (const locSnap of locations.docs) {
-        const loc = locSnap.data();
-        if (loc.deleted) continue;
-        // Count assets at this location
-        let assets = await getDocs(collection(db, `clients/${docSnap.id}/assets`));
-        let assetCount = Array.from(assets.docs).filter(a => a.data().location === loc.name && !a.data().deleted).length;
-        html += `<tr>
-          <td>${loc.name || locSnap.id}</td>
-          <td>${assetCount}</td>
-          <td>
-            <button onclick="editLocation('${docSnap.id}','${locSnap.id}')" style="color:#36ff71;background:none;border:none;cursor:pointer;">Edit</button>
-            <button onclick="deleteLocation('${docSnap.id}','${locSnap.id}')" style="color:#f00;background:none;border:none;cursor:pointer;">Delete</button>
-          </td>
-        </tr>`;
-      }
-      html += "</tbody></table>";
-    }
-    panel.innerHTML = html || "<div style='color:#36ff71'>No locations found.</div>";
-  } else {
-    const locations = await getDocs(collection(db, `clients/${clientId}/locations`));
-    html += `
-      <button class="manage-btn" style="margin-bottom:16px;" onclick="showAddLocationModal('${clientId}')">Add Location</button>
-      <table style='width:100%;margin-bottom:22px;color:#fff;background:#101914;border-radius:7px;box-shadow:0 0 10px #33ff8092;'>
-        <thead>
-          <tr>
-            <th>Location</th>
-            <th># of Assets</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>`;
-    for (const locSnap of locations.docs) {
-      const loc = locSnap.data();
-      if (loc.deleted) continue;
-      let assets = await getDocs(collection(db, `clients/${clientId}/assets`));
-      let assetCount = Array.from(assets.docs).filter(a => a.data().location === loc.name && !a.data().deleted).length;
-      html += `<tr>
-        <td>${loc.name || locSnap.id}</td>
-        <td>${assetCount}</td>
-        <td>
-          <button onclick="editLocation('${clientId}','${locSnap.id}')" style="color:#36ff71;background:none;border:none;cursor:pointer;">Edit</button>
-          <button onclick="deleteLocation('${clientId}','${locSnap.id}')" style="color:#f00;background:none;border:none;cursor:pointer;">Delete</button>
-        </td>
-      </tr>`;
-    }
-    html += "</tbody></table>";
-    panel.innerHTML = html;
-  }
-}
+// === Add Asset Button in Single-Client Asset Tab ===
+// (Place this near where the asset table renders)
+window.renderAssetsPanel = renderAssetsPanel;
 window.renderLocationsPanel = renderLocationsPanel;
 
-// Modals
-window.editLocation = function(clientId, locId) {
-  alert("Edit Location modal coming soon.\nClient: " + clientId + "\nLocation: " + locId);
-};
-window.deleteLocation = async function(clientId, locId) {
-  if (!confirm("Delete this location?")) return;
-  await updateDoc(doc(db, `clients/${clientId}/locations/${locId}`), { deleted: true });
-  renderLocationsPanel(clientId);
-};
-window.showAddLocationModal = function(clientId) {
-  alert("Add Location modal coming soon for client: " + clientId);
-};
+
+
