@@ -191,7 +191,7 @@ assetTypeQuestionForm.onsubmit = async function(e) {
   assetTypeQuestionMsg.textContent = "Saving...";
 
   // 1. Figure out asset type (existing or new)
-  let assetTypeName = newAssetTypeInput.value.trim() || assetTypeSelect.value;
+  let assetTypeName = newAssetTypeInput.value.trim() || assetTypeSelect.options[assetTypeSelect.selectedIndex]?.dataset.displayName || assetTypeSelect.value;
   if (!assetTypeName) {
     assetTypeQuestionMsg.style.color = "#ff5050";
     assetTypeQuestionMsg.textContent = "Asset type required.";
@@ -213,41 +213,33 @@ assetTypeQuestionForm.onsubmit = async function(e) {
   }
 
   try {
-    // Try to find existing assetType by name
-    let assetTypeDoc = null, assetTypeId = null;
-    const snap = await getDocs(collection(db, "assetTypes"));
-    snap.forEach(docSnap => {
-      const d = docSnap.data();
-      if (d.name && d.name.toLowerCase() === assetTypeName.toLowerCase()) {
-        assetTypeDoc = docSnap;
-        assetTypeId = docSnap.id;
-      }
-    });
+    // Always use slug for document ID, pretty name for "name" field
+    let assetTypeId = slug(assetTypeName);
+    const atDocRef = doc(db, "assetTypes", assetTypeId);
+    const currDocSnap = await getDoc(atDocRef);
 
-    if (assetTypeDoc) {
+    if (currDocSnap.exists()) {
       // Update existing: set/merge frequency
       let freqKey = `questions_${freq.toLowerCase()}`;
       let update = {};
       update[freqKey] = questions;
       // Merge/append frequency to .frequencies array if not present
-      const atDocRef = doc(db, "assetTypes", assetTypeId);
-      const currDoc = (await getDoc(atDocRef)).data();
+      const currDoc = currDocSnap.data();
       let newFreqArr = Array.isArray(currDoc.frequencies) ? currDoc.frequencies.slice() : [];
       if (!newFreqArr.includes(freq)) newFreqArr.push(freq);
       update['frequencies'] = newFreqArr;
       await updateDoc(atDocRef, update);
       assetTypeQuestionMsg.style.color = "#28e640";
-      assetTypeQuestionMsg.textContent = `Questions for "${assetTypeName}" (${freq}) updated!`;
+      assetTypeQuestionMsg.textContent = `Questions for "${currDoc.name}" (${freq}) updated!`;
       await refreshAssetTypeDropdown(assetTypeId);
     } else {
-      // --- THIS BLOCK IS UPDATED FOR DOC ID SLUG ---
-      let docId = slug(assetTypeName);
+      // Create new assetType with slug ID and display name
       let docData = {
-        name: assetTypeName,     // Preserve original input for UI
+        name: assetTypeName,     // Pretty name for UI
         frequencies: [freq],
       };
       docData[`questions_${freq.toLowerCase()}`] = questions;
-      await setDoc(doc(db, "assetTypes", docId), docData);
+      await setDoc(atDocRef, docData);
       assetTypeQuestionMsg.style.color = "#28e640";
       assetTypeQuestionMsg.textContent = `Asset type "${assetTypeName}" created with ${freq} questions.`;
       await refreshAssetTypeDropdown();
@@ -267,21 +259,16 @@ async function showCurrentQuestions(assetTypeName) {
     currentQuestionsContainer.innerHTML = '';
     return;
   }
-  // Find doc by name (case-insensitive)
-  let docSnap = null, docData = null;
-  const snap = await getDocs(collection(db, "assetTypes"));
-  snap.forEach(ds => {
-    let d = ds.data();
-    if (d.name && d.name.toLowerCase() === assetTypeName.toLowerCase()) {
-      docSnap = ds;
-      docData = d;
-    }
-  });
-  if (!docData) {
+  // Always lookup by slug
+  let docId = slug(assetTypeName);
+  let docRef = doc(db, "assetTypes", docId);
+  let docSnap = await getDoc(docRef);
+  if (!docSnap.exists()) {
     currentQuestionsContainer.innerHTML = '';
     return;
   }
-  let html = `<div class="question-list-title">Current Frequencies & Questions for "${assetTypeName}":</div>`;
+  let docData = docSnap.data();
+  let html = `<div class="question-list-title">Current Frequencies & Questions for "${docData.name}":</div>`;
   for (const freq of docData.frequencies || []) {
     let fq = freq.toLowerCase();
     let qArr = docData[`questions_${fq}`];
@@ -296,24 +283,16 @@ async function showCurrentQuestions(assetTypeName) {
   }
   currentQuestionsContainer.innerHTML = html;
 }
-// When assetType changes, show current
-assetTypeSelect.onchange = async () => {
-  let name = assetTypeSelect.value;
-  if (name) await showCurrentQuestions(name);
-};
-newAssetTypeInput.oninput = async () => {
-  let name = newAssetTypeInput.value.trim();
-  if (name) await showCurrentQuestions(name);
-};
 
-// Populate asset type dropdown
+// Populate asset type dropdown (slug as value, pretty name as label)
 async function refreshAssetTypeDropdown(selectedId = null) {
   assetTypeSelect.innerHTML = '<option value="">Select asset type...</option>';
   const snap = await getDocs(collection(db, "assetTypes"));
   snap.forEach(docSnap => {
     const at = docSnap.data();
-    const id = docSnap.id;
-    assetTypeSelect.innerHTML += `<option value="${at.name}">${at.name}</option>`;
+    const id = docSnap.id; // slug
+    // Use data-display-name for safe retrieval if needed
+    assetTypeSelect.innerHTML += `<option value="${id}" data-display-name="${at.name}">${at.name}</option>`;
   });
 }
 
@@ -331,13 +310,14 @@ assignAssetForm.onsubmit = async function(e) {
   assignAssetMsg.style.color = "#fdd835";
   assignAssetMsg.textContent = "Assigning asset...";
   const clientId = clientSelect.value;
-  let assetTypeName = assetTypeSelect.value || newAssetTypeInput.value.trim();
+  // Always store slug in asset_type!
+  let assetTypeId = assetTypeSelect.value || slug(newAssetTypeInput.value.trim());
   const assetId = assetIdInput.value.trim();
   const location = assetLocationInput.value.trim();
   const serialNo = serialNoInput.value.trim();
   const assignedUser = assignedUserInput.value.trim();
 
-  if (!clientId || !assetTypeName || !assetId || !location) {
+  if (!clientId || !assetTypeId || !assetId || !location) {
     assignAssetMsg.style.color = "#ff5050";
     assignAssetMsg.textContent = "Fill out all required fields.";
     return;
@@ -345,7 +325,7 @@ assignAssetForm.onsubmit = async function(e) {
   try {
     await addDoc(collection(db, `clients/${clientId}/assets`), {
       asset_id: assetId,
-      asset_type: assetTypeName,
+      asset_type: assetTypeId, // Always the slug
       location,
       serial_no: serialNo,
       assigned_user: assignedUser,
@@ -371,6 +351,8 @@ async function refreshClientDropdown(selectedId = null) {
   });
 }
 
-// ===== Initial population =====
+// ===== Initial population (ALWAYS LIVE) =====
+document.addEventListener("DOMContentLoaded", () => {
   refreshClientDropdown();
   refreshAssetTypeDropdown();
+});
