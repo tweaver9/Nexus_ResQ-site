@@ -531,3 +531,212 @@ window.deleteUser = async function(clientId, userId) {
   await updateDoc(doc(db, `clients/${clientId}/users/${userId}`), { deleted: true });
   await renderUsersPanel(clientId);
 };
+
+async function renderAssetsPanel(clientId) {
+  const panel = document.getElementById('cmTabPanel');
+  panel.innerHTML = `<div style="color:#36ff71;text-align:center;">Loading assets...</div>`;
+  let html = "";
+
+  // Helper for table row actions
+  function assetActions(cid, aid) {
+    return `
+      <button onclick="editAsset('${cid}','${aid}')" style="color:#36ff71;background:none;border:none;cursor:pointer;">Edit</button>
+      <button onclick="deleteAsset('${cid}','${aid}')" style="color:#f00;background:none;border:none;cursor:pointer;">Delete</button>
+    `;
+  }
+
+  if (clientId === "all") {
+    const snap = await getDocs(collection(db, "clients"));
+    for (const docSnap of snap.docs) {
+      const c = docSnap.data();
+      const assets = await getDocs(collection(db, `clients/${docSnap.id}/assets`));
+      if (!assets.size) continue;
+      html += `<div style="margin:24px 0 8px 0;font-weight:600;color:#50ff9a;">${c.name || docSnap.id}</div>`;
+      html += `<table style='width:100%;margin-bottom:22px;color:#fff;background:#101914;border-radius:7px;box-shadow:0 0 10px #33ff8092;'>
+        <thead>
+          <tr>
+            <th>Asset ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Location</th>
+            <th>Assigned User</th>
+            <th>Status</th>
+            <th>Last Inspected By</th>
+            <th>Last Inspection</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>`;
+      assets.forEach(assetSnap => {
+        const a = assetSnap.data();
+        if (a.deleted) return;
+        html += `<tr>
+          <td>${assetSnap.id}</td>
+          <td>${a.name || ""}</td>
+          <td>${a.type || ""}</td>
+          <td>${a.location || ""}</td>
+          <td>${a.assigned_user || ""}</td>
+          <td>${a.status || ""}</td>
+          <td>${a.last_inspected_by || ""}</td>
+          <td>${a.last_inspection ? (a.last_inspection.toDate ? a.last_inspection.toDate().toLocaleDateString() : a.last_inspection) : ""}</td>
+          <td>${assetActions(docSnap.id, assetSnap.id)}</td>
+        </tr>`;
+      });
+      html += "</tbody></table>";
+    }
+    // Bulk add/delete coming below
+    panel.innerHTML = html || "<div style='color:#36ff71'>No assets found.</div>";
+  } else {
+    // Single client
+    const assets = await getDocs(collection(db, `clients/${clientId}/assets`));
+    html += `
+      <button class="manage-btn" style="margin-bottom:16px;" onclick="showBulkAddAssetsModal('${clientId}')">Bulk Add Assets</button>
+      <button class="manage-btn" style="margin-bottom:16px;" onclick="showBulkDeleteAssetsModal('${clientId}')">Bulk Delete Selected</button>
+      <table style='width:100%;margin-bottom:22px;color:#fff;background:#101914;border-radius:7px;box-shadow:0 0 10px #33ff8092;'>
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAllAssets" /></th>
+            <th>Asset ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Location</th>
+            <th>Assigned User</th>
+            <th>Status</th>
+            <th>Last Inspected By</th>
+            <th>Last Inspection</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    assets.forEach(assetSnap => {
+      const a = assetSnap.data();
+      if (a.deleted) return;
+      html += `<tr>
+        <td><input type="checkbox" class="assetCheckbox" value="${assetSnap.id}"></td>
+        <td>${assetSnap.id}</td>
+        <td>${a.name || ""}</td>
+        <td>${a.type || ""}</td>
+        <td>${a.location || ""}</td>
+        <td>${a.assigned_user || ""}</td>
+        <td>${a.status || ""}</td>
+        <td>${a.last_inspected_by || ""}</td>
+        <td>${a.last_inspection ? (a.last_inspection.toDate ? a.last_inspection.toDate().toLocaleDateString() : a.last_inspection) : ""}</td>
+        <td>${assetActions(clientId, assetSnap.id)}</td>
+      </tr>`;
+    });
+    html += "</tbody></table>";
+    panel.innerHTML = html;
+    // Select all logic
+    setTimeout(() => {
+      const selectAll = document.getElementById('selectAllAssets');
+      if (selectAll) {
+        selectAll.onclick = () => {
+          document.querySelectorAll('.assetCheckbox').forEach(cb => cb.checked = selectAll.checked);
+        };
+      }
+    }, 50);
+  }
+}
+window.renderAssetsPanel = renderAssetsPanel; // so you can call after CRUD
+
+// Placeholder modals for add/edit/delete/bulk
+window.editAsset = function(clientId, assetId) {
+  alert("Edit Asset modal coming soon.\nClient: " + clientId + "\nAsset: " + assetId);
+};
+window.deleteAsset = async function(clientId, assetId) {
+  if (!confirm("Delete this asset?")) return;
+  await updateDoc(doc(db, `clients/${clientId}/assets/${assetId}`), { deleted: true });
+  renderAssetsPanel(clientId);
+};
+window.showBulkAddAssetsModal = function(clientId) {
+  alert("Bulk Add modal coming soon for client: " + clientId);
+};
+window.showBulkDeleteAssetsModal = async function(clientId) {
+  const checked = Array.from(document.querySelectorAll('.assetCheckbox:checked')).map(cb => cb.value);
+  if (!checked.length) return alert("Select assets to delete.");
+  if (!confirm("Delete selected assets?")) return;
+  for (const assetId of checked) {
+    await updateDoc(doc(db, `clients/${clientId}/assets/${assetId}`), { deleted: true });
+  }
+  renderAssetsPanel(clientId);
+};
+
+
+async function renderLocationsPanel(clientId) {
+  const panel = document.getElementById('cmTabPanel');
+  panel.innerHTML = `<div style="color:#36ff71;text-align:center;">Loading locations...</div>`;
+  let html = "";
+
+  // For "all", show locations grouped by client
+  if (clientId === "all") {
+    const snap = await getDocs(collection(db, "clients"));
+    for (const docSnap of snap.docs) {
+      const c = docSnap.data();
+      const locations = await getDocs(collection(db, `clients/${docSnap.id}/locations`));
+      if (!locations.size) continue;
+      html += `<div style="margin:24px 0 8px 0;font-weight:600;color:#50ff9a;">${c.name || docSnap.id}</div>`;
+      html += "<table style='width:100%;margin-bottom:22px;color:#fff;background:#101914;border-radius:7px;box-shadow:0 0 10px #33ff8092;'><thead><tr>" +
+        "<th>Location</th><th># of Assets</th><th>Actions</th></tr></thead><tbody>";
+      for (const locSnap of locations.docs) {
+        const loc = locSnap.data();
+        if (loc.deleted) continue;
+        // Count assets at this location
+        let assets = await getDocs(collection(db, `clients/${docSnap.id}/assets`));
+        let assetCount = Array.from(assets.docs).filter(a => a.data().location === loc.name && !a.data().deleted).length;
+        html += `<tr>
+          <td>${loc.name || locSnap.id}</td>
+          <td>${assetCount}</td>
+          <td>
+            <button onclick="editLocation('${docSnap.id}','${locSnap.id}')" style="color:#36ff71;background:none;border:none;cursor:pointer;">Edit</button>
+            <button onclick="deleteLocation('${docSnap.id}','${locSnap.id}')" style="color:#f00;background:none;border:none;cursor:pointer;">Delete</button>
+          </td>
+        </tr>`;
+      }
+      html += "</tbody></table>";
+    }
+    panel.innerHTML = html || "<div style='color:#36ff71'>No locations found.</div>";
+  } else {
+    const locations = await getDocs(collection(db, `clients/${clientId}/locations`));
+    html += `
+      <button class="manage-btn" style="margin-bottom:16px;" onclick="showAddLocationModal('${clientId}')">Add Location</button>
+      <table style='width:100%;margin-bottom:22px;color:#fff;background:#101914;border-radius:7px;box-shadow:0 0 10px #33ff8092;'>
+        <thead>
+          <tr>
+            <th>Location</th>
+            <th># of Assets</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    for (const locSnap of locations.docs) {
+      const loc = locSnap.data();
+      if (loc.deleted) continue;
+      let assets = await getDocs(collection(db, `clients/${clientId}/assets`));
+      let assetCount = Array.from(assets.docs).filter(a => a.data().location === loc.name && !a.data().deleted).length;
+      html += `<tr>
+        <td>${loc.name || locSnap.id}</td>
+        <td>${assetCount}</td>
+        <td>
+          <button onclick="editLocation('${clientId}','${locSnap.id}')" style="color:#36ff71;background:none;border:none;cursor:pointer;">Edit</button>
+          <button onclick="deleteLocation('${clientId}','${locSnap.id}')" style="color:#f00;background:none;border:none;cursor:pointer;">Delete</button>
+        </td>
+      </tr>`;
+    }
+    html += "</tbody></table>";
+    panel.innerHTML = html;
+  }
+}
+window.renderLocationsPanel = renderLocationsPanel;
+
+// Modals
+window.editLocation = function(clientId, locId) {
+  alert("Edit Location modal coming soon.\nClient: " + clientId + "\nLocation: " + locId);
+};
+window.deleteLocation = async function(clientId, locId) {
+  if (!confirm("Delete this location?")) return;
+  await updateDoc(doc(db, `clients/${clientId}/locations/${locId}`), { deleted: true });
+  renderLocationsPanel(clientId);
+};
+window.showAddLocationModal = function(clientId) {
+  alert("Add Location modal coming soon for client: " + clientId);
+};
