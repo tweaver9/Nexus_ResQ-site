@@ -933,20 +933,67 @@ document.body.addEventListener('mousedown', e => {
 window.renderAssetsPanel = renderAssetsPanel;
 window.renderLocationsPanel = renderLocationsPanel;
 
-// ==== LOCATIONS TAB: BASIC PANEL (REQUIRED FOR TAB TO WORK, REMOVE THIS COMMENT WHEN REPLACING) ====
+// ==== LOCATIONS TAB: FULL PANEL WITH LIST, EDIT, DELETE, ADD ====
+
+// Drop this whole function in place of your current renderLocationsPanel
 
 async function renderLocationsPanel(clientId) {
   const panel = document.getElementById('cmTabPanel');
-  // You can expand this in the future with actual add/edit/delete controls!
-  panel.innerHTML = `
-    <div style="color:#36ff71;text-align:center;margin:70px 0 40px 0;">
-      Location management coming soon.<br>
-      You’ll add/edit/delete locations for the selected client.
-    </div>
-    <button class="manage-btn" style="margin:auto;display:block;" onclick="showAddLocationModal('${clientId}')">Add Location</button>
-  `;
+  panel.innerHTML = `<div style="color:#36ff71;text-align:center;">Loading locations...</div>`;
+  let html = "";
+
+  // Helper for table row actions
+  function locationActions(cid, locId) {
+    return `
+      <button onclick="editLocation('${cid}','${locId}')" style="color:#36ff71;background:none;border:none;cursor:pointer;">Edit</button>
+      <button onclick="deleteLocation('${cid}','${locId}')" style="color:#f00;background:none;border:none;cursor:pointer;">Delete</button>
+    `;
+  }
+
+  if (clientId === "all") {
+    // Show a simple message for "All"
+    html = `<div style="color:#fff;text-align:center;margin:40px 0;">
+      Please select a client to manage locations.
+    </div>`;
+  } else {
+    // Load all locations for this client
+    const locSnap = await getDocs(collection(db, `clients/${clientId}/locations`));
+    html += `<table style="width:100%;margin-bottom:18px;color:#fff;background:#101914;border-radius:7px;box-shadow:0 0 10px #33ff8092;">
+      <thead>
+        <tr>
+          <th>Location Name</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>`;
+    let count = 0;
+    locSnap.forEach(locDoc => {
+      const loc = locDoc.data();
+      if (loc.deleted) return; // Soft delete
+      html += `<tr>
+        <td>${loc.name || ""}</td>
+        <td>${locationActions(clientId, locDoc.id)}</td>
+      </tr>`;
+      count++;
+    });
+    if (!count) {
+      html += `<tr><td colspan="2" style="color:#36ff71;text-align:center;">No locations found.</td></tr>`;
+    }
+    html += `</tbody></table>`;
+    html += `<button class="manage-btn" style="margin:auto;display:block;" onclick="showAddLocationModal('${clientId}')">Add Location</button>`;
+  }
+  panel.innerHTML = html;
 }
 
-window.renderLocationsPanel = renderLocationsPanel;
+// Add this function to handle deleting a location (soft delete, matches your other delete methods)
+window.deleteLocation = async function(clientId, locId) {
+  if (!confirm("Delete this location? This cannot be undone.")) return;
+  await updateDoc(doc(db, `clients/${clientId}/locations/${locId}`), { deleted: true });
+  await renderLocationsPanel(clientId);
+};
 
+// No change to editLocation or showAddLocationModal—they already exist!
+
+// Make sure this is global
+window.renderLocationsPanel = renderLocationsPanel;
 
