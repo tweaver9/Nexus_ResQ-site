@@ -933,5 +933,20 @@ document.body.addEventListener('mousedown', e => {
 window.renderAssetsPanel = renderAssetsPanel;
 window.renderLocationsPanel = renderLocationsPanel;
 
+// ==== LOCATIONS TAB: BASIC PANEL (REQUIRED FOR TAB TO WORK, REMOVE THIS COMMENT WHEN REPLACING) ====
+
+async function renderLocationsPanel(clientId) {
+  const panel = document.getElementById('cmTabPanel');
+  // You can expand this in the future with actual add/edit/delete controls!
+  panel.innerHTML = `
+    <div style="color:#36ff71;text-align:center;margin:70px 0 40px 0;">
+      Location management coming soon.<br>
+      You’ll add/edit/delete locations for the selected client.
+    </div>
+    <button class="manage-btn" style="margin:auto;display:block;" onclick="showAddLocationModal('${clientId}')">Add Location</button>
+  `;
+}
+
+window.renderLocationsPanel = renderLocationsPanel;
 
 
