@@ -60,6 +60,10 @@ body {
   background: #245677;
 }
 
+.nav-btn.active-nav {
+  background: #2c91f0;
+}
+
 /* Main Content */
 .main-content {
   flex: 1;
