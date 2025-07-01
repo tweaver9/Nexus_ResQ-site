@@ -63,25 +63,55 @@ clientForm.onsubmit = async function (e) {
     clientForm.querySelector("#submitClientBtn").disabled = false;
     return;
   }
+
   try {
-    const clientRef = await addDoc(collection(db, "clients"), {
-      name: clientName,
-      created_at: serverTimestamp()
-    });
+    // 1. Add client doc
+    let clientRef;
+    try {
+      clientRef = await addDoc(collection(db, "clients"), {
+        name: clientName,
+        created_at: serverTimestamp()
+      });
+      console.log('Client doc created:', clientRef.id);
+    } catch (err) {
+      throw new Error("Failed to create client doc: " + err.message);
+    }
     const clientId = clientRef.id;
-    // Upload logo
-    const logoUrl = await uploadLogoAndGetUrl(logoFile, clientId);
-    await updateDoc(doc(db, "clients", clientId), { logo_url: logoUrl });
-    // Add admin user
-    await addDoc(collection(db, `clients/${clientId}/users`), {
-      username: adminUsername,
-      password: adminPassword,
-      first_name: adminFirst,
-      last_name: adminLast,
-      role: "admin",
-      mustChangePassword: true,
-      created_at: serverTimestamp()
-    });
+
+    // 2. Upload logo
+    let logoUrl;
+    try {
+      logoUrl = await uploadLogoAndGetUrl(logoFile, clientId);
+      console.log('Logo uploaded:', logoUrl);
+    } catch (err) {
+      throw new Error("Failed to upload logo: " + err.message);
+    }
+
+    // 3. Update client with logo URL
+    try {
+      await updateDoc(doc(db, "clients", clientId), { logo_url: logoUrl });
+      console.log('Client doc updated with logo URL');
+    } catch (err) {
+      throw new Error("Failed to update client with logo URL: " + err.message);
+    }
+
+    // 4. Add admin user
+    try {
+      await addDoc(collection(db, `clients/${clientId}/users`), {
+        username: adminUsername,
+        password: adminPassword,
+        first_name: adminFirst,
+        last_name: adminLast,
+        role: "admin",
+        mustChangePassword: true,
+        created_at: serverTimestamp()
+      });
+      console.log('Admin user added');
+    } catch (err) {
+      throw new Error("Failed to add admin user: " + err.message);
+    }
+
+    // 5. Success!
     onboardCreds.innerHTML = `<b>Client successfully created!</b><br><br>
       <b>Client Name:</b> ${clientName}<br>
       <b>Client ID:</b> ${clientId}<br>
@@ -97,6 +127,7 @@ clientForm.onsubmit = async function (e) {
   } catch (err) {
     clientFormMsg.style.color = "#ff5050";
     clientFormMsg.textContent = "Error: " + (err.message || "Unknown error");
+    console.error('Client creation failed:', err);
   }
   clientForm.querySelector("#submitClientBtn").disabled = false;
 };
