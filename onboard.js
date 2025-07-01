@@ -4,13 +4,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-// ========== SECURITY ==========
+// ========== SECURITY: Nexus Owner Only ==========
 if (sessionStorage.role !== 'nexus') {
   document.body.innerHTML = '<div style="color:#fdd835;font-size:1.2em;margin:64px auto;max-width:380px;text-align:center;">Access Denied<br>This page is restricted to Nexus Owners.</div>';
   throw new Error("Not authorized");
 }
 
-// ======= CLIENT CREATION =======
+// ========== CLIENT CREATION ==========
 const clientForm = document.getElementById('addClientForm');
 const clientNameInput = document.getElementById('clientName');
 const clientLogoInput = document.getElementById('clientLogo');
@@ -20,6 +20,9 @@ const adminUsernameInput = document.getElementById('adminUsername');
 const adminPasswordInput = document.getElementById('adminPassword');
 const clientFormMsg = document.getElementById('clientFormMsg');
 const onboardCreds = document.getElementById('onboardCreds');
+const manageClientsBtn = document.getElementById('manageClientsBtn');
+const clientManagerModal = document.getElementById('clientManagerModal');
+const clientManagerModalContent = document.getElementById('clientManagerModalContent');
 
 function slug(str) {
   return str.toLowerCase()
@@ -51,7 +54,7 @@ clientForm.onsubmit = async function (e) {
   clientForm.querySelector("#submitClientBtn").disabled = true;
 
   const clientName = clientNameInput.value.trim();
-  const clientSubdomain = slug(clientName);  // <-- This is the subdomain!
+  const clientSubdomain = slug(clientName);
   const logoFile = clientLogoInput.files[0];
   const adminFirst = adminFirstInput.value.trim();
   const adminLast = adminLastInput.value.trim();
@@ -71,10 +74,9 @@ clientForm.onsubmit = async function (e) {
     try {
       clientRef = await addDoc(collection(db, "clients"), {
         name: clientName,
-        subdomain: clientSubdomain,         // <<<<<<<<------ Added here!
+        subdomain: clientSubdomain,
         created_at: serverTimestamp()
       });
-      console.log('Client doc created:', clientRef.id);
     } catch (err) {
       throw new Error("Failed to create client doc: " + err.message);
     }
@@ -84,7 +86,6 @@ clientForm.onsubmit = async function (e) {
     let logoUrl;
     try {
       logoUrl = await uploadLogoAndGetUrl(logoFile, clientId);
-      console.log('Logo uploaded:', logoUrl);
     } catch (err) {
       throw new Error("Failed to upload logo: " + err.message);
     }
@@ -92,7 +93,6 @@ clientForm.onsubmit = async function (e) {
     // 3. Update client with logo URL
     try {
       await updateDoc(doc(db, "clients", clientId), { logo_url: logoUrl });
-      console.log('Client doc updated with logo URL');
     } catch (err) {
       throw new Error("Failed to update client with logo URL: " + err.message);
     }
@@ -108,7 +108,6 @@ clientForm.onsubmit = async function (e) {
         mustChangePassword: true,
         created_at: serverTimestamp()
       });
-      console.log('Admin user added');
     } catch (err) {
       throw new Error("Failed to add admin user: " + err.message);
     }
@@ -124,7 +123,6 @@ clientForm.onsubmit = async function (e) {
     `;
     onboardCreds.style.display = "block";
     clientFormMsg.textContent = "";
-    await refreshClientDropdown(clientId);
     clientForm.reset();
     autoFillAdmin();
   } catch (err) {
@@ -168,183 +166,39 @@ function imageToWebp(img, maxW = 220, maxH = 120) {
   );
 }
 
-// ============ ASSET TYPE & FREQUENCY QUESTIONS =============
-const assetTypeSelect = document.getElementById('assetTypeSelect');
-const newAssetTypeInput = document.getElementById('newAssetTypeInput');
-const frequencySelect = document.getElementById('frequencySelect');
-const newFrequencyInput = document.getElementById('newFrequencyInput');
-const questionsList = document.getElementById('questionsList');
-const addQuestionBtn = document.getElementById('addQuestionBtn');
-const assetTypeQuestionForm = document.getElementById('assetTypeQuestionForm');
-const assetTypeQuestionMsg = document.getElementById('assetTypeQuestionMsg');
-const currentQuestionsContainer = document.getElementById('currentQuestionsContainer');
+// ========== MANAGE CLIENTS MODAL (Skeleton) ==========
 
-// Track questions in local UI state
-let currentQuestions = [];
-
-function renderQuestionsList() {
-  questionsList.innerHTML = '';
-  currentQuestions.forEach((q, idx) => {
-    const row = document.createElement('div');
-    row.className = 'question-row';
-    row.innerHTML = `
-      <input type="text" value="${q}" placeholder="Inspection question" />
-      <button type="button" class="remove-q-btn" data-idx="${idx}">&times;</button>
-    `;
-    row.querySelector('input').oninput = e => currentQuestions[idx] = e.target.value;
-    row.querySelector('.remove-q-btn').onclick = () => {
-      currentQuestions.splice(idx, 1);
-      renderQuestionsList();
-    };
-    questionsList.appendChild(row);
-  });
-}
-function addEmptyQuestion() {
-  currentQuestions.push('');
-  renderQuestionsList();
-}
-addQuestionBtn.onclick = addEmptyQuestion;
-// Start with 5 empty lines
-for (let i = 0; i < 5; ++i) addEmptyQuestion();
-
-// If asset type/frequency changes, clear questions
-function resetQuestionsForm() {
-  currentQuestions = [];
-  for (let i = 0; i < 5; ++i) currentQuestions.push('');
-  renderQuestionsList();
-}
-assetTypeSelect.onchange = resetQuestionsForm;
-frequencySelect.onchange = resetQuestionsForm;
-newAssetTypeInput.oninput = resetQuestionsForm;
-newFrequencyInput.oninput = resetQuestionsForm;
-
-// -------- Asset Type + Frequency submit --------
-assetTypeQuestionForm.onsubmit = async function(e) {
-  e.preventDefault();
-  assetTypeQuestionMsg.style.color = "#fdd835";
-  assetTypeQuestionMsg.textContent = "Saving...";
-
-  // 1. Figure out asset type (existing or new)
-  let assetTypeName = newAssetTypeInput.value.trim() || assetTypeSelect.options[assetTypeSelect.selectedIndex]?.dataset.displayName || assetTypeSelect.value;
-  if (!assetTypeName) {
-    assetTypeQuestionMsg.style.color = "#ff5050";
-    assetTypeQuestionMsg.textContent = "Asset type required.";
-    return;
-  }
-  // 2. Frequency
-  let freq = newFrequencyInput.value.trim() || frequencySelect.value;
-  if (!freq) {
-    assetTypeQuestionMsg.style.color = "#ff5050";
-    assetTypeQuestionMsg.textContent = "Frequency required.";
-    return;
-  }
-  // 3. Questions
-  const questions = currentQuestions.map(q => q.trim()).filter(q => q);
-  if (!questions.length) {
-    assetTypeQuestionMsg.style.color = "#ff5050";
-    assetTypeQuestionMsg.textContent = "Please enter at least one question.";
-    return;
-  }
-
-  try {
-    // Always use slug for document ID, pretty name for "name" field
-    let assetTypeId = slug(assetTypeName);
-    const atDocRef = doc(db, "assetTypes", assetTypeId);
-    const currDocSnap = await getDoc(atDocRef);
-
-    if (currDocSnap.exists()) {
-      // Update existing: set/merge frequency
-      let freqKey = `questions_${freq.toLowerCase()}`;
-      let update = {};
-      update[freqKey] = questions;
-      // Merge/append frequency to .frequencies array if not present
-      const currDoc = currDocSnap.data();
-      let newFreqArr = Array.isArray(currDoc.frequencies) ? currDoc.frequencies.slice() : [];
-      if (!newFreqArr.includes(freq)) newFreqArr.push(freq);
-      update['frequencies'] = newFreqArr;
-      await updateDoc(atDocRef, update);
-      assetTypeQuestionMsg.style.color = "#28e640";
-      assetTypeQuestionMsg.textContent = `Questions for "${currDoc.name}" (${freq}) updated!`;
-      await refreshAssetTypeDropdown(assetTypeId);
-    } else {
-      // Create new assetType with slug ID and display name
-      let docData = {
-        name: assetTypeName,     // Pretty name for UI
-        frequencies: [freq],
-      };
-      docData[`questions_${freq.toLowerCase()}`] = questions;
-      await setDoc(atDocRef, docData);
-      assetTypeQuestionMsg.style.color = "#28e640";
-      assetTypeQuestionMsg.textContent = `Asset type "${assetTypeName}" created with ${freq} questions.`;
-      await refreshAssetTypeDropdown();
-    }
-    // After save, refresh current questions view
-    await showCurrentQuestions(assetTypeName);
-    resetQuestionsForm();
-  } catch (err) {
-    assetTypeQuestionMsg.style.color = "#ff5050";
-    assetTypeQuestionMsg.textContent = "Error: " + (err.message || "Unknown error");
-  }
+// Show modal on button click (for Nexus only)
+manageClientsBtn.onclick = function () {
+  clientManagerModal.style.display = 'flex';
+  renderClientManager();
 };
 
-// ---- Show all questions for asset type ----
-async function showCurrentQuestions(assetTypeName) {
-  if (!assetTypeName) {
-    currentQuestionsContainer.innerHTML = '';
-    return;
-  }
-  // Always lookup by slug
-  let docId = slug(assetTypeName);
-  let docRef = doc(db, "assetTypes", docId);
-  let docSnap = await getDoc(docRef);
-  if (!docSnap.exists()) {
-    currentQuestionsContainer.innerHTML = '';
-    return;
-  }
-  let docData = docSnap.data();
-  let html = `<div class="question-list-title">Current Frequencies & Questions for "${docData.name}":</div>`;
-  for (const freq of docData.frequencies || []) {
-    let fq = freq.toLowerCase();
-    let qArr = docData[`questions_${fq}`];
-    if (Array.isArray(qArr)) {
-      html += `<div class="freq-tag">${freq}</div>`;
-      html += `<div class="current-questions-list">`;
-      qArr.forEach((q, i) => {
-        html += `<div style="color:#eee;margin-left:16px;">${i+1}. ${q}</div>`;
-      });
-      html += `</div>`;
-    }
-  }
-  currentQuestionsContainer.innerHTML = html;
+function closeClientManagerModal() {
+  clientManagerModal.style.display = 'none';
 }
 
-// Populate asset type dropdown (slug as value, pretty name as label)
-async function refreshAssetTypeDropdown(selectedId = null) {
-  assetTypeSelect.innerHTML = '<option value="">Select asset type...</option>';
-  const snap = await getDocs(collection(db, "assetTypes"));
-  snap.forEach(docSnap => {
-    const at = docSnap.data();
-    const id = docSnap.id; // slug
-    // Use data-display-name for safe retrieval if needed
-    assetTypeSelect.innerHTML += `<option value="${id}" data-display-name="${at.name}">${at.name}</option>`;
-  });
-}
-
-// Populate client dropdown (for completeness)
-async function refreshClientDropdown(selectedId = null) {
-  if (!document.getElementById('clientSelect')) return; // Only if present
-  const clientSelect = document.getElementById('clientSelect');
-  clientSelect.innerHTML = '<option value="">Select client...</option>';
-  const snap = await getDocs(collection(db, "clients"));
-  snap.forEach(docSnap => {
-    const c = docSnap.data();
-    const id = docSnap.id;
-    clientSelect.innerHTML += `<option value="${id}" ${id === selectedId ? 'selected' : ''}>${c.name || id}</option>`;
-  });
-}
-
-// ===== Initial population (ALWAYS LIVE) =====
-document.addEventListener("DOMContentLoaded", () => {
-  refreshClientDropdown();
-  refreshAssetTypeDropdown();
+// ESC closes modal
+document.addEventListener('keydown', e => {
+  if (e.key === "Escape") closeClientManagerModal();
 });
+
+// Click outside closes modal
+clientManagerModal.onclick = function(e) {
+  if (e.target === clientManagerModal) closeClientManagerModal();
+};
+
+// Placeholder function for now: UI will be built out further
+function renderClientManager() {
+  clientManagerModalContent.innerHTML = `
+    <h2 style="color:#36ff71;margin-bottom:26px;text-align:center;">Client Manager</h2>
+    <div style="text-align:center;margin:30px 0 36px 0;color:#eee;">
+      <b>All client/user/asset management will appear here.<br>
+      (Coming soon!)</b>
+    </div>
+    <button class="manage-btn" onclick="window.closeClientManagerModal()" style="margin:0 auto;">Close</button>
+  `;
+}
+// Expose for modal close button
+window.closeClientManagerModal = closeClientManagerModal;
+
