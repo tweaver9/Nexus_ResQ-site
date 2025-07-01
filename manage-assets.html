@@ -28,18 +28,41 @@
     .status-moved { background: #bbb; color: #444; }
     .action-btn { background: #142b47; color: #fdd835; border: none; border-radius: 6px; padding: 5px 15px; font-size: 1em; font-family: inherit; font-weight: 500; cursor: pointer; margin-right: 8px; transition: background 0.15s, color 0.15s; }
     .action-btn:hover { background: #fdd835; color: #142b47; }
+    #modal-root { position: fixed; left:0;top:0;width:100vw;height:100vh;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(14,16,32,.78);}
+    .modal-content {
+      background: #1e2f3c;
+      border-radius: 20px;
+      padding: 36px 40px;
+      box-shadow: 0 8px 40px 0 #0a1322c5;
+      min-width: 330px; max-width: 480px;
+      display: flex; flex-direction: column; gap: 16px; color: #f2f2f2;
+    }
+    .modal-content h3 { color: #fdd835; margin: 0 0 10px 0; font-size: 1.45em; }
+    .modal-content label { margin-top: 12px; margin-bottom: 3px; font-weight: 600; letter-spacing: .04em; color: #ffe066;}
+    .modal-content input, .modal-content select {
+      padding: 8px 12px; border-radius: 7px; border: 1px solid #344267;
+      background: #232c3c; color: #fff; font-size: 1em; margin-bottom: 6px;
+    }
+    .modal-content button { margin-top: 14px; }
+    .manage-cats-header { display:flex;justify-content:space-between;align-items:center; }
+    .cat-list {margin-top:14px;}
+    .cat-list-item { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;}
+    .cat-list-item span { flex:1; }
+    .cat-list-item button { font-size:0.95em;padding:2px 12px;margin-left:8px;}
+    .cat-edit-input { width:70%;padding:3px 8px;margin-right:8px;}
     @media (max-width: 900px) {
       .assets-header, .assets-container { padding-left: 6px; padding-right: 6px; }
       .assets-header h1 { font-size: 1.6em; }
       .assets-table th, .assets-table td { padding: 7px 3px; }
+      .modal-content { padding: 24px 4vw;}
     }
     @media (max-width: 600px) {
-      .assets-header { flex-direction: column; align-items: flex-start; }
+      .assets-header { flex-direction: column; align-items: flex-start;}
       .header-right { flex-direction: column; align-items: flex-start; gap: 10px;}
       .assets-container { padding: 0 2px; }
       .assets-table { font-size: 0.97em; }
+      .modal-content { padding:14px 2vw;}
     }
-    #modal-root { position: fixed; left:0;top:0;width:100vw;height:100vh;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(14,16,32,.58);}
   </style>
 </head>
 <body>
@@ -47,9 +70,9 @@
     <h1>Manage Assets</h1>
     <div class="header-right">
       <button class="assets-action-btn" id="addAssetBtn">+ Add Asset</button>
-      <button class="assets-action-btn" id="addTypeBtn">+ Add Type</button>
+      <button class="assets-action-btn" id="bulkAddAssetBtn">+ Bulk Add Assets</button>
       <button class="assets-action-btn" id="addLocationBtn">+ Add Location</button>
-      <!-- ADMIN EXPANSION: Add/Remove Clients, Users, Permissions, etc. -->
+      <button class="assets-action-btn" id="manageCategoriesBtn">Manage Categories</button>
     </div>
   </header>
   <main>
@@ -60,7 +83,6 @@
       <table class="assets-table" id="assetsTable">
         <thead>
           <tr>
-            <th>Client</th>
             <th>Status</th>
             <th>Asset ID</th>
             <th>Type</th>
@@ -83,7 +105,7 @@
     // ----------- FIREBASE IMPORTS -----------
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import {
-      getFirestore, collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, query
+      getFirestore, collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, getDoc
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     // ----------- YOUR FIREBASE CONFIG HERE -----------
@@ -98,11 +120,55 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // ========== GLOBALS ==========
+    // List can be updated in the modal and pushed to Firebase
+    const DEFAULT_CATEGORIES = [
+      "30# ABC Extinguisher",
+      "20# ABC Extinguisher",
+      "5# ABC Extinguisher",
+      "Deluge",
+      "Hose House",
+      "Warehouse",
+      "Hose",
+      "PIV",
+      "Hydrant",
+      "Hydrant Monitor",
+      "Platform Monitor",
+      "Pencil Monitor",
+      "Stored Pressure Extinguisher",
+      "Exit Sign",
+      "SCBA Cylinder",
+      "SCBA Frame",
+      "Engine I",
+      "Engine II",
+      "Quick Attack",
+      "Lube Raft",
+      "Captain Truck",
+      "Lt. Truck",
+      "Rescue Truck",
+      "Rescue Trailer",
+      "Hazmat Truck",
+      "Hazmat Trailer",
+      "Rapid Rescue",
+      "Foam Tote",
+      "Ambulance",
+      "Med 1",
+      "Med 2",
+      "Brush Truck",
+      "Admin Vehicle",
+      "Response Vehicle",
+      "Ladder Truck",
+      "Trailer",
+      "Bay"
+    ];
+
     // ========== STATE ==========
     let allClients = [];
     let allAssets = [];
-    let assetTypesCache = {};
+    let assetCategories = [];
+    let assetCategoriesLastSync = 0; // timestamp
     let locationsCache = {};
+    let assetTypesCache = {}; // legacy
 
     // ========== DOM ==========
     const assetsTableBody = document.getElementById('assetsTableBody');
@@ -110,32 +176,64 @@
     const assetSearch = document.getElementById('assetSearch');
     const modalRoot = document.getElementById('modal-root');
     const addAssetBtn = document.getElementById('addAssetBtn');
-    const addTypeBtn = document.getElementById('addTypeBtn');
+    const bulkAddAssetBtn = document.getElementById('bulkAddAssetBtn');
     const addLocationBtn = document.getElementById('addLocationBtn');
+    const manageCategoriesBtn = document.getElementById('manageCategoriesBtn');
 
-    // ========== LOAD DATA ==========
+    // ========== CATEGORY LOADING (HYBRID: FIREBASE, LOCALSTORAGE, DEFAULT) ==========
+    async function loadAssetCategories(force=false) {
+      // Check localStorage cache (1 hour cache)
+      if (!force) {
+        const cached = localStorage.getItem('nexus_asset_categories');
+        const ts = parseInt(localStorage.getItem('nexus_asset_categories_ts')||'0',10);
+        if (cached && Date.now()-ts < 60*60*1000) {
+          assetCategories = JSON.parse(cached);
+          return;
+        }
+      }
+      // Try Firebase
+      try {
+        const snap = await getDocs(collection(db, "assetCategories"));
+        let cats = [];
+        snap.forEach(doc => {
+          if(doc.data().name) cats.push(doc.data().name);
+        });
+        if (cats.length) {
+          assetCategories = cats;
+          localStorage.setItem('nexus_asset_categories', JSON.stringify(assetCategories));
+          localStorage.setItem('nexus_asset_categories_ts', Date.now()+'');
+          return;
+        }
+      } catch(e) {
+        // Firebase unavailable
+      }
+      // Fallback: use DEFAULT_CATEGORIES
+      assetCategories = DEFAULT_CATEGORIES;
+      localStorage.setItem('nexus_asset_categories', JSON.stringify(assetCategories));
+      localStorage.setItem('nexus_asset_categories_ts', Date.now()+'');
+    }
+
+    // ========== CLIENTS/LOCATIONS/ASSETS ==========
     window.addEventListener('DOMContentLoaded', async () => {
       await loadAllClients();
+      await loadAssetCategories();
       await loadAllAssets();
       assetSearch.addEventListener('input', renderAssets);
       addAssetBtn.onclick = showAddAssetModal;
-      addTypeBtn.onclick = showAddTypeModal;
+      bulkAddAssetBtn.onclick = showBulkAddAssetModal;
       addLocationBtn.onclick = showAddLocationModal;
+      manageCategoriesBtn.onclick = showManageCategoriesModal;
     });
 
     async function loadAllClients() {
       const snap = await getDocs(collection(db, "clients"));
       allClients = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Preload assetTypes and locations for dropdown performance
       for (const c of allClients) {
-        assetTypesCache[c.id] = await getTypesForClient(c.id);
         locationsCache[c.id] = await getLocationsForClient(c.id);
       }
     }
-
     async function loadAllAssets() {
       allAssets = [];
-      // Load all assets from all clients
       for (const client of allClients) {
         const snap = await getDocs(collection(db, `clients/${client.id}/assets`));
         snap.forEach(doc => {
@@ -149,18 +247,12 @@
       }
       renderAssets();
     }
-
-    // ========== HELPERS ==========
-    async function getTypesForClient(clientId) {
-      const snap = await getDocs(collection(db, `clients/${clientId}/assetTypes`));
-      return snap.docs.map(d => d.data().name);
-    }
     async function getLocationsForClient(clientId) {
       const snap = await getDocs(collection(db, `clients/${clientId}/locations`));
       return snap.docs.map(d => d.data().name);
     }
 
-    // ========== RENDER ASSET TABLE ==========
+    // ========== RENDER TABLE ==========
     function renderAssets() {
       const searchVal = assetSearch.value.trim().toLowerCase();
       let filtered = allAssets;
@@ -179,18 +271,16 @@
         return;
       }
       noAssetsMsg.style.display = "none";
-
       filtered.forEach(row => {
         assetsTableBody.insertAdjacentHTML('beforeend', `
           <tr>
-            <td>${row.clientName}</td>
             <td>${statusBadge(row.status)}</td>
             <td>${row.asset_id || "—"}</td>
             <td>${row.type || "—"}</td>
             <td>${row.location || "—"}</td>
             <td>${row.assigned_user || "—"}</td>
             <td>${row.last_inspected_by || "—"}</td>
-            <td>${row.last_inspection_date || "—"}</td>
+            <td>${formatMMDDYY(row.last_inspection_date) || "—"}</td>
             <td>
               <button class="action-btn" onclick="window.editAsset('${row.clientId}','${row.id}')">Edit</button>
               <button class="action-btn" onclick="window.deleteAsset('${row.clientId}','${row.id}')">Delete</button>
@@ -199,7 +289,16 @@
         `);
       });
     }
-
+    function formatMMDDYY(dt) {
+      if(!dt) return "";
+      if(typeof dt === "string" && dt.includes("/")) return dt;
+      let d = typeof dt === "string" ? new Date(dt) : dt.toDate ? dt.toDate() : new Date(dt);
+      if(isNaN(d.getTime())) return "";
+      let mm = (d.getMonth()+1).toString().padStart(2,'0');
+      let dd = d.getDate().toString().padStart(2,'0');
+      let yy = d.getFullYear().toString().slice(-2);
+      return `${mm}/${dd}/${yy}`;
+    }
     function statusBadge(status) {
       if (status === "in_service") return `<span class="status-badge status-inservice">In Service</span>`;
       if (status === "out_of_service") return `<span class="status-badge status-outofservice">Out</span>`;
@@ -208,12 +307,25 @@
       return `<span class="status-badge">${status || "—"}</span>`;
     }
 
-    // ========== ADD ASSET MODAL (MULTI-CLIENT) ==========
+    // ========== ADD/EDIT ASSET ==========
+    function categoryDropdownHtml(selected = "") {
+      return `
+        <label>Type</label>
+        <select id="assetCategory" required>
+          ${assetCategories.map(cat => `
+            <option value="${cat}" ${cat === selected ? "selected" : ""}>${cat}</option>
+          `).join('')}
+          <option value="Other">Other</option>
+        </select>
+        <input type="text" id="customCategory" placeholder="Enter custom type" style="display:none;margin-top:8px;">
+      `;
+    }
+
     async function showAddAssetModal() {
       let clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
       modalRoot.innerHTML = `
-        <div style="background:#223052;padding:32px 26px;border-radius:14px;max-width:480px;margin:60px auto;">
-          <h3 style="color:#fdd835;">Add Asset (Any Client)</h3>
+        <div class="modal-content">
+          <h3>Add Asset</h3>
           <form id="addAssetForm">
             <label>Client</label>
             <select id="assetClient" required>
@@ -224,25 +336,20 @@
             <select id="assetLocation" required>
               <option value="">Select Client First</option>
             </select>
-            <label>Type</label>
-            <select id="assetType" required>
-              <option value="">Select Client First</option>
-            </select>
+            ${categoryDropdownHtml()}
             <label>Asset ID</label>
-            <input type="text" id="assetId" required placeholder="e.g. Extinguisher001">
-            <label>Serial No.</label>
-            <input type="text" id="assetSerial" placeholder="Optional">
+            <input type="text" id="assetId" required placeholder="e.g. Hazmat Truck">
+            <label>Assigned User</label>
+            <input type="text" id="assignedUser" placeholder="username">
             <label>Status</label>
             <select id="assetStatus">
               <option value="in_service">In Service</option>
               <option value="out_of_service">Out of Service</option>
               <option value="moved">Moved</option>
             </select>
-            <label>Assigned User</label>
-            <input type="text" id="assignedUser" placeholder="Optional">
             <label>Last Inspected By</label>
             <input type="text" id="lastInspectedBy" placeholder="username">
-            <label>Last Inspection Date</label>
+            <label>Last Inspection</label>
             <input type="date" id="lastInspectionDate">
             <button class="assets-action-btn" type="submit">Add</button>
             <button class="action-btn" type="button" id="closeAssetModal">Cancel</button>
@@ -252,39 +359,37 @@
       `;
       modalRoot.style.display = "flex";
       document.getElementById('closeAssetModal').onclick = () => modalRoot.style.display = "none";
-
-      // When client is picked, load its locations and types
       document.getElementById('assetClient').onchange = function() {
         const clientId = this.value;
         const locList = locationsCache[clientId] || [];
-        const typeList = assetTypesCache[clientId] || [];
-        document.getElementById('assetLocation').innerHTML = `<option value="">Select Location</option>` +
-          locList.map(l => `<option value="${l}">${l}</option>`).join('');
-        document.getElementById('assetType').innerHTML = `<option value="">Select Type</option>` +
-          typeList.map(t => `<option value="${t}">${t}</option>`).join('');
+        document.getElementById('assetLocation').innerHTML = `<option value="">Select Location</option>` + locList.map(l => `<option value="${l}">${l}</option>`).join('');
       };
-
+      document.getElementById('assetCategory').onchange = function() {
+        document.getElementById('customCategory').style.display = this.value === "Other" ? "" : "none";
+      };
       document.getElementById('addAssetForm').onsubmit = async function(e) {
         e.preventDefault();
         const msg = document.getElementById('assetFormMsg');
         msg.textContent = "Adding...";
         const clientId = document.getElementById('assetClient').value;
         const location = document.getElementById('assetLocation').value.trim();
-        const type = document.getElementById('assetType').value.trim();
+        let category = document.getElementById('assetCategory').value;
+        if (category === "Other") {
+          category = document.getElementById('customCategory').value.trim() || "Custom";
+        }
         const asset_id = document.getElementById('assetId').value.trim();
-        const serial = document.getElementById('assetSerial').value.trim();
         const assigned_user = document.getElementById('assignedUser').value.trim();
         const status = document.getElementById('assetStatus').value;
         const last_inspected_by = document.getElementById('lastInspectedBy').value.trim();
         const last_inspection_date = document.getElementById('lastInspectionDate').value;
-        if (!clientId || !asset_id || !type || !location) {
+        if (!clientId || !asset_id || !category || !location) {
           msg.textContent = "Fill all required fields.";
           msg.style.color = "#ff5050";
           return;
         }
         try {
           await addDoc(collection(db, `clients/${clientId}/assets`), {
-            asset_id, type, location, serial, assigned_user, status,
+            asset_id, type: category, location, assigned_user, status,
             last_inspected_by, last_inspection_date,
             created_at: serverTimestamp()
           });
@@ -299,45 +404,69 @@
       };
     }
 
-    // ========== ADD TYPE MODAL (PER CLIENT) ==========
-    function showAddTypeModal() {
+    // ========== BULK ADD ==========
+    function showBulkAddAssetModal() {
       let clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
       modalRoot.innerHTML = `
-        <div style="background:#223052;padding:32px 26px;border-radius:14px;max-width:360px;margin:60px auto;">
-          <h3 style="color:#fdd835;">Add Asset Type</h3>
-          <form id="addTypeForm">
+        <div class="modal-content">
+          <h3>Bulk Add Assets</h3>
+          <form id="bulkAddForm">
             <label>Client</label>
-            <select id="typeClient" required>
+            <select id="bulkClient" required>
               <option value="">Select Client</option>
               ${clientOptions}
             </select>
-            <label>Name</label>
-            <input type="text" id="typeName" required placeholder="e.g. Fire Extinguisher">
-            <button class="assets-action-btn" type="submit">Add</button>
-            <button class="action-btn" type="button" id="closeTypeModal">Cancel</button>
-            <span id="typeFormMsg" style="margin-left:10px;color:#fdd835;"></span>
+            <label>Location</label>
+            <select id="bulkLocation" required><option value="">Select Client First</option></select>
+            ${categoryDropdownHtml()}
+            <label>Quantity</label>
+            <input type="number" id="bulkQty" min="1" max="99" required value="1" />
+            <button class="assets-action-btn" type="submit">Bulk Add</button>
+            <button class="action-btn" type="button" id="closeBulkModal">Cancel</button>
+            <span id="bulkFormMsg" style="margin-left:10px;color:#fdd835;"></span>
           </form>
         </div>
       `;
       modalRoot.style.display = "flex";
-      document.getElementById('closeTypeModal').onclick = () => modalRoot.style.display = "none";
-      document.getElementById('addTypeForm').onsubmit = async function (e) {
+      document.getElementById('closeBulkModal').onclick = () => modalRoot.style.display = "none";
+      document.getElementById('bulkClient').onchange = function() {
+        const clientId = this.value;
+        const locList = locationsCache[clientId] || [];
+        document.getElementById('bulkLocation').innerHTML = `<option value="">Select Location</option>` + locList.map(l => `<option value="${l}">${l}</option>`).join('');
+      };
+      document.getElementById('assetCategory').onchange = function() {
+        document.getElementById('customCategory').style.display = this.value === "Other" ? "" : "none";
+      };
+      document.getElementById('bulkAddForm').onsubmit = async function(e) {
         e.preventDefault();
-        const msg = document.getElementById('typeFormMsg');
+        const msg = document.getElementById('bulkFormMsg');
         msg.textContent = "Adding...";
-        const clientId = document.getElementById('typeClient').value;
-        const name = document.getElementById('typeName').value.trim();
-        if (!clientId || !name) {
-          msg.textContent = "Fill out all fields.";
+        const clientId = document.getElementById('bulkClient').value;
+        const location = document.getElementById('bulkLocation').value;
+        let category = document.getElementById('assetCategory').value;
+        if (category === "Other") {
+          category = document.getElementById('customCategory').value.trim() || "Custom";
+        }
+        const qty = parseInt(document.getElementById('bulkQty').value);
+        if (!clientId || !location || !category || qty < 1) {
+          msg.textContent = "Fill all fields.";
           msg.style.color = "#ff5050";
           return;
         }
         try {
-          await addDoc(collection(db, `clients/${clientId}/assetTypes`), { name, created_at: serverTimestamp() });
-          msg.textContent = "Added!";
+          for (let i = 0; i < qty; i++) {
+            await addDoc(collection(db, `clients/${clientId}/assets`), {
+              asset_id: `NEW_${category.replace(/\s+/g,"_")}_${Date.now()}_${i+1}`,
+              type: category,
+              location,
+              status: "in_service",
+              created_at: serverTimestamp()
+            });
+          }
+          msg.textContent = "Bulk Added!";
           msg.style.color = "#28e640";
-          assetTypesCache[clientId] = await getTypesForClient(clientId);
           modalRoot.style.display = "none";
+          await loadAllAssets();
         } catch (error) {
           msg.textContent = "Error: " + (error.message || "Unknown error");
           msg.style.color = "#ff5050";
@@ -345,12 +474,12 @@
       };
     }
 
-    // ========== ADD LOCATION MODAL (PER CLIENT) ==========
+    // ========== ADD LOCATION ==========
     function showAddLocationModal() {
       let clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
       modalRoot.innerHTML = `
-        <div style="background:#223052;padding:32px 26px;border-radius:14px;max-width:360px;margin:60px auto;">
-          <h3 style="color:#fdd835;">Add Location/Zone/Area</h3>
+        <div class="modal-content">
+          <h3>Add Location</h3>
           <form id="addLocationForm">
             <label>Client</label>
             <select id="locationClient" required>
@@ -394,23 +523,157 @@
       };
     }
 
-    // ========== EDIT / DELETE ASSET ==========
-    window.editAsset = function(clientId, assetId) {
-      alert(`Edit asset: ${assetId} for client: ${clientId}\n(This feature coming soon)`);
+    // ========== EDIT/DELETE ASSET ==========
+    window.editAsset = async function(clientId, assetId) {
+      const docRef = doc(db, `clients/${clientId}/assets/${assetId}`);
+      const assetSnap = await getDoc(docRef);
+      if (!assetSnap.exists()) {
+        alert("Asset not found.");
+        return;
+      }
+      const asset = assetSnap.data();
+      modalRoot.innerHTML = `
+        <div class="modal-content">
+          <h3>Edit Asset</h3>
+          <form id="editAssetForm">
+            <label>Asset ID</label>
+            <input type="text" id="editAssetId" value="${asset.asset_id || ""}" required>
+            ${categoryDropdownHtml(asset.type)}
+            <label>Location</label>
+            <input type="text" id="editAssetLocation" value="${asset.location || ""}" required>
+            <label>Assigned User</label>
+            <input type="text" id="editAssignedUser" value="${asset.assigned_user || ""}">
+            <label>Status</label>
+            <select id="editAssetStatus">
+              <option value="in_service" ${asset.status === "in_service" ? "selected":""}>In Service</option>
+              <option value="out_of_service" ${asset.status === "out_of_service" ? "selected":""}>Out of Service</option>
+              <option value="moved" ${asset.status === "moved" ? "selected":""}>Moved</option>
+            </select>
+            <label>Last Inspected By</label>
+            <input type="text" id="editLastInspectedBy" value="${asset.last_inspected_by || ""}">
+            <label>Last Inspection</label>
+            <input type="date" id="editLastInspectionDate" value="${asset.last_inspection_date || ""}">
+            <button class="assets-action-btn" type="submit">Save</button>
+            <button class="action-btn" type="button" id="closeEditModal">Cancel</button>
+            <span id="editFormMsg" style="margin-left:10px;color:#fdd835;"></span>
+          </form>
+        </div>
+      `;
+      modalRoot.style.display = "flex";
+      document.getElementById('closeEditModal').onclick = () => modalRoot.style.display = "none";
+      document.getElementById('assetCategory').onchange = function() {
+        document.getElementById('customCategory').style.display = this.value === "Other" ? "" : "none";
+      };
+      document.getElementById('editAssetForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const msg = document.getElementById('editFormMsg');
+        msg.textContent = "Saving...";
+        try {
+          let category = document.getElementById('assetCategory').value;
+          if (category === "Other") {
+            category = document.getElementById('customCategory').value.trim() || "Custom";
+          }
+          await updateDoc(docRef, {
+            asset_id: document.getElementById('editAssetId').value,
+            type: category,
+            location: document.getElementById('editAssetLocation').value,
+            assigned_user: document.getElementById('editAssignedUser').value,
+            status: document.getElementById('editAssetStatus').value,
+            last_inspected_by: document.getElementById('editLastInspectedBy').value,
+            last_inspection_date: document.getElementById('editLastInspectionDate').value
+          });
+          msg.textContent = "Saved!";
+          msg.style.color = "#28e640";
+          modalRoot.style.display = "none";
+          await loadAllAssets();
+        } catch (error) {
+          msg.textContent = "Error: " + (error.message || "Unknown error");
+          msg.style.color = "#ff5050";
+        }
+      };
     };
     window.deleteAsset = async function(clientId, assetId) {
       if (!confirm('Delete this asset?')) return;
       try {
-        await updateDoc(doc(db, `clients/${clientId}/assets/${assetId}`), { deleted: true });
+        await deleteDoc(doc(db, `clients/${clientId}/assets/${assetId}`));
         await loadAllAssets();
       } catch (error) {
         alert('Failed to delete asset.');
       }
     };
 
-    // ========== ADMIN EXPANSION POINTS ==========
-    // Add similar modal logic for clients, users, questions, roles, permissions, assignments, etc.
+    // ========== MANAGE CATEGORIES (ADMIN ONLY) ==========
+    function showManageCategoriesModal() {
+      modalRoot.innerHTML = `
+        <div class="modal-content" style="max-width:600px">
+          <div class="manage-cats-header">
+            <h3>Manage Asset Categories</h3>
+            <button class="action-btn" id="closeCatsModal">Close</button>
+          </div>
+          <div>
+            <button class="assets-action-btn" id="syncDefaultCatsBtn" style="margin-bottom:12px;display:none;">Sync Default Categories to Firebase</button>
+            <form id="addCatForm" style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="addCatInput" placeholder="Add new category" style="flex:1;">
+              <button class="assets-action-btn" type="submit">Add</button>
+            </form>
+            <div class="cat-list" id="catList"></div>
+          </div>
+        </div>
+      `;
+      modalRoot.style.display = "flex";
+      document.getElementById('closeCatsModal').onclick = () => modalRoot.style.display = "none";
 
+      // Show sync button if categories missing in Firestore
+      getDocs(collection(db,"assetCategories")).then(snap=>{
+        if(snap.empty) document.getElementById('syncDefaultCatsBtn').style.display="";
+      });
+
+      document.getElementById('syncDefaultCatsBtn').onclick = async function() {
+        // push DEFAULT_CATEGORIES to Firestore (no duplicates)
+        const catCol = collection(db, "assetCategories");
+        for (const name of DEFAULT_CATEGORIES) {
+          await addDoc(catCol, { name });
+        }
+        await loadAssetCategories(true);
+        alert("Default categories synced!");
+        modalRoot.style.display = "none";
+      };
+
+      document.getElementById('addCatForm').onsubmit = async function(e) {
+        e.preventDefault();
+        let val = document.getElementById('addCatInput').value.trim();
+        if (!val) return;
+        await addDoc(collection(db,"assetCategories"), { name: val });
+        document.getElementById('addCatInput').value = "";
+        await loadAssetCategories(true);
+        showManageCategoriesModal();
+      };
+      renderCatList();
+    }
+    async function renderCatList() {
+      let snap;
+      try {
+        snap = await getDocs(collection(db,"assetCategories"));
+      } catch(e){
+        document.getElementById('catList').innerHTML = `<span style="color:#ff5050;">Could not load from Firebase.</span>`;
+        return;
+      }
+      let cats = [];
+      snap.forEach(doc => cats.push({id: doc.id, name: doc.data().name}));
+      cats.sort((a,b)=>a.name.localeCompare(b.name));
+      document.getElementById('catList').innerHTML = cats.map(cat=>`
+        <div class="cat-list-item">
+          <span>${cat.name}</span>
+          <button class="action-btn" onclick="window.deleteCat('${cat.id}')">Delete</button>
+        </div>
+      `).join('');
+      window.deleteCat = async function(id) {
+        if (!confirm("Delete this category?")) return;
+        await deleteDoc(doc(db,"assetCategories",id));
+        await loadAssetCategories(true);
+        showManageCategoriesModal();
+      };
+    }
   </script>
 </body>
 </html>
