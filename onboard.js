@@ -296,52 +296,10 @@ async function refreshAssetTypeDropdown(selectedId = null) {
   });
 }
 
-// ========== ASSIGN ASSET TO CLIENT ===========
-const assignAssetForm = document.getElementById('assignAssetForm');
-const clientSelect = document.getElementById('clientSelect');
-const assetIdInput = document.getElementById('assetId');
-const assetLocationInput = document.getElementById('assetLocation');
-const serialNoInput = document.getElementById('serialNo');
-const assignedUserInput = document.getElementById('assignedUser');
-const assignAssetMsg = document.getElementById('assignAssetMsg');
-
-assignAssetForm.onsubmit = async function(e) {
-  e.preventDefault();
-  assignAssetMsg.style.color = "#fdd835";
-  assignAssetMsg.textContent = "Assigning asset...";
-  const clientId = clientSelect.value;
-  // Always store slug in asset_type!
-  let assetTypeId = assetTypeSelect.value || slug(newAssetTypeInput.value.trim());
-  const assetId = assetIdInput.value.trim();
-  const location = assetLocationInput.value.trim();
-  const serialNo = serialNoInput.value.trim();
-  const assignedUser = assignedUserInput.value.trim();
-
-  if (!clientId || !assetTypeId || !assetId || !location) {
-    assignAssetMsg.style.color = "#ff5050";
-    assignAssetMsg.textContent = "Fill out all required fields.";
-    return;
-  }
-  try {
-    await addDoc(collection(db, `clients/${clientId}/assets`), {
-      asset_id: assetId,
-      asset_type: assetTypeId, // Always the slug
-      location,
-      serial_no: serialNo,
-      assigned_user: assignedUser,
-      created_at: serverTimestamp()
-    });
-    assignAssetMsg.style.color = "#28e640";
-    assignAssetMsg.textContent = "Asset assigned to client!";
-    assignAssetForm.reset();
-  } catch (err) {
-    assignAssetMsg.style.color = "#ff5050";
-    assignAssetMsg.textContent = "Error: " + (err.message || "Unknown error");
-  }
-};
-
-// --------- Dropdowns for client list ----------
+// Populate client dropdown (for completeness)
 async function refreshClientDropdown(selectedId = null) {
+  if (!document.getElementById('clientSelect')) return; // Only if present
+  const clientSelect = document.getElementById('clientSelect');
   clientSelect.innerHTML = '<option value="">Select client...</option>';
   const snap = await getDocs(collection(db, "clients"));
   snap.forEach(docSnap => {
