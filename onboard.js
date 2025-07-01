@@ -924,7 +924,7 @@ document.addEventListener('keydown', e => {
 document.body.addEventListener('mousedown', e => {
   const modal = document.getElementById('editLocationModal');
   if (modal && e.target === modal) window.closeEditLocationModal();
-};
+)};
 
 // === Add Asset Button in Single-Client Asset Tab ===
 // (Place this near where the asset table renders)
