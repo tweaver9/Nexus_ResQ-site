@@ -1,43 +1,324 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nexus Res-Q | Onboarding</title>
+  <meta charset="UTF-8">
+  <title>Nexus Res-Q | Client Onboarding</title>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="CSS/onboard.css" />
+  <style>
+    :root {
+      --nexus-yellow: #fdd835;
+      --nexus-dark: #181b24;
+      --nexus-mid: #23263a;
+      --nexus-grey: #ececec;
+      --nexus-shadow: 0 12px 28px 0 rgba(0,0,0,0.16);
+      --radius: 18px;
+    }
+    html, body {
+      height: 100%;
+      background: linear-gradient(120deg, #202337 60%, #22242d 100%);
+      font-family: 'Oswald', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    .onboard-root {
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+    .onboard-left {
+      width: 400px;
+      min-width: 340px;
+      background: linear-gradient(120deg, var(--nexus-dark) 80%, #22242d 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 44px 38px 44px 44px;
+      border-radius: var(--radius) 0 0 var(--radius);
+      position: relative;
+      box-shadow: 0 0 0 2px #23263a44 inset;
+      height: 540px;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
+    .nexus-logo {
+      height: 46px;
+      width: auto;
+      margin-bottom: 28px;
+      filter: drop-shadow(0 3px 7px #0008);
+    }
+    .onboard-headline {
+      font-size: 1.55em;
+      font-weight: 600;
+      margin-bottom: 25px;
+      color: var(--nexus-yellow);
+      letter-spacing: 1px;
+    }
+    .feature-blurb {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .feature-icon {
+      font-size: 1.5em;
+      color: var(--nexus-yellow);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .feature-text strong {
+      color: var(--nexus-yellow);
+      font-weight: 500;
+    }
+    .feature-text {
+      font-size: 1.01em;
+      color: #ececec;
+      line-height: 1.2;
+      margin-right: 10px;
+    }
+    .lines-bg {
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.19;
+      background: repeating-linear-gradient(115deg, transparent 0 55px, var(--nexus-yellow) 60px 63px, transparent 70px 180px);
+    }
+    .onboard-right {
+      background: rgba(255,255,255,0.98);
+      min-width: 390px;
+      width: 430px;
+      padding: 46px 38px 38px 38px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      box-shadow: var(--nexus-shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      height: 540px;
+      position: relative;
+      z-index: 1;
+    }
+    .step-label {
+      font-size: 1.18em;
+      font-weight: 600;
+      color: #23263a;
+      margin-bottom: 25px;
+      letter-spacing: 0.4px;
+    }
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 22px;
+    }
+    label {
+      font-size: 1.04em;
+      font-weight: 500;
+      margin-bottom: 7px;
+      color: #23263a;
+    }
+    input[type="text"], input[type="file"] {
+      font-family: 'Oswald', Arial, sans-serif;
+      font-size: 1.06em;
+      padding: 9px 12px;
+      border: 1.4px solid #dedede;
+      border-radius: 7px;
+      background: #f6f6f7;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input[type="text"]:focus {
+      border: 1.5px solid var(--nexus-yellow);
+      background: #fff;
+    }
+    .upload-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 7px;
+    }
+    .next-btn {
+      width: 100%;
+      margin-top: 17px;
+      background: linear-gradient(90deg, var(--nexus-yellow) 85%, #e7c62a 100%);
+      border: none;
+      border-radius: 8px;
+      font-size: 1.13em;
+      font-family: 'Oswald', Arial, sans-serif;
+      font-weight: 600;
+      color: #22242d;
+      padding: 12px 0 10px 0;
+      box-shadow: 0 2px 10px #d7b70011;
+      cursor: pointer;
+      transition: box-shadow 0.13s, background 0.17s;
+      letter-spacing: 0.4px;
+    }
+    .next-btn:hover {
+      box-shadow: 0 5px 18px #fdd83544;
+      background: linear-gradient(93deg, #ffe35a 70%, var(--nexus-yellow) 100%);
+    }
+    @media (max-width: 1000px) {
+      .onboard-root { transform: scale(0.94);}
+    }
+  </style>
 </head>
 <body>
-  <div class="layout">
-    
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h2>Nexus Res-Q</h2>
-        <select id="clientSelector">
-          <option value="">Select Client</option>
-          <!-- JS will populate -->
-        </select>
+  <div class="onboard-root">
+    <div class="onboard-left">
+      <img src="logos/nexus-logo-yellow.png" alt="Nexus Res-Q Logo" class="nexus-logo" />
+      <div class="onboard-headline">Begin Client Onboarding</div>
+      <div class="feature-blurb">
+        <span class="feature-icon">⚡</span>
+        <div class="feature-text"><strong>Fast Setup</strong><br>Get your client up and running in minutes with guided steps.</div>
       </div>
-      <nav class="sidebar-nav">
-        <button class="nav-btn" data-section="clients">Clients</button>
-        <button class="nav-btn" data-section="locations">Locations</button>
-        <button class="nav-btn" data-section="templates">Templates</button>
-        <button class="nav-btn" data-section="logs">Logs</button>
-        <button class="nav-btn" data-section="assignments">Assignments</button>
-      </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-      <div id="contentArea">
-        <h1>Welcome to the Owner Dashboard</h1>
-        <p>Select a section from the sidebar to begin managing client data.</p>
+      <div class="feature-blurb">
+        <span class="feature-icon">🛡️</span>
+        <div class="feature-text"><strong>Smart Database</strong><br>No guesswork—every field is mapped and checked, ensuring consistency.</div>
       </div>
-    </main>
-
+      <div class="feature-blurb">
+        <span class="feature-icon">🔗</span>
+        <div class="feature-text"><strong>Secure Asset Management</strong><br>Assets, users, locations—automated and connected from day one.</div>
+      </div>
+      <div class="lines-bg"></div>
+    </div>
+    <div class="onboard-right">
+      <div class="step-label">Step 1: Client Details</div>
+      <form id="step1Form" autocomplete="off">
+        <div class="form-row">
+          <label for="clientName">Client Name</label>
+          <input type="text" id="clientName" name="clientName" maxlength="48" required autocomplete="off" placeholder="Enter client name..." />
+        </div>
+        <div class="form-row">
+          <label for="clientLogo">Upload Client Logo</label>
+          <input type="file" id="clientLogo" name="clientLogo" accept="image/*" required />
+          <div style="font-size:0.9em;color:#555; margin-top:5px;">SVG or PNG recommended, max 1MB.</div>
+        </div>
+        <button class="next-btn" type="submit">Continue</button>
+      </form>
+    </div>
   </div>
+  <script>
+  // Holds onboarding data as we go
+  const onboardingData = {};
 
-  <script type="module" src="onboard.js"></script>
+  // Step 1 (Client Name/Logo)
+  const step1Form = document.getElementById('step1Form');
+  const onboardRight = document.querySelector('.onboard-right');
+
+  step1Form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Validate
+    const clientName = document.getElementById('clientName').value.trim();
+    const clientLogoFile = document.getElementById('clientLogo').files[0];
+
+    if (!clientName) {
+      alert('Please enter a client name.');
+      return;
+    }
+    if (!clientLogoFile) {
+      alert('Please upload a client logo.');
+      return;
+    }
+
+    // Show a preview (optional)
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      onboardingData.clientName = clientName;
+      onboardingData.clientLogo = evt.target.result; // base64 DataURL
+
+      // Proceed to Step 2
+      showStep2();
+    };
+    reader.readAsDataURL(clientLogoFile);
+  });
+
+  // Step 2: Asset Types (placeholder for now)
+  function showStep2() {
+    onboardRight.innerHTML = `
+      <div class="step-label">Step 2: Asset Types</div>
+      <form id="step2Form">
+        <div class="form-row">
+          <label for="assetTypes">List all asset types to track</label>
+          <input type="text" id="assetTypes" name="assetTypes" maxlength="120" required placeholder="e.g., Extinguishers, Vehicles, Warehouses..." />
+          <div style="font-size:0.95em; color:#555; margin-top:6px;">
+            Don’t forget vehicles, warehouses, trailers, etc.
+          </div>
+        </div>
+        <button class="next-btn" type="submit">Continue</button>
+        <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo1">Back</button>
+      </form>
+    `;
+
+    // Back button logic
+    document.getElementById('backTo1').onclick = function() {
+      showStep1(true);
+    };
+
+    // Asset Types submit logic (just collects for now)
+    document.getElementById('step2Form').onsubmit = function(e) {
+      e.preventDefault();
+      const assetTypes = document.getElementById('assetTypes').value.trim();
+      if (!assetTypes) {
+        alert('Please enter at least one asset type.');
+        return;
+      }
+      onboardingData.assetTypes = assetTypes.split(',').map(s => s.trim()).filter(Boolean);
+      // Next: Insert Step 3 here later
+      alert('Step 2 complete! (Ready for next step implementation.)');
+    };
+  }
+
+  // Allow re-show of Step 1 (used if hitting "Back" later)
+  function showStep1(isBack = false) {
+    onboardRight.innerHTML = `
+      <div class="step-label">Step 1: Client Details</div>
+      <form id="step1Form" autocomplete="off">
+        <div class="form-row">
+          <label for="clientName">Client Name</label>
+          <input type="text" id="clientName" name="clientName" maxlength="48" required autocomplete="off" placeholder="Enter client name..." value="${onboardingData.clientName || ''}" />
+        </div>
+        <div class="form-row">
+          <label for="clientLogo">Upload Client Logo</label>
+          <input type="file" id="clientLogo" name="clientLogo" accept="image/*" ${onboardingData.clientLogo ? '' : 'required'} />
+          <div style="font-size:0.9em;color:#555; margin-top:5px;">SVG or PNG recommended, max 1MB.</div>
+        </div>
+        <button class="next-btn" type="submit">Continue</button>
+      </form>
+    `;
+    // (If going back, skip re-selecting logo)
+    document.getElementById('step1Form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const clientName = document.getElementById('clientName').value.trim();
+      const clientLogoInput = document.getElementById('clientLogo');
+      let skipLogo = !!onboardingData.clientLogo && !clientLogoInput.files[0];
+
+      if (!clientName) {
+        alert('Please enter a client name.');
+        return;
+      }
+      if (!onboardingData.clientLogo && !clientLogoInput.files[0]) {
+        alert('Please upload a client logo.');
+        return;
+      }
+      if (skipLogo) {
+        onboardingData.clientName = clientName;
+        showStep2();
+      } else {
+        const file = clientLogoInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          onboardingData.clientName = clientName;
+          onboardingData.clientLogo = evt.target.result;
+          showStep2();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+</script>
+
 </body>
 </html>
