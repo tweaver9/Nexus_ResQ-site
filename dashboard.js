@@ -77,12 +77,6 @@ window.addEventListener('DOMContentLoaded', () => {
     window.location.href = "login.html";
   };
 
-  // Area status (placeholder logic)
-  document.getElementById('area-a-status').className = 'done';
-  document.getElementById('area-a-status').textContent = 'Area A — ✅ Done';
-  document.getElementById('area-b-status').className = 'not-done';
-  document.getElementById('area-b-status').textContent = 'Area B — ❌ Not Done';
-
   // Load failed assets (Home)
   async function loadFailedAssets() {
     const failedAssetsList = document.getElementById('failed-assets-list');
