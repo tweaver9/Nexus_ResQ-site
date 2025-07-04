@@ -11,118 +11,101 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 window.addEventListener('DOMContentLoaded', () => {
-  // ---------- 1. DOM Elements ----------
-  const logoImg = document.getElementById('client-logo');
-  const clientLogoUrl = sessionStorage.getItem('clientLogoUrl');
-  if (logoImg) {
-    logoImg.src = clientLogoUrl || "logos/nexusresq.jpg";
-  }
-  const dashboardTitle = document.getElementById('dashboard-title');
-  const welcomeMessage = document.getElementById('welcome-message');
-  const logoutLink = document.getElementById('logout-link');
-
-  const activityList = document.getElementById('activity-list');
-  const inspectionList = document.getElementById('inspection-list');
-  const failedAssetsList = document.getElementById('failed-assets-list');
-  const onboardBtn = document.getElementById('onboard-btn');
-
-  // ---------- 2. Session Data ----------
+  // Session
   const clientId = sessionStorage.getItem('tenant_id');
   const username = sessionStorage.getItem('username');
   const role = sessionStorage.getItem('role');
+  const clientLogoUrl = sessionStorage.getItem('clientLogoUrl');
 
-  // ---------- 3. Redirect if not logged in ----------
+  // Redirect if not logged in
   if (!clientId || !username || !role) {
     window.location.href = "login.html";
     return;
   }
 
-  // ---------- 4. Load client info (logo, name) ----------
-  async function loadClientInfo() {
-    try {
-      const clientDocRef = doc(db, "clients", clientId);
-      const clientSnap = await getDoc(clientDocRef);
-      if (clientSnap.exists()) {
-        const client = clientSnap.data();
-        if (client.logo_url) logoImg.src = client.logo_url;
-        if (client.name) dashboardTitle.textContent = client.name + " Dashboard";
-      } else {
-        dashboardTitle.textContent = "Client Dashboard";
-      }
-    } catch {
-      dashboardTitle.textContent = "Client Dashboard";
+  // Set logo and welcome
+  const logoImg = document.getElementById('client-logo');
+  if (logoImg && clientLogoUrl) logoImg.src = clientLogoUrl;
+  document.getElementById('dashboard-title').textContent = `${clientId.charAt(0).toUpperCase() + clientId.slice(1)} Dashboard`;
+  document.getElementById('welcome-message').textContent = username
+    ? `Welcome Back, ${username.charAt(0).toUpperCase() + username.slice(1)}!`
+    : 'Welcome Back!';
+
+  // Sidebar role-based visibility
+  const roleButtonMap = {
+    admin:    ['home', 'users', 'assets', 'inspections', 'logs', 'analytics', 'assignments', 'billing', 'help'],
+    manager:  ['home', 'users', 'assets', 'inspections', 'logs', 'analytics', 'assignments', 'help'],
+    user:     ['home', 'inspections', 'logs', 'analytics', 'assignments', 'help'],
+    nexus:    [
+      'home', 'users', 'assets', 'inspections', 'logs', 'analytics', 'assignments', 'billing', 'help',
+      'firebase', 'onboard' // Only nexus sees these
+    ]
+  };
+
+  const allowedPanels = roleButtonMap[role] || roleButtonMap['user'];
+  document.querySelectorAll('.sidebar-btn').forEach(btn => {
+    const panel = btn.id.replace('btn-', '');
+    if (!allowedPanels.includes(panel)) {
+      btn.style.display = 'none';
+    } else {
+      btn.style.display = '';
     }
-  }
-
-  // ---------- 5. Welcome Message ----------
-  welcomeMessage.textContent = `Welcome, ${username}!`;
-
-  // ---------- 6. Log Out Button ----------
-  logoutLink.addEventListener('click', () => {
-    sessionStorage.clear();
-    window.location.href = "login.html";
   });
 
-  // ---------- 7. Load Recent Activity (last 5) ----------
-  async function loadRecentActivity() {
-    try {
-      const actionsCol = collection(db, `clients/${clientId}/activity`);
-      const q = query(actionsCol, orderBy("timestamp", "desc"), limit(5));
-      const snapshot = await getDocs(q);
+  // Sidebar navigation logic
+  const panels = Array.from(document.querySelectorAll('.dashboard-panel'));
+  document.querySelectorAll('.sidebar-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Remove active from all buttons
+      document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Hide all panels
+      panels.forEach(panelDiv => panelDiv.style.display = 'none');
+      // Show the selected panel
+      const panelId = 'panel-' + btn.id.replace('btn-', '');
+      const panel = document.getElementById(panelId);
+      if (panel) panel.style.display = 'block';
+    });
+  });
+  // Set Home as active by default
+  document.getElementById('btn-home').classList.add('active');
 
-      activityList.innerHTML = '';
-      if (snapshot.empty) {
-        activityList.innerHTML = `<div class="dashboard-placeholder">No recent activity.</div>`;
-        return;
-      }
-      snapshot.forEach(doc => {
-        const a = doc.data();
-        const line = document.createElement('div');
-        line.className = "activity-row";
-        line.textContent = `${a.user || 'System'}: ${a.action || 'Action'} (${a.timestamp ? new Date(a.timestamp).toLocaleString() : ''})`;
-        activityList.appendChild(line);
-      });
-    } catch (e) {
-      activityList.innerHTML = `<div class="dashboard-placeholder">Error loading activity.</div>`;
-    }
-  }
+  // Log out
+  document.getElementById('logout-link').onclick = () => {
+    sessionStorage.clear();
+    window.location.href = "login.html";
+  };
 
-  // ---------- 8. Load Most Recent Inspections (last 5) ----------
-  async function loadRecentInspections() {
-    try {
-      const inspectionsCol = collection(db, `clients/${clientId}/inspections`);
-      const q = query(inspectionsCol, orderBy("timestamp", "desc"), limit(5));
-      const snapshot = await getDocs(q);
+  // Tabs logic (Monthly/Annual)
+  document.getElementById('tab-monthly').onclick = function() {
+    this.classList.add('active');
+    document.getElementById('tab-annual').classList.remove('active');
+    // TODO: Load monthly data
+  };
+  document.getElementById('tab-annual').onclick = function() {
+    this.classList.add('active');
+    document.getElementById('tab-monthly').classList.remove('active');
+    // TODO: Load annual data
+  };
 
-      inspectionList.innerHTML = '';
-      if (snapshot.empty) {
-        inspectionList.innerHTML = `<div class="dashboard-placeholder">No inspections submitted yet.</div>`;
-        return;
-      }
-      snapshot.forEach(doc => {
-        const i = doc.data();
-        const line = document.createElement('div');
-        line.className = "inspection-row";
-        line.textContent = `#${i.assetName || i.assetId || 'Unknown Asset'} by ${i.user || 'Unknown'} (${i.timestamp ? new Date(i.timestamp).toLocaleString() : ''})`;
-        inspectionList.appendChild(line);
-      });
-    } catch (e) {
-      inspectionList.innerHTML = `<div class="dashboard-placeholder">Error loading inspections.</div>`;
-    }
-  }
+  // Area status (placeholder logic)
+  document.getElementById('area-a-status').className = 'done';
+  document.getElementById('area-a-status').textContent = 'Area A — ✅ Done';
+  document.getElementById('area-b-status').className = 'not-done';
+  document.getElementById('area-b-status').textContent = 'Area B — ❌ Not Done';
 
-  // ---------- 9. Load Assets Failed Inspection (last 5) ----------
+  // Load failed assets (Home)
   async function loadFailedAssets() {
+    const failedAssetsList = document.getElementById('failed-assets-list');
     try {
       const inspectionsCol = collection(db, `clients/${clientId}/inspections`);
       const q = query(
         inspectionsCol,
         where("result", "==", "fail"),
         orderBy("timestamp", "desc"),
-        limit(5)
+        limit(10)
       );
       const snapshot = await getDocs(q);
-
       failedAssetsList.innerHTML = '';
       if (snapshot.empty) {
         failedAssetsList.innerHTML = `<div class="dashboard-placeholder">No failed assets reported.</div>`;
@@ -132,7 +115,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const i = doc.data();
         const line = document.createElement('div');
         line.className = "failed-row";
-        line.textContent = `#${i.assetName || i.assetId || 'Unknown Asset'} (${i.user || 'Unknown'}) at ${i.timestamp ? new Date(i.timestamp).toLocaleString() : ''}`;
+        line.textContent = `${i.assetName || i.assetId || 'Unknown Asset'} (${i.zone || 'Zone ?'}) — Tag: ${i.tag || 'N/A'} — ${i.timestamp ? new Date(i.timestamp).toLocaleString() : ''}`;
         failedAssetsList.appendChild(line);
       });
     } catch (e) {
@@ -140,26 +123,31 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ---------- 10. Show Nexus-Only Onboard Button ----------
-  function showOrHideNexusButtons() {
-    if (onboardBtn) {
-      if (role === "nexus") {
-        onboardBtn.style.display = "";
-      } else {
-        onboardBtn.style.display = "none";
+  // Load recent inspections (Home)
+  async function loadRecentInspections() {
+    const inspectionList = document.getElementById('inspection-list');
+    try {
+      const inspectionsCol = collection(db, `clients/${clientId}/inspections`);
+      const q = query(inspectionsCol, orderBy("timestamp", "desc"), limit(30));
+      const snapshot = await getDocs(q);
+      inspectionList.innerHTML = '';
+      if (snapshot.empty) {
+        inspectionList.innerHTML = `<div class="dashboard-placeholder">No inspections submitted yet.</div>`;
+        return;
       }
+      snapshot.forEach(doc => {
+        const i = doc.data();
+        const line = document.createElement('div');
+        line.className = "inspection-row";
+        line.textContent = `${i.user || 'Unknown'} — ${i.assetName || i.assetId || 'Unknown Asset'} — ${i.zone || 'Zone ?'} — ${i.timestamp ? new Date(i.timestamp).toLocaleString() : ''}`;
+        inspectionList.appendChild(line);
+      });
+    } catch (e) {
+      inspectionList.innerHTML = `<div class="dashboard-placeholder">Error loading inspections.</div>`;
     }
   }
 
-  // ---------- 11. Debugging Info ----------
-  console.log('tenant_id:', sessionStorage.getItem('tenant_id'));
-  console.log('username:', sessionStorage.getItem('username'));
-  console.log('role:', sessionStorage.getItem('role'));
-
-  // ---------- 12. Run All Loaders ----------
-  loadClientInfo();
-  showOrHideNexusButtons();
-  loadRecentActivity();
-  loadRecentInspections();
+  // Initial load
   loadFailedAssets();
+  loadRecentInspections();
 });
