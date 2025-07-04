@@ -111,6 +111,8 @@
       position: relative;
       z-index: 1;
       margin: 0;
+      overflow-y: auto;
+      max-height: 540px;
     }
     .step-label {
       font-size: 1.18em;
@@ -307,6 +309,7 @@ const storage = firebase.storage();
           alert('Please enter at least one asset type.');
           return;
         }
+        let clean = assetTypes.replace(/\s+and\s+/ig, ', ');
         onboardingData.assetTypes = assetTypes.split(',').map(s => s.trim()).filter(Boolean);
         // Next: Insert Step 3 here later
         showStep3();
