@@ -18,8 +18,9 @@ async function loadClientLogos() {
     snapshot.forEach(docSnap => {
       const client = docSnap.data();
 
-      let logo = client.logo_url
-        ? `<img src="${client.logo_url}" alt="${client.name} logo" />`
+     let logoUrl = client.logoUrl || client.logo_url || "";  // Try camelCase, then snake_case, then blank
+      let logo = logoUrl
+        ? `<img src="${logoUrl}" alt="${client.name} logo" />`
         : `<div style="width:100px;height:80px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:1.4em;background:#223052;border-radius:8px;">${client.name?.[0] || "?"}</div>`;
 
       let link = `<a href="https://${client.subdomain}.nexusresq.com/login.html" title="${client.name}">
