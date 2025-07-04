@@ -80,6 +80,8 @@ window.addEventListener('DOMContentLoaded', () => {
   // Load failed assets (Home)
   async function loadFailedAssets() {
     const failedAssetsList = document.getElementById('failed-assets-list');
+    if (!failedAssetsList) return; // or show a warning
+    failedAssetsList.innerHTML = '';
     try {
       const inspectionsCol = collection(db, `clients/${clientId}/inspections`);
       const q = query(
