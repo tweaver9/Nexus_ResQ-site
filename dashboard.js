@@ -147,7 +147,25 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Initialize FullCalendar
+  const calendarEl = document.getElementById('calendar');
+  if (calendarEl) {
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      height: 400,
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+      }
+    });
+    calendar.render();
+  }
+
   // Initial load
   loadFailedAssets();
   loadRecentInspections();
 });
+
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
