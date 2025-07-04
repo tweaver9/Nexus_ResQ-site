@@ -280,7 +280,7 @@
         }
         onboardingData.assetTypes = assetTypes.split(',').map(s => s.trim()).filter(Boolean);
         // Next: Insert Step 3 here later
-        alert('Step 2 complete! (Ready for next step implementation.)');
+        showStep3();
       };
     }
 
@@ -331,6 +331,270 @@
         }
       });
     }
-  </script>
+    function showStep3() {
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 3: Import Asset List (CSV)</div>
+    <div style="color:#fdd835; font-size:1.08em; margin-bottom:10px;">
+      Optional: Import a CSV to quickly add assets. <br>
+      <span style="color:#ececec; font-size:0.96em;">
+        You can skip this and add assets manually after onboarding.
+      </span>
+    </div>
+    <a href="#" id="downloadCsv" style="color:#fdd835;font-size:1em;text-decoration:underline;cursor:pointer;display:inline-block;margin-bottom:17px;">Download CSV Template</a>
+    <form id="csvImportForm" enctype="multipart/form-data">
+      <div class="form-row">
+        <label for="assetCsv">Upload CSV File</label>
+        <input type="file" id="assetCsv" accept=".csv,text/csv" style="background:#18203a;color:#fff;" />
+        <div id="csvStatus" style="margin-top:7px;font-size:0.98em;"></div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+      <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo2">Back</button>
+    </form>
+  `;
+
+  // Download template handler
+  document.getElementById('downloadCsv').onclick = function(e) {
+    e.preventDefault();
+    const csvTemplate = "Asset Name,Asset Type,Serial Number,Location,Notes\n";
+    const blob = new Blob([csvTemplate], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "nexus_asset_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Back button
+  document.getElementById('backTo2').onclick = function() {
+    showStep2();
+  };
+
+  // CSV Validation Logic
+  document.getElementById('assetCsv').onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const status = document.getElementById('csvStatus');
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const text = evt.target.result;
+      // Very basic validation
+      const lines = text.trim().split('\n');
+      if (lines.length < 2) {
+        status.textContent = "File is empty or missing data.";
+        status.style.color = "#ff5656";
+        return;
+      }
+      const columns = lines[0].split(',');
+      const required = ["Asset Name", "Asset Type", "Serial Number", "Location", "Notes"];
+      const missing = required.filter(col => !columns.includes(col));
+      if (missing.length) {
+        status.textContent = "Missing columns: " + missing.join(', ');
+        status.style.color = "#ff5656";
+        return;
+      }
+      status.textContent = "File looks good! " + (lines.length-1) + " assets detected.";
+      status.style.color = "#43ff7a";
+      // Save data for next step
+      onboardingData.assetCsv = text;
+    };
+    reader.readAsText(file);
+  };
+    // ...existing code above...
+
+// Form submit: Validate or skip CSV
+document.getElementById('csvImportForm').onsubmit = function(e) {
+  e.preventDefault();
+  // Allow skip, or require valid CSV if provided
+  if (!onboardingData.assetCsv && document.getElementById('assetCsv').files.length > 0) {
+    document.getElementById('csvStatus').textContent = "Please upload a valid CSV template.";
+    document.getElementById('csvStatus').style.color = "#ff5656";
+    return;
+  }
+  // Now launch Step 4
+  showStep4();
+};
+
+// Step 4: Add Custom Questions (not nested!)
+function showStep4() {
+  // If asset types are empty, block or skip
+  if (!onboardingData.assetTypes || onboardingData.assetTypes.length === 0) {
+    alert("No asset types found. Please complete Step 2.");
+    showStep2();
+    return;
+  }
+
+  // Use an object to track custom questions by asset type
+  onboardingData.customQuestions = onboardingData.customQuestions || {};
+
+  // Build options for dropdown
+  const options = onboardingData.assetTypes
+    .map(type => `<option value="${type}">${type}</option>`)
+    .join('');
+
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 4: Add Custom Questions</div>
+    <div style="color:#fdd835; font-size:1.08em; margin-bottom:10px;">
+      Do you have any additional questions in addition to the industry standard ones? <br>
+      <span style="color:#ececec; font-size:0.96em;">
+        If so, add them here. Or you can skip this and add questions later.
+      </span>
+    </div>
+    <form id="customQuestionForm" autocomplete="off" style="margin-bottom:18px;">
+      <div class="form-row">
+        <label for="questionAssetType">Asset Type</label>
+        <select id="questionAssetType" style="font-family:'Oswald';font-size:1.07em;padding:9px 12px;border-radius:7px;background:#203358;color:#e6e6f1;border:2px solid #1c3050;">
+          ${options}
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="customQuestion">Additional Question</label>
+        <input type="text" id="customQuestion" maxlength="90" placeholder="e.g., Is the serial number legible?" autocomplete="off" />
+      </div>
+      <button class="next-btn" type="submit" style="width:auto;max-width:130px;margin-bottom:0;">Add</button>
+    </form>
+    <div id="questionList" style="margin-bottom:20px;"></div>
+    <button class="next-btn" id="continueStep4">Continue</button>
+    <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo3">Back</button>
+  `;
+
+  // Helper: Render questions by asset type
+  function renderQuestions() {
+    const list = document.getElementById('questionList');
+    let html = '';
+    const q = onboardingData.customQuestions;
+    if (Object.keys(q).length === 0) {
+      list.innerHTML = `<div style="color:#ececec;font-size:0.99em;">No custom questions added yet.</div>`;
+      return;
+    }
+    for (const type in q) {
+      html += `<div style="margin-bottom:6px;">
+        <strong style="color:#fdd835">${type}:</strong><ul style="margin:3px 0 5px 12px;">`;
+      q[type].forEach((question, idx) => {
+        html += `<li style="color:#e6e6f1;">
+          ${question}
+          <button type="button" data-type="${type}" data-idx="${idx}" style="margin-left:8px;font-size:0.93em;background:#233358;border:none;color:#fdd835;border-radius:5px;padding:1px 8px;cursor:pointer;">Remove</button>
+        </li>`;
+      });
+      html += `</ul></div>`;
+    }
+    list.innerHTML = html;
+    // Add remove handlers
+    document.querySelectorAll('#questionList button[data-type]').forEach(btn => {
+      btn.onclick = function() {
+        const type = btn.getAttribute('data-type');
+        const idx = +btn.getAttribute('data-idx');
+        onboardingData.customQuestions[type].splice(idx, 1);
+        if (onboardingData.customQuestions[type].length === 0) delete onboardingData.customQuestions[type];
+        renderQuestions();
+      };
+    });
+  }
+
+  renderQuestions();
+
+  // Add question
+  document.getElementById('customQuestionForm').onsubmit = function(e) {
+    e.preventDefault();
+    const type = document.getElementById('questionAssetType').value;
+    const question = document.getElementById('customQuestion').value.trim();
+    if (!question) {
+      alert('Please enter a question.');
+      return;
+    }
+    onboardingData.customQuestions[type] = onboardingData.customQuestions[type] || [];
+    onboardingData.customQuestions[type].push(question);
+    document.getElementById('customQuestion').value = '';
+    renderQuestions();
+  };
+
+  // Continue button
+  document.getElementById('continueStep4').onclick = function() {
+   showStep5();
+    // showStep5();  // implement the review/confirmation step next
+  };
+
+  // Back button
+  document.getElementById('backTo3').onclick = function() {
+    showStep3();
+  };
+}
+function showStep5() {
+  // 1. Client Info
+  const clientName = onboardingData.clientName || '';
+  const clientLogo = onboardingData.clientLogo
+    ? `<img src="${onboardingData.clientLogo}" alt="Logo" style="height:48px;max-width:120px;display:block;background:#fff;padding:3px 9px;border-radius:8px;margin-bottom:8px;">`
+    : '';
+
+  // 2. Asset Types
+  const assetTypes = onboardingData.assetTypes ? onboardingData.assetTypes.join(', ') : '';
+
+  // 3. Imported Assets (from CSV)
+  let assetTable = '<div style="color:#ccc;font-size:1em;">No CSV imported.</div>';
+  if (onboardingData.assetCsv) {
+    const rows = onboardingData.assetCsv.trim().split('\n');
+    const headers = rows[0].split(',');
+    assetTable = `<table style="border-collapse:collapse;margin-bottom:9px;font-size:0.98em;background:#203358;border-radius:9px;overflow:hidden;">
+      <tr>${headers.map(h => `<th style="padding:6px 11px;color:#fdd835;text-align:left;border-bottom:1.5px solid #1c3050;">${h}</th>`).join('')}</tr>`;
+    for (let i = 1; i < Math.min(6, rows.length); i++) {
+      const cells = rows[i].split(',');
+      assetTable += `<tr>${cells.map(c => `<td style="padding:6px 11px;color:#ececec;">${c}</td>`).join('')}</tr>`;
+    }
+    if (rows.length > 6) {
+      assetTable += `<tr><td colspan="${headers.length}" style="padding:6px 11px;color:#aaa;text-align:center;">...and ${rows.length - 6} more</td></tr>`;
+    }
+    assetTable += '</table>';
+  }
+
+  // 4. Custom Questions (grouped by type)
+  let questionSummary = '<div style="color:#ccc;font-size:1em;">None added</div>';
+  if (onboardingData.customQuestions && Object.keys(onboardingData.customQuestions).length) {
+    questionSummary = '';
+    for (const [type, qs] of Object.entries(onboardingData.customQuestions)) {
+      questionSummary += `<div style="margin-bottom:8px;"><strong style="color:#fdd835">${type}:</strong><ul style="margin:4px 0 0 18px;">`;
+      for (const q of qs) questionSummary += `<li style="color:#ececec;font-size:0.99em;">${q}</li>`;
+      questionSummary += '</ul></div>';
+    }
+  }
+
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 5: Review & Confirm</div>
+    <div style="font-size:1.07em;color:#fdd835;margin-bottom:5px;">Please review your onboarding details:</div>
+    <div style="background:#18203a;padding:23px 20px 13px 20px;border-radius:13px;margin-bottom:25px;box-shadow:0 2px 14px #0003;">
+      <div style="margin-bottom:17px;">
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Client Name:</div>
+        <div style="font-size:1.1em;color:#fff;font-weight:700;margin-bottom:2px;">${clientName}</div>
+        ${clientLogo}
+      </div>
+      <div style="margin-bottom:17px;">
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Asset Types:</div>
+        <div style="color:#fdd835;font-size:1.07em;font-weight:600;">${assetTypes}</div>
+      </div>
+      <div style="margin-bottom:17px;">
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Imported Assets (CSV):</div>
+        ${assetTable}
+      </div>
+      <div>
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Custom Questions:</div>
+        ${questionSummary}
+      </div>
+    </div>
+    <button class="next-btn" id="finishBtn" style="background:#fdd835;color:#18203a;font-size:1.19em;font-weight:700;padding:14px 0;margin-bottom:8px;margin-top:10px;">Finish & Submit</button>
+    <button class="next-btn" type="button" style="background:#ececec;color:#23263a;" id="backTo4">Back</button>
+  `;
+
+  // Finish & Submit (replace with your actual Firebase logic)
+  document.getElementById('finishBtn').onclick = function() {
+    alert("Onboarding Complete!\n\nData is ready to be saved to Firebase or reviewed by admin.");
+    // TODO: Call your function to upload `onboardingData` to Firebase here.
+    // window.location.href = "/dashboard.html"; // Example redirect
+  };
+
+  document.getElementById('backTo4').onclick = function() {
+    showStep4();
+  };
+}
+
+</script>
 </body>
 </html>
