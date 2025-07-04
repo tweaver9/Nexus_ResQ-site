@@ -68,6 +68,7 @@ window.addEventListener('DOMContentLoaded', () => {
           sessionStorage.setItem('role', user.role || 'admin');
           // Set logo for dashboard
           sessionStorage.setItem('clientLogoUrl', (client && (client.logo_url || client.logoUrl)) || "");
+          sessionStorage.setItem('userDocId', 'admin'); // or use user.username if that's your doc ID
 
           if (user.must_change_password) {
             window.location.href = "change-password.html";
