@@ -9,6 +9,7 @@ import {
   doc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { Calendar } from 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/+esm';
 
 window.addEventListener('DOMContentLoaded', () => {
   // Session
@@ -150,7 +151,8 @@ window.addEventListener('DOMContentLoaded', () => {
   // Initialize FullCalendar
   const calendarEl = document.getElementById('calendar');
   if (calendarEl) {
-    const calendar = new FullCalendar.Calendar(calendarEl, {
+    // Use Calendar instead of FullCalendar.Calendar
+    const calendar = new Calendar(calendarEl, {
       initialView: 'dayGridMonth',
       height: 400,
       headerToolbar: {
@@ -166,4 +168,3 @@ window.addEventListener('DOMContentLoaded', () => {
   loadFailedAssets();
   loadRecentInspections();
 });
-
