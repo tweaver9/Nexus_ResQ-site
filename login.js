@@ -26,4 +26,47 @@ async function loadClientLogo() {
   }
 }
 
-window.addEventListener('DOMContentLoaded', loadClientLogo);
+window.addEventListener('DOMContentLoaded', () => {
+  loadClientLogo();
+
+  // Add login form handler
+  const form = document.querySelector('.login-form');
+  if (form) {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const username = form.elements['username'].value.trim();
+      const password = form.elements['password'].value.trim();
+      const subdomain = getSubdomain();
+      const errorDiv = document.getElementById('login-error');
+      errorDiv.textContent = "";
+
+      if (!username || !password) {
+        errorDiv.textContent = "Please enter both username and password.";
+        return;
+      }
+      if (!subdomain) {
+        errorDiv.textContent = "Invalid subdomain. Please access via your client portal link.";
+        return;
+      }
+
+      try {
+        // Try to get the user doc (admin only for now)
+        const userRef = doc(db, "clients", subdomain, "users", "admin");
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          errorDiv.textContent = "User not found.";
+          return;
+        }
+        const user = userSnap.data();
+        if (user.username === username && user.password === password) {
+          // Success: redirect to dashboard
+          window.location.href = "dashboard.html";
+        } else {
+          errorDiv.textContent = "Invalid username or password.";
+        }
+      } catch (err) {
+        errorDiv.textContent = "Login error: " + err.message;
+      }
+    });
+  }
+});
