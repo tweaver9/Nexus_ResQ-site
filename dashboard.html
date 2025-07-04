@@ -200,48 +200,23 @@
       font-weight: 600;
       margin-bottom: 10px;
     }
-    .simple-calendar-table {
+    #simple-calendar {
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.calendar-section {
+  overflow-x: auto;
+  padding: 18px 0 0 0;
+  /* Optional: set a min-height or height if needed */
+}
+.simple-calendar-table {
   width: 100%;
   max-width: 320px;
-  border-collapse: collapse;
   margin: 0 auto;
+  border-radius: 16px;
+  box-shadow: 0 2px 14px #0001;
   background: #142b47;
-  color: #fff;
-  font-family: 'Oswald', Arial, sans-serif;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px #0002;
-}
-.simple-calendar-table caption {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #fdd835;
-  padding: 10px 0 6px 0;
-  background: #181b24;
-  letter-spacing: 1px;
-}
-.simple-calendar-table th, .simple-calendar-table td {
-  width: 14.2%;
-  text-align: center;
-  padding: 8px 0;
-  border: none;
-}
-.simple-calendar-table th {
-  background: #22345a;
-  color: #fdd835;
-  font-weight: 600;
-  font-size: 1em;
-}
-.simple-calendar-table td.today {
-  background: #fdd835;
-  color: #23263a;
-  font-weight: bold;
-  border-radius: 50%;
-}
-.simple-calendar-table td {
-  font-size: 1em;
-  border-radius: 50%;
-  transition: background 0.2s;
 }
     @media (max-width: 1100px) {
       .dashboard-main { flex-direction: column; }
@@ -306,10 +281,10 @@
       <div id="panel-onboard" class="dashboard-panel" style="display:none;">Onboard Client here...</div>
     </div>
     <div class="dashboard-right">
-      <div class="calendar-section">
-        <div class="section-title">Calendar</div>
-        <div id="calendar"></div>
-      </div>
+      <div class="calendar-section dashboard-panel" id="panel-calendar">
+  <div class="section-title">Calendar</div>
+  <div id="simple-calendar"></div>
+</div>
       <div class="tasks-section">
         <div class="section-title">Your Task</div>
         <div class="dashboard-list">
@@ -322,9 +297,7 @@
       </div>
     </div>
   </div>
-  <!-- Paste this where you want the calendar to appear -->
-<div id="simple-calendar"></div>
-<script>
+  <script>
 function renderSimpleCalendar(containerId) {
   const today = new Date();
   const year = today.getFullYear();
@@ -387,14 +360,10 @@ renderSimpleCalendar("simple-calendar");
 .simple-calendar-table {
   width: 100%;
   max-width: 320px;
-  border-collapse: collapse;
   margin: 0 auto;
+  border-radius: 16px;
+  box-shadow: 0 2px 14px #0001;
   background: #142b47;
-  color: #fff;
-  font-family: 'Oswald', Arial, sans-serif;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px #0002;
 }
 .simple-calendar-table caption {
   font-size: 1.2em;
