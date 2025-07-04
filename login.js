@@ -1,22 +1,29 @@
 import { db } from './firebase.js';
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-async function showClientLogo() {
-  // Assume you parse subdomain, e.g. "citgo"
-  const subdomain = window.location.hostname.split('.')[0];
+// Utility: Get the subdomain from the window.location
+function getSubdomain() {
+  const host = window.location.hostname;
+  // e.g. "citgo.nexusresq.com" -> "citgo"
+  if (!host.includes('nexusresq.com')) return null;
+  return host.split('.')[0];
+}
 
-  // Query the client doc using subdomain as doc ID
-  const clientSnap = await getDoc(doc(db, "clients", subdomain));
-  if (!clientSnap.exists()) return; // fallback or error
+async function loadClientLogo() {
+  const subdomain = getSubdomain();
+  if (!subdomain) return; // fallback
 
-  const client = clientSnap.data();
-  const logoUrl = client.logoUrl || client.logo_url || "";
-  if (logoUrl) {
-    document.getElementById('client-logo').src = logoUrl;
-  } else {
-    // fallback to text tile or default logo
-    document.getElementById('client-logo').src = "default.png";
+  const docRef = doc(db, "clients", subdomain);
+  const snap = await getDoc(docRef);
+
+  if (snap.exists()) {
+    const client = snap.data();
+    const logoUrl = client.logoUrl || client.logo_url || "";
+    if (logoUrl) {
+      document.getElementById('client-logo').src = logoUrl;
+      document.getElementById('client-logo').alt = client.name + " logo";
+    }
   }
 }
 
-window.addEventListener('DOMContentLoaded', showClientLogo);
+window.addEventListener('DOMContentLoaded', loadClientLogo);
