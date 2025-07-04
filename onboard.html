@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Firebase App (the core Firebase SDK) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<!-- Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+  <!-- Firebase Storage -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script>
+
   <meta charset="UTF-8">
   <title>Nexus Res-Q | Client Onboarding</title>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
@@ -213,6 +220,21 @@
     </div>
   </div>
   <script>
+    // --- FIREBASE SETUP ---
+const firebaseConfig = {
+  apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
+  authDomain: "nexus-res-q.firebaseapp.com",
+  projectId: "nexus-res-q",
+  storageBucket: "nexus-res-q.appspot.com",
+  messagingSenderId: "203995658810",
+  appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+
     // Holds onboarding data as we go
     const onboardingData = {};
 
@@ -235,6 +257,13 @@
         alert('Please upload a client logo.');
         return;
       }
+       if (!clientLogoFile) {
+    alert('Please upload a client logo.');
+    return;
+  }
+
+  onboardingData.clientName = clientName;
+  onboardingData.logoFile = clientLogoFile;
 
       // Show a preview (optional)
       const reader = new FileReader();
@@ -584,11 +613,47 @@ function showStep5() {
   `;
 
   // Finish & Submit (replace with your actual Firebase logic)
-  document.getElementById('finishBtn').onclick = function() {
-    alert("Onboarding Complete!\n\nData is ready to be saved to Firebase or reviewed by admin.");
-    // TODO: Call your function to upload `onboardingData` to Firebase here.
-    // window.location.href = "/dashboard.html"; // Example redirect
-  };
+
+document.getElementById('finishBtn').onclick = async function() {
+  document.getElementById('finishBtn').disabled = true;
+  document.getElementById('finishBtn').textContent = 'Submitting...';
+
+  const slug = onboardingData.clientName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 30)
+    + '-' + Math.random().toString(36).substr(2, 6);
+
+  let logoUrl = '';
+  try {
+    if (onboardingData.logoFile) {
+      const ext = onboardingData.logoFile.name.split('.').pop();
+      const safeFileName = 'logo.' + ext;
+      const logoRef = storage.ref().child(`client_logos/${slug}/${safeFileName}`);
+      await logoRef.put(onboardingData.logoFile);
+      logoUrl = await logoRef.getDownloadURL();
+    }
+
+    const clientDoc = {
+      name: onboardingData.clientName,
+      logoUrl: logoUrl,
+      assetTypes: onboardingData.assetTypes || [],
+      importedAssetsCsv: onboardingData.assetCsv || '',
+      customQuestions: onboardingData.customQuestions || {},
+      created: new Date().toISOString()
+    };
+
+    await db.collection('clients').doc(slug).set(clientDoc);
+    alert("Onboarding Complete! Client data has been saved to Firebase.");
+    // Optionally redirect or reset the form
+  } catch (err) {
+    alert("Error saving to Firebase: " + err.message);
+    document.getElementById('finishBtn').disabled = false;
+    document.getElementById('finishBtn').textContent = 'Finish & Submit';
+  }
+};
+
 
   document.getElementById('backTo4').onclick = function() {
     showStep4();
