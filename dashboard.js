@@ -151,7 +151,12 @@ function showOrHideNexusButtons() {
   }
 }
 
-// ---------- 11. Run All Loaders ----------
+// ---------- 11. Debugging Info ----------
+console.log('tenant_id:', sessionStorage.getItem('tenant_id'));
+console.log('username:', sessionStorage.getItem('username'));
+console.log('role:', sessionStorage.getItem('role'));
+
+// ---------- 12. Run All Loaders ----------
 loadClientInfo();
 showOrHideNexusButtons();
 loadRecentActivity();
