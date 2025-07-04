@@ -239,46 +239,18 @@
   <div class="dashboard-main">
     <div class="dashboard-center">
       <div id="panel-home" class="dashboard-panel" style="display:block;">
-        <!-- Home content here -->
-        <div class="dashboard-header-card">
-          <div>
-            <span class="welcome" id="welcome-message">Welcome Back!</span>
-            <div style="font-size:1em; color:#888; margin-top:7px;">Get additional features and manage your assets and inspections here.</div>
-          </div>
-          <button class="upgrade-btn">Upgrade</button>
-        </div>
-        <div class="dashboard-cards">
-          <div class="dashboard-card red">
-            <div class="card-title">Design Shift</div>
-            <div class="card-meta">3 Members • Updated 2d ago</div>
-          </div>
-          <div class="dashboard-card blue">
-            <div class="card-title">Health Care App</div>
-            <div class="card-meta">5 Members • Updated 1d ago</div>
-          </div>
-          <div class="dashboard-card yellow">
-            <div class="card-title">Food Truck Website</div>
-            <div class="card-meta">2 Members • Updated 4d ago</div>
-          </div>
-        </div>
-        <div class="dashboard-section">
-          <div class="section-title">Recent Files</div>
-          <div class="dashboard-list" id="inspection-list">
-            <div class="list-item">Design Thinking Process • Dec 12, 2018</div>
-            <div class="list-item">UI Numbers • Dec 11, 2018</div>
-          </div>
-        </div>
-        <div class="dashboard-section">
-          <div class="section-title">Area Status</div>
-          <div class="area-status-table-container">
-    <table class="area-status-table" id="area-status-table">
-      <tbody>
-        <!-- JS will populate rows here -->
-      </tbody>
-    </table>
+  <div class="dashboard-section">
+    <div class="section-title">Area Status</div>
+    <div class="area-status-table-container">
+      <table class="area-status-table" id="area-status-table">
+        <tbody>
+          <!-- JS will populate rows here -->
+        </tbody>
+      </table>
+    </div>
   </div>
-        </div>
-      </div>
+  <!-- ...other sections like dashboard-header-card, dashboard-cards, etc... -->
+</div>
       <div id="panel-users" class="dashboard-panel" style="display:none;">User management here...</div>
       <div id="panel-assets" class="dashboard-panel" style="display:none;">Asset management here...</div>
       <div id="panel-inspections" class="dashboard-panel" style="display:none;">Inspections here...</div>
@@ -308,5 +280,20 @@
     </div>
   </div>
   <script type="module" src="dashboard.js"></script>
+  <script>
+    const calendarEl = document.getElementById('calendar');
+if (calendarEl) {
+  const calendar = new Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    height: 400,
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    }
+  });
+  calendar.render();
+}
+  </script>
 </body>
 </html>
