@@ -344,7 +344,7 @@ function showStep2() {
     if (!f || !l) return alert("Please enter both names.");
     onboardingData.adminFirst = f;
     onboardingData.adminLast = l;
-    onboardingData.adminUsername = `${f[0].toLowerCase()}.${l.toLowerCase()}@${c}`;
+    onboardingData.adminUsername = `${f[0].toLowerCase()}${l.toLowerCase()}@${c}`;
     onboardingData.adminPassword = c;
     onboardingData.adminMustChange = true;
     showStep3();
