@@ -333,27 +333,45 @@ html, body {
   font-size: 1em;             /* Slightly smaller location name */
 }
 
+/* Modern glowing lights for area status */
 .area-status-indicator {
   display: inline-block;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   margin-left: 8px;
   vertical-align: middle;
+  border: 2px solid #23263a;
+  box-shadow: 0 0 8px 2px rgba(0,0,0,0.18), 0 0 0 2px rgba(0,0,0,0.08) inset;
+  transition: box-shadow 0.2s;
+}
+
+.area-status-indicator.green {
+  background: #28e640;
+  box-shadow:
+    0 0 8px 2px #28e64088,
+    0 0 0 2px #28e64044 inset,
+    0 0 2px 0 #23263a;
+}
+
+.area-status-indicator.red {
+  background: #ff5050;
+  box-shadow:
+    0 0 8px 2px #ff505088,
+    0 0 0 2px #ff505044 inset,
+    0 0 2px 0 #23263a;
+}
+
+.area-status-indicator.yellow {
+  background: #fdd835;
+  box-shadow:
+    0 0 8px 2px #fdd83588,
+    0 0 0 2px #fdd83544 inset,
+    0 0 2px 0 #23263a;
 }
 
 .area-status-count {
   font-size: 0.93em;          /* Slightly smaller count text */
-}
-/* Area status indicator colors */
-.area-status-indicator.green {
-  background: #28e640;
-}
-.area-status-indicator.red {
-  background: #ff5050;
-}
-.area-status-indicator.yellow {
-  background: #fdd835;
 }
 @media (max-width: 1300px) {
   .dashboard-header,
