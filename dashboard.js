@@ -156,6 +156,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
     const locations = [];
 
+    console.log("Locations found:", locationsSnapshot.docs.map(doc => doc.id));
+
     for (const locDoc of locationsSnapshot.docs) {
       const locData = locDoc.data();
       const locationId = locDoc.id;
