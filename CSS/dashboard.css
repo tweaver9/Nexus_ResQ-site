@@ -380,3 +380,8 @@ html, body {
 .dashboard-card {
   background: var(--primary-dark) !important;
 }
+
+.dashboard-main,
+.dashboard-center {
+  background: var(--primary-dark) !important;
+}
