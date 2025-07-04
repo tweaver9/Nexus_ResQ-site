@@ -339,7 +339,16 @@ html, body {
 .area-status-count {
   font-size: 0.93em;          /* Slightly smaller count text */
 }
-
+/* Area status indicator colors */
+.area-status-indicator.green {
+  background: #28e640;
+}
+.area-status-indicator.red {
+  background: #ff5050;
+}
+.area-status-indicator.yellow {
+  background: #fdd835;
+}
 @media (max-width: 1300px) {
   .dashboard-header,
   .dashboard-main,
