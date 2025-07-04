@@ -486,7 +486,7 @@ function showStep5() {
 
   function renderAssetFreq(idx) {
     const type = assetTypes[idx];
-    let freqList = ['Daily', 'Monthly', 'Quarterly', 'Annually'];
+    let freqList = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'BiAnnually',  'Annually'];
     let hydroList = [];
     if (type.toLowerCase().includes('extinguisher')) {
       hydroList = ['5yr Hydro', '10yr Hydro'];
