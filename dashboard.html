@@ -2,56 +2,298 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Nexus Res-Q | Client Dashboard</title>
+  <title>Nexus Res-Q | Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="CSS/dashboard.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Oswald', Arial, sans-serif;
+      background: #f5f6fa;
+      color: #23263a;
+      min-height: 100vh;
+      display: flex;
+    }
+    .sidebar {
+      width: 220px;
+      background: linear-gradient(180deg, #181b24, #23263a);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      min-height: 100vh;
+      box-shadow: 2px 0 12px #0002;
+      z-index: 2;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 28px 24px 18px 24px;
+      border-bottom: 1px solid #23263a;
+    }
+    .sidebar-logo {
+      height: 40px;
+      border-radius: 7px;
+      background: #fff;
+      padding: 2px 8px;
+    }
+    .sidebar-title {
+      font-size: 1.25em;
+      font-weight: 700;
+      color: #fdd835;
+      letter-spacing: 1px;
+    }
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 30px;
+      padding: 0 12px;
+    }
+    .sidebar-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      text-align: left;
+      font-size: 1.08em;
+      font-family: 'Oswald', Arial, sans-serif;
+      font-weight: 500;
+      padding: 12px 18px;
+      border-radius: 7px;
+      margin-bottom: 2px;
+      cursor: pointer;
+      transition: background 0.13s, color 0.13s;
+      outline: none;
+    }
+    .sidebar-btn.active, .sidebar-btn:hover {
+      background: linear-gradient(90deg, #fdd835 60%, #ffe45e 100%);
+      color: #23263a;
+      font-weight: 700;
+    }
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 18px 24px;
+      font-size: 0.97em;
+      color: #fdd835;
+      cursor: pointer;
+      text-align: left;
+      border-top: 1px solid #23263a;
+    }
+    .dashboard-main {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      min-height: 100vh;
+      background: #f5f6fa;
+    }
+    .dashboard-center {
+      flex: 2;
+      padding: 36px 32px 36px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .dashboard-header-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 14px #0001;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .dashboard-header-card .welcome {
+      font-size: 1.35em;
+      font-weight: 700;
+      color: #23263a;
+    }
+    .dashboard-header-card .upgrade-btn {
+      background: linear-gradient(90deg, #fdd835 60%, #ffe45e 100%);
+      color: #23263a;
+      border: none;
+      border-radius: 7px;
+      padding: 10px 22px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 24px;
+    }
+    .dashboard-cards {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .dashboard-card {
+      flex: 1 1 220px;
+      min-width: 220px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 14px #0001;
+      padding: 22px 18px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .dashboard-card.red { background: linear-gradient(120deg, #ff5050 60%, #ffb300 100%); color: #fff; }
+    .dashboard-card.blue { background: linear-gradient(120deg, #3b82f6 60%, #a5b4fc 100%); color: #fff; }
+    .dashboard-card.yellow { background: linear-gradient(120deg, #fdd835 60%, #ffe45e 100%); color: #23263a; }
+    .dashboard-card .card-title {
+      font-size: 1.1em;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .dashboard-card .card-meta {
+      font-size: 0.97em;
+      opacity: 0.9;
+    }
+    .dashboard-section {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 14px #0001;
+      padding: 22px 18px 18px 18px;
+      margin-bottom: 18px;
+    }
+    .dashboard-section .section-title {
+      font-size: 1.13em;
+      color: #fdd835;
+      font-weight: 600;
+      margin-bottom: 13px;
+    }
+    .dashboard-list {
+      max-height: 180px;
+      overflow-y: auto;
+      font-size: 0.98em;
+    }
+    .dashboard-list .list-item {
+      padding: 7px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .dashboard-list .list-item:last-child {
+      border-bottom: none;
+    }
+    /* Right panel */
+    .dashboard-right {
+      flex: 1;
+      padding: 36px 24px 36px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-width: 320px;
+    }
+    .calendar-section, .tasks-section, .storage-section {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 14px #0001;
+      padding: 18px 18px 14px 18px;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: 1.1em;
+      color: #fdd835;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 1100px) {
+      .dashboard-main { flex-direction: column; }
+      .dashboard-right { min-width: unset; padding: 18px 8px; }
+      .dashboard-center { padding: 18px 8px; }
+    }
+    @media (max-width: 700px) {
+      .dashboard-cards { flex-direction: column; gap: 12px; }
+      .dashboard-main { flex-direction: column; }
+      .dashboard-right { padding: 8px 0; }
+      .dashboard-center { padding: 8px 0; }
+    }
+  </style>
 </head>
 <body>
-  <header class="dashboard-header">
-    <div class="header-left">
-      <img src="" alt="Client Logo" class="client-logo" id="client-logo">
-      <span class="dashboard-title" id="dashboard-title">Dashboard</span>
-      <span class="welcome-banner" id="welcome-message"></span>
-      <span id="logout-link" class="logout-link" style="cursor:pointer;">Log Out</span>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <img src="" alt="Client Logo" class="sidebar-logo" id="client-logo">
+      <span class="sidebar-title">Nexus Res-Q</span>
     </div>
-    <div class="header-right">
-      <button class="dashboard-btn" onclick="location.href='manage-users.html'">Manage Users</button>
-      <button class="dashboard-btn" onclick="location.href='view-inspections.html'">
-        <span class="desktop-label">View All Inspections</span>
-        <span class="mobile-label">Inspections</span>
-      </button>
-      <button class="dashboard-btn" onclick="location.href='manage-assets.html'">Manage Assets</button>
-      <!-- Nexus-only Onboard button (hidden by default) -->
-      <button class="dashboard-btn" id="onboard-btn" style="display:none;" onclick="location.href='onboard.html'">Onboard</button>
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <button class="sidebar-btn active" id="btn-home">Home</button>
+      <button class="sidebar-btn" id="btn-users">Manage Users</button>
+      <button class="sidebar-btn" id="btn-assets">Manage Assets</button>
+      <button class="sidebar-btn" id="btn-inspections">Inspections</button>
+      <button class="sidebar-btn" id="btn-logs">Logs</button>
+      <button class="sidebar-btn" id="btn-analytics">Analytics</button>
+      <button class="sidebar-btn" id="btn-assignments">Assignments</button>
+      <button class="sidebar-btn" id="btn-billing">Billing</button>
+      <button class="sidebar-btn" id="btn-help">Help</button>
+      <button class="sidebar-btn" id="btn-firebase">Firebase Manager</button>
+      <button class="sidebar-btn" id="btn-onboard">Onboard Client</button>
+    </nav>
+    <div class="sidebar-footer" id="logout-link">Log Out</div>
+  </aside>
+  <div class="dashboard-main">
+    <div class="dashboard-center">
+      <div id="panel-home" class="dashboard-panel" style="display:block;">
+        <!-- Home content here -->
+        <div class="dashboard-header-card">
+          <div>
+            <span class="welcome" id="welcome-message">Welcome Back!</span>
+            <div style="font-size:1em; color:#888; margin-top:7px;">Get additional features and manage your assets and inspections here.</div>
+          </div>
+          <button class="upgrade-btn">Upgrade</button>
+        </div>
+        <div class="dashboard-cards">
+          <div class="dashboard-card red">
+            <div class="card-title">Design Shift</div>
+            <div class="card-meta">3 Members • Updated 2d ago</div>
+          </div>
+          <div class="dashboard-card blue">
+            <div class="card-title">Health Care App</div>
+            <div class="card-meta">5 Members • Updated 1d ago</div>
+          </div>
+          <div class="dashboard-card yellow">
+            <div class="card-title">Food Truck Website</div>
+            <div class="card-meta">2 Members • Updated 4d ago</div>
+          </div>
+        </div>
+        <div class="dashboard-section">
+          <div class="section-title">Recent Files</div>
+          <div class="dashboard-list" id="inspection-list">
+            <div class="list-item">Design Thinking Process • Dec 12, 2018</div>
+            <div class="list-item">UI Numbers • Dec 11, 2018</div>
+          </div>
+        </div>
+      </div>
+      <div id="panel-users" class="dashboard-panel" style="display:none;">User management here...</div>
+      <div id="panel-assets" class="dashboard-panel" style="display:none;">Asset management here...</div>
+      <div id="panel-inspections" class="dashboard-panel" style="display:none;">Inspections here...</div>
+      <div id="panel-logs" class="dashboard-panel" style="display:none;">Logs here...</div>
+      <div id="panel-analytics" class="dashboard-panel" style="display:none;">Analytics here...</div>
+      <div id="panel-assignments" class="dashboard-panel" style="display:none;">Assignments here...</div>
+      <div id="panel-billing" class="dashboard-panel" style="display:none;">Billing here...</div>
+      <div id="panel-help" class="dashboard-panel" style="display:none;">Help here...</div>
+      <div id="panel-firebase" class="dashboard-panel" style="display:none;">Firebase Manager here...</div>
+      <div id="panel-onboard" class="dashboard-panel" style="display:none;">Onboard Client here...</div>
     </div>
-  </header>
-
-  <main class="dashboard-main">
-    <div class="dashboard-grid">
-      <section class="dashboard-box" id="activity-box">
-        <div class="box-header">Recent Activity</div>
-        <div class="box-content" id="activity-list">
-          <div class="dashboard-placeholder">No recent activity.</div>
+    <div class="dashboard-right">
+      <div class="calendar-section">
+        <div class="section-title">Calendar</div>
+        <!-- You can use a calendar library or static markup here -->
+        <div style="color:#888;">[Calendar Placeholder]</div>
+      </div>
+      <div class="tasks-section">
+        <div class="section-title">Your Task</div>
+        <div class="dashboard-list">
+          <div class="list-item">Review health care app with team <span style="color:#ff5050;">• Dec 2, 2019</span></div>
         </div>
-      </section>
-      <section class="dashboard-box" id="inspections-box">
-        <div class="box-header">Most Recent Inspections Completed</div>
-        <div class="box-content" id="inspection-list">
-          <div class="dashboard-placeholder">No inspections submitted yet.</div>
-        </div>
-      </section>
-      <section class="dashboard-box" id="failed-assets-box">
-        <div class="box-header">Assets Failed Inspection</div>
-        <div class="box-content" id="failed-assets-list">
-          <div class="dashboard-placeholder">No failed assets reported.</div>
-        </div>
-      </section>
+      </div>
+      <div class="storage-section">
+        <div class="section-title">Storage</div>
+        <div style="color:#888;">[Storage Chart Placeholder]</div>
+      </div>
     </div>
-  </main>
-
-  <div id="modal-root" style="display:none;"></div>
-
+  </div>
   <script type="module" src="dashboard.js"></script>
 </body>
 </html>
