@@ -58,23 +58,20 @@ window.addEventListener('DOMContentLoaded', () => {
           return;
         }
         const user = userSnap.data();
+        const clientRef = doc(db, "clients", subdomain);
+        const clientSnap = await getDoc(clientRef);
+        const client = clientSnap.exists() ? clientSnap.data() : null;
+
         if (user.username === username && user.password === password) {
+          sessionStorage.setItem('tenant_id', subdomain);
+          sessionStorage.setItem('username', user.username);
+          sessionStorage.setItem('role', user.role || 'admin');
+          // Set logo for dashboard
+          sessionStorage.setItem('clientLogoUrl', (client && (client.logo_url || client.logoUrl)) || "");
+
           if (user.must_change_password) {
-            // Save login state and redirect to password change
-            localStorage.setItem('nexus_logged_in', 'true');
-            localStorage.setItem('nexus_user', JSON.stringify({
-              username: user.username,
-              subdomain: subdomain,
-              must_change_password: true
-            }));
             window.location.href = "change-password.html";
           } else {
-            localStorage.setItem('nexus_logged_in', 'true');
-            localStorage.setItem('nexus_user', JSON.stringify({
-              username: user.username,
-              subdomain: subdomain,
-              must_change_password: false
-            }));
             window.location.href = "dashboard.html";
           }
         } else {
