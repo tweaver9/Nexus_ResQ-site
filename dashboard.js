@@ -38,7 +38,7 @@ window.addEventListener('DOMContentLoaded', () => {
     user:     ['home', 'inspections', 'logs', 'analytics', 'assignments', 'help'],
     nexus:    [
       'home', 'users', 'assets', 'inspections', 'logs', 'analytics', 'assignments', 'billing', 'help',
-      'firebase', 'onboard' // Only nexus sees these
+      'firebase', 'onboard'
     ]
   };
 
