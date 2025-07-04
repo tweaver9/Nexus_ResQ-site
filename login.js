@@ -59,8 +59,24 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         const user = userSnap.data();
         if (user.username === username && user.password === password) {
-          // Success: redirect to dashboard
-          window.location.href = "dashboard.html";
+          if (user.must_change_password) {
+            // Save login state and redirect to password change
+            localStorage.setItem('nexus_logged_in', 'true');
+            localStorage.setItem('nexus_user', JSON.stringify({
+              username: user.username,
+              subdomain: subdomain,
+              must_change_password: true
+            }));
+            window.location.href = "change-password.html";
+          } else {
+            localStorage.setItem('nexus_logged_in', 'true');
+            localStorage.setItem('nexus_user', JSON.stringify({
+              username: user.username,
+              subdomain: subdomain,
+              must_change_password: false
+            }));
+            window.location.href = "dashboard.html";
+          }
         } else {
           errorDiv.textContent = "Invalid username or password.";
         }
