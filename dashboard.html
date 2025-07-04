@@ -96,7 +96,7 @@
       gap: 24px;
     }
     .dashboard-header-card {
-      background: #fff;
+      background: var(--primary-mid); /* was #fff */
       border-radius: 16px;
       box-shadow: 0 2px 14px #0001;
       padding: 28px 32px;
@@ -130,7 +130,7 @@
     .dashboard-card {
       flex: 1 1 220px;
       min-width: 220px;
-      background: #fff;
+      background: var(--primary-mid); /* was #fff */
       border-radius: 16px;
       box-shadow: 0 2px 14px #0001;
       padding: 22px 18px 18px 18px;
@@ -152,7 +152,7 @@
       opacity: 0.9;
     }
     .dashboard-section {
-      background: #fff;
+      background: var(--primary-mid); /* was #fff */
       border-radius: 16px;
       box-shadow: 0 2px 14px #0001;
       padding: 22px 18px 18px 18px;
@@ -185,8 +185,10 @@
       gap: 24px;
       min-width: 320px;
     }
-    .calendar-section, .tasks-section, .storage-section {
-      background: #fff;
+    .dashboard-right .calendar-section,
+    .dashboard-right .tasks-section,
+    .dashboard-right .storage-section {
+      background: var(--primary-mid); /* was #fff */
       border-radius: 16px;
       box-shadow: 0 2px 14px #0001;
       padding: 18px 18px 14px 18px;
