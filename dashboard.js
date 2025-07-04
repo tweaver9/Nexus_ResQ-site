@@ -77,18 +77,6 @@ window.addEventListener('DOMContentLoaded', () => {
     window.location.href = "login.html";
   };
 
-  // Tabs logic (Monthly/Annual)
-  document.getElementById('tab-monthly').onclick = function() {
-    this.classList.add('active');
-    document.getElementById('tab-annual').classList.remove('active');
-    // TODO: Load monthly data
-  };
-  document.getElementById('tab-annual').onclick = function() {
-    this.classList.add('active');
-    document.getElementById('tab-monthly').classList.remove('active');
-    // TODO: Load annual data
-  };
-
   // Area status (placeholder logic)
   document.getElementById('area-a-status').className = 'done';
   document.getElementById('area-a-status').textContent = 'Area A — ✅ Done';
