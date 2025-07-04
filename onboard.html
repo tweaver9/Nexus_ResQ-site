@@ -323,8 +323,8 @@ function showStep2() {
   const adminPassword = document.getElementById('adminPassword');
   function updateUserPass() {
     let c = (onboardingData.clientName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    let f = (adminFirst.value || '').trim().toLowerCase();
-    let l = (adminLast.value || '').trim().toLowerCase();
+    let f = (adminFirst.value || '').trim().toLowerCase().replace(/[^a-z]/g, "");
+    let l = (adminLast.value || '').trim().toLowerCase().replace(/[^a-z]/g, "");
     if (f && l && c) {
       adminUsername.value = `${f[0]}${l}@${c}`;
       adminPassword.value = c;
@@ -338,8 +338,8 @@ function showStep2() {
 
   document.getElementById('step2Form').onsubmit = function(e) {
     e.preventDefault();
-    let f = adminFirst.value.trim();
-    let l = adminLast.value.trim();
+    let f = adminFirst.value.trim().toLowerCase().replace(/[^a-z]/g, '');
+    let l = adminLast.value.trim().toLowerCase().replace(/[^a-z]/g, '');
     let c = (onboardingData.clientName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     if (!f || !l) return alert("Please enter both names.");
     onboardingData.adminFirst = f;
