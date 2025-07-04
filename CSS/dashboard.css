@@ -184,6 +184,9 @@ html, body {
   flex-direction: row;
   min-height: 100vh;
   background: var(--primary-dark);
+  width: 100vw;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
 .dashboard-center {
@@ -331,9 +334,12 @@ html, body {
 }
 
 .area-status-indicator {
-  width: 14px;                /* Smaller indicator */
+  display: inline-block;
+  width: 14px;
   height: 14px;
-  margin-top: 2px;
+  border-radius: 50%;
+  margin-left: 8px;
+  vertical-align: middle;
 }
 
 .area-status-count {
@@ -406,6 +412,10 @@ html, body {
   .dashboard-main { flex-direction: column; }
   .dashboard-right { padding: 8px 0; }
   .dashboard-center { padding: 8px 0; }
+}
+
+body, .dashboard-main, .dashboard-center {
+  background: #0d1b2a !important;
 }
 
 .dashboard-panel,
