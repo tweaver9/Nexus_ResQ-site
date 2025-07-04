@@ -6,7 +6,7 @@ window.addEventListener('DOMContentLoaded', function() {
   const msgDiv = document.getElementById('changePasswordMsg');
   const username = sessionStorage.getItem('username');
   const tenantId = sessionStorage.getItem('tenant_id');
-  const userDocId = sessionStorage.getItem('userDocId');
+  const userDocId = sessionStorage.getItem('userDocId'); // Make sure this is set in login.js!
 
   if (!tenantId || !username || !userDocId) {
     msgDiv.textContent = "Session expired. Please log in again.";
@@ -30,11 +30,11 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     try {
-      // Update password and disable mustChangePassword
+      // Update password and disable must_change_password
       const userRef = doc(db, `clients/${tenantId}/users`, userDocId);
       await updateDoc(userRef, {
         password: newPass,
-        mustChangePassword: false
+        must_change_password: false // <-- Use snake_case as in Firestore
       });
       msgDiv.style.color = "#28e640";
       msgDiv.textContent = "Password changed! Redirecting...";
