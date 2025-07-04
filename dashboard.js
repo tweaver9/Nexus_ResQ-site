@@ -12,6 +12,10 @@ import {
 
 // ---------- 1. DOM Elements ----------
 const logoImg = document.getElementById('client-logo');
+const clientLogoUrl = sessionStorage.getItem('clientLogoUrl');
+if (logoImg) {
+  logoImg.src = clientLogoUrl || "logos/nexusresq.jpg";
+}
 const dashboardTitle = document.getElementById('dashboard-title');
 const welcomeMessage = document.getElementById('welcome-message');
 const logoutLink = document.getElementById('logout-link');
