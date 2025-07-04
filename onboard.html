@@ -5,178 +5,177 @@
   <title>Nexus Res-Q | Client Onboarding</title>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
-  :root {
-    --nexus-yellow: #fdd835;
-    --nexus-bg: #12233d;
-    --nexus-card: #1c3050;
-    --nexus-input: #203358;
-    --nexus-light: #e6e6f1;
-    --nexus-shadow: 0 12px 28px 0 rgba(0,0,0,0.16);
-    --radius: 18px;
-  }
-  html, body {
-    height: 100%;
-    background: var(--nexus-bg);
-    font-family: 'Oswald', Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    overflow: hidden;
-  }
-  .onboard-root {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    gap: 0;
-  }
-  .onboard-left {
-    width: 400px;
-    height: 540px;
-    background: var(--nexus-card);
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    padding: 44px 38px 44px 44px;
-    border-radius: var(--radius) 0 0 var(--radius);
-    position: relative;
-    box-shadow: 0 0 0 2px #23263a44 inset;
-    justify-content: flex-start;
-    align-items: flex-start;
-    margin: 0;
-  }
-  .nexus-logo {
-    height: 46px;
-    width: auto;
-    margin-bottom: 28px;
-    filter: drop-shadow(0 3px 7px #0008);
-  }
-  .onboard-headline {
-    font-size: 1.55em;
-    font-weight: 600;
-    margin-bottom: 25px;
-    color: var(--nexus-yellow);
-    letter-spacing: 1px;
-  }
-  .feature-blurb {
-    margin-bottom: 20px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  .feature-icon {
-    font-size: 1.5em;
-    color: var(--nexus-yellow);
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .feature-text strong {
-    color: var(--nexus-yellow);
-    font-weight: 500;
-  }
-  .feature-text {
-    font-size: 1.01em;
-    color: #ececec;
-    line-height: 1.2;
-    margin-right: 10px;
-  }
-  .lines-bg {
-    position: absolute;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.19;
-    background: repeating-linear-gradient(115deg, transparent 0 55px, var(--nexus-yellow) 60px 63px, transparent 70px 180px);
-  }
-  .onboard-right {
-    width: 430px;
-    height: 540px;
-    background: var(--nexus-card);
-    color: var(--nexus-light);
-    border-radius: 0 var(--radius) var(--radius) 0;
-    box-shadow: var(--nexus-shadow);
-    padding: 46px 38px 38px 38px;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    position: relative;
-    z-index: 1;
-    margin: 0;
-  }
-  .step-label {
-    font-size: 1.18em;
-    font-weight: 600;
-    color: var(--nexus-yellow);
-    margin-bottom: 25px;
-    letter-spacing: 0.4px;
-  }
-  .form-row {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 22px;
-  }
-  label {
-    font-size: 1.08em;
-    font-weight: 600;
-    margin-bottom: 7px;
-    color: var(--nexus-yellow);
-    letter-spacing: 0.04em;
-  }
-  input[type="text"], input[type="file"] {
-    font-family: 'Oswald', Arial, sans-serif;
-    font-size: 1.07em;
-    padding: 11px 13px;
-    border: 2px solid var(--nexus-card);
-    border-radius: 7px;
-    background: var(--nexus-input);
-    color: var(--nexus-light);
-    outline: none;
-    transition: border 0.18s, box-shadow 0.18s;
-  }
-  input[type="text"]:focus, input[type="file"]:focus {
-    border: 2.3px solid var(--nexus-yellow);
-    background: var(--nexus-input);
-    color: var(--nexus-light);
-    box-shadow: 0 0 0 2px #fdd83544;
-  }
-  input::placeholder {
-    color: #93a7c6;
-    opacity: 1;
-  }
-  .upload-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 7px;
-  }
-  .next-btn {
-    width: 100%;
-    margin-top: 17px;
-    background: var(--nexus-yellow);
-    color: var(--nexus-bg);
-    font-size: 1.13em;
-    font-family: 'Oswald', Arial, sans-serif;
-    font-weight: 700;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 0 10px 0;
-    box-shadow: 0 2px 10px #d7b70011;
-    cursor: pointer;
-    letter-spacing: 0.4px;
-    transition: background 0.13s, color 0.13s;
-  }
-  .next-btn:hover, .next-btn:focus {
-    background: #ffe45e;
-    color: var(--nexus-card);
-    box-shadow: 0 5px 18px #fdd83544;
-  }
-  @media (max-width: 1000px) {
-    .onboard-root { transform: scale(0.94);}
-  }
-</style>
-
+    :root {
+      --nexus-yellow: #fdd835;
+      --nexus-bg: #12233d;
+      --nexus-card: #1c3050;
+      --nexus-input: #203358;
+      --nexus-light: #e6e6f1;
+      --nexus-shadow: 0 12px 28px 0 rgba(0,0,0,0.16);
+      --radius: 18px;
+    }
+    html, body {
+      height: 100%;
+      background: var(--nexus-bg);
+      font-family: 'Oswald', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    .onboard-root {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      gap: 0;
+    }
+    .onboard-left {
+      width: 400px;
+      height: 540px;
+      background: var(--nexus-card);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 44px 38px 44px 44px;
+      border-radius: var(--radius) 0 0 var(--radius);
+      position: relative;
+      box-shadow: 0 0 0 2px #23263a44 inset;
+      justify-content: flex-start;
+      align-items: flex-start;
+      margin: 0;
+    }
+    .nexus-logo {
+      height: 46px;
+      width: auto;
+      margin-bottom: 28px;
+      filter: drop-shadow(0 3px 7px #0008);
+    }
+    .onboard-headline {
+      font-size: 1.55em;
+      font-weight: 600;
+      margin-bottom: 25px;
+      color: var(--nexus-yellow);
+      letter-spacing: 1px;
+    }
+    .feature-blurb {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .feature-icon {
+      font-size: 1.5em;
+      color: var(--nexus-yellow);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .feature-text strong {
+      color: var(--nexus-yellow);
+      font-weight: 500;
+    }
+    .feature-text {
+      font-size: 1.01em;
+      color: #ececec;
+      line-height: 1.2;
+      margin-right: 10px;
+    }
+    .lines-bg {
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.19;
+      background: repeating-linear-gradient(115deg, transparent 0 55px, var(--nexus-yellow) 60px 63px, transparent 70px 180px);
+    }
+    .onboard-right {
+      width: 430px;
+      height: 540px;
+      background: var(--nexus-card);
+      color: var(--nexus-light);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      box-shadow: var(--nexus-shadow);
+      padding: 46px 38px 38px 38px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+    }
+    .step-label {
+      font-size: 1.18em;
+      font-weight: 600;
+      color: var(--nexus-yellow);
+      margin-bottom: 25px;
+      letter-spacing: 0.4px;
+    }
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 22px;
+    }
+    label {
+      font-size: 1.08em;
+      font-weight: 600;
+      margin-bottom: 7px;
+      color: var(--nexus-yellow);
+      letter-spacing: 0.04em;
+    }
+    input[type="text"], input[type="file"] {
+      font-family: 'Oswald', Arial, sans-serif;
+      font-size: 1.07em;
+      padding: 11px 13px;
+      border: 2px solid var(--nexus-card);
+      border-radius: 7px;
+      background: var(--nexus-input);
+      color: var(--nexus-light);
+      outline: none;
+      transition: border 0.18s, box-shadow 0.18s;
+    }
+    input[type="text"]:focus, input[type="file"]:focus {
+      border: 2.3px solid var(--nexus-yellow);
+      background: var(--nexus-input);
+      color: var(--nexus-light);
+      box-shadow: 0 0 0 2px #fdd83544;
+    }
+    input::placeholder {
+      color: #93a7c6;
+      opacity: 1;
+    }
+    .upload-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 7px;
+    }
+    .next-btn {
+      width: 100%;
+      margin-top: 17px;
+      background: var(--nexus-yellow);
+      color: var(--nexus-bg);
+      font-size: 1.13em;
+      font-family: 'Oswald', Arial, sans-serif;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 0 10px 0;
+      box-shadow: 0 2px 10px #d7b70011;
+      cursor: pointer;
+      letter-spacing: 0.4px;
+      transition: background 0.13s, color 0.13s;
+    }
+    .next-btn:hover, .next-btn:focus {
+      background: #ffe45e;
+      color: var(--nexus-card);
+      box-shadow: 0 5px 18px #fdd83544;
+    }
+    @media (max-width: 1000px) {
+      .onboard-root { transform: scale(0.94);}
+    }
+  </style>
 </head>
 <body>
   <div class="onboard-root">
@@ -191,9 +190,10 @@
         <span class="feature-icon">🔗</span>
         <div class="feature-text"><strong>Secure Asset Management</strong><br>Assets, users, locations—automated and connected from day one.</div>
       </div>
-     <div class="feature-blurb">
+      <div class="feature-blurb">
         <span class="feature-icon">🔍</span>
-        <div class="feature-text"><strong>Audit Ready</strong><br>Inspections are dated, signed, and kept secure in our cloud!.</div>
+        <div class="feature-text"><strong>Audit Ready</strong><br>Inspections are dated, signed, and kept secure in our cloud!</div>
+      </div>
       <div class="lines-bg"></div>
     </div>
     <div class="onboard-right">
@@ -213,125 +213,124 @@
     </div>
   </div>
   <script>
-  // Holds onboarding data as we go
-  const onboardingData = {};
+    // Holds onboarding data as we go
+    const onboardingData = {};
 
-  // Step 1 (Client Name/Logo)
-  const step1Form = document.getElementById('step1Form');
-  const onboardRight = document.querySelector('.onboard-right');
+    // Step 1 (Client Name/Logo)
+    const step1Form = document.getElementById('step1Form');
+    const onboardRight = document.querySelector('.onboard-right');
 
-  step1Form.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    // Validate
-    const clientName = document.getElementById('clientName').value.trim();
-    const clientLogoFile = document.getElementById('clientLogo').files[0];
-
-    if (!clientName) {
-      alert('Please enter a client name.');
-      return;
-    }
-    if (!clientLogoFile) {
-      alert('Please upload a client logo.');
-      return;
-    }
-
-    // Show a preview (optional)
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-      onboardingData.clientName = clientName;
-      onboardingData.clientLogo = evt.target.result; // base64 DataURL
-
-      // Proceed to Step 2
-      showStep2();
-    };
-    reader.readAsDataURL(clientLogoFile);
-  });
-
-  // Step 2: Asset Types (placeholder for now)
-  function showStep2() {
-    onboardRight.innerHTML = `
-      <div class="step-label">Step 2: Asset Types</div>
-      <form id="step2Form">
-        <div class="form-row">
-          <label for="assetTypes">List all asset types to track</label>
-          <input type="text" id="assetTypes" name="assetTypes" maxlength="120" required placeholder="e.g., Extinguishers, Vehicles, Warehouses..." />
-          <div style="font-size:0.95em; color:#555; margin-top:6px;">
-            Don’t forget vehicles, warehouses, trailers, etc.
-          </div>
-        </div>
-        <button class="next-btn" type="submit">Continue</button>
-        <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo1">Back</button>
-      </form>
-    `;
-
-    // Back button logic
-    document.getElementById('backTo1').onclick = function() {
-      showStep1(true);
-    };
-
-    // Asset Types submit logic (just collects for now)
-    document.getElementById('step2Form').onsubmit = function(e) {
+    step1Form.addEventListener('submit', function(e) {
       e.preventDefault();
-      const assetTypes = document.getElementById('assetTypes').value.trim();
-      if (!assetTypes) {
-        alert('Please enter at least one asset type.');
-        return;
-      }
-      onboardingData.assetTypes = assetTypes.split(',').map(s => s.trim()).filter(Boolean);
-      // Next: Insert Step 3 here later
-      alert('Step 2 complete! (Ready for next step implementation.)');
-    };
-  }
 
-  // Allow re-show of Step 1 (used if hitting "Back" later)
-  function showStep1(isBack = false) {
-    onboardRight.innerHTML = `
-      <div class="step-label">Step 1: Client Details</div>
-      <form id="step1Form" autocomplete="off">
-        <div class="form-row">
-          <label for="clientName">Client Name</label>
-          <input type="text" id="clientName" name="clientName" maxlength="48" required autocomplete="off" placeholder="Enter client name..." value="${onboardingData.clientName || ''}" />
-        </div>
-        <div class="form-row">
-          <label for="clientLogo">Upload Client Logo</label>
-          <input type="file" id="clientLogo" name="clientLogo" accept="image/*" ${onboardingData.clientLogo ? '' : 'required'} />
-          <div style="font-size:0.9em;color:#555; margin-top:5px;">SVG or PNG recommended, max 1MB.</div>
-        </div>
-        <button class="next-btn" type="submit">Continue</button>
-      </form>
-    `;
-    // (If going back, skip re-selecting logo)
-    document.getElementById('step1Form').addEventListener('submit', function(e) {
-      e.preventDefault();
+      // Validate
       const clientName = document.getElementById('clientName').value.trim();
-      const clientLogoInput = document.getElementById('clientLogo');
-      let skipLogo = !!onboardingData.clientLogo && !clientLogoInput.files[0];
+      const clientLogoFile = document.getElementById('clientLogo').files[0];
 
       if (!clientName) {
         alert('Please enter a client name.');
         return;
       }
-      if (!onboardingData.clientLogo && !clientLogoInput.files[0]) {
+      if (!clientLogoFile) {
         alert('Please upload a client logo.');
         return;
       }
-      if (skipLogo) {
-        onboardingData.clientName = clientName;
-        showStep2();
-      } else {
-        const file = clientLogoInput.files[0];
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          onboardingData.clientName = clientName;
-          onboardingData.clientLogo = evt.target.result;
-          showStep2();
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-</script>
 
+      // Show a preview (optional)
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        onboardingData.clientName = clientName;
+        onboardingData.clientLogo = evt.target.result; // base64 DataURL
+
+        // Proceed to Step 2
+        showStep2();
+      };
+      reader.readAsDataURL(clientLogoFile);
+    });
+
+    // Step 2: Asset Types (placeholder for now)
+    function showStep2() {
+      onboardRight.innerHTML = `
+        <div class="step-label">Step 2: Asset Types</div>
+        <form id="step2Form">
+          <div class="form-row">
+            <label for="assetTypes">List all asset types to track</label>
+            <input type="text" id="assetTypes" name="assetTypes" maxlength="120" required placeholder="e.g., Extinguishers, Vehicles, Warehouses..." />
+            <div style="font-size:0.95em; color:#555; margin-top:6px;">
+              Don’t forget vehicles, warehouses, trailers, etc.
+            </div>
+          </div>
+          <button class="next-btn" type="submit">Continue</button>
+          <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo1">Back</button>
+        </form>
+      `;
+
+      // Back button logic
+      document.getElementById('backTo1').onclick = function() {
+        showStep1(true);
+      };
+
+      // Asset Types submit logic (just collects for now)
+      document.getElementById('step2Form').onsubmit = function(e) {
+        e.preventDefault();
+        const assetTypes = document.getElementById('assetTypes').value.trim();
+        if (!assetTypes) {
+          alert('Please enter at least one asset type.');
+          return;
+        }
+        onboardingData.assetTypes = assetTypes.split(',').map(s => s.trim()).filter(Boolean);
+        // Next: Insert Step 3 here later
+        alert('Step 2 complete! (Ready for next step implementation.)');
+      };
+    }
+
+    // Allow re-show of Step 1 (used if hitting "Back" later)
+    function showStep1(isBack = false) {
+      onboardRight.innerHTML = `
+        <div class="step-label">Step 1: Client Details</div>
+        <form id="step1Form" autocomplete="off">
+          <div class="form-row">
+            <label for="clientName">Client Name</label>
+            <input type="text" id="clientName" name="clientName" maxlength="48" required autocomplete="off" placeholder="Enter client name..." value="${onboardingData.clientName || ''}" />
+          </div>
+          <div class="form-row">
+            <label for="clientLogo">Upload Client Logo</label>
+            <input type="file" id="clientLogo" name="clientLogo" accept="image/*" ${onboardingData.clientLogo ? '' : 'required'} />
+            <div style="font-size:0.9em;color:#555; margin-top:5px;">SVG or PNG recommended, max 1MB.</div>
+          </div>
+          <button class="next-btn" type="submit">Continue</button>
+        </form>
+      `;
+      // (If going back, skip re-selecting logo)
+      document.getElementById('step1Form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const clientName = document.getElementById('clientName').value.trim();
+        const clientLogoInput = document.getElementById('clientLogo');
+        let skipLogo = !!onboardingData.clientLogo && !clientLogoInput.files[0];
+
+        if (!clientName) {
+          alert('Please enter a client name.');
+          return;
+        }
+        if (!onboardingData.clientLogo && !clientLogoInput.files[0]) {
+          alert('Please upload a client logo.');
+          return;
+        }
+        if (skipLogo) {
+          onboardingData.clientName = clientName;
+          showStep2();
+        } else {
+          const file = clientLogoInput.files[0];
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            onboardingData.clientName = clientName;
+            onboardingData.clientLogo = evt.target.result;
+            showStep2();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  </script>
 </body>
 </html>
