@@ -373,3 +373,10 @@ html, body {
   .dashboard-right { padding: 8px 0; }
   .dashboard-center { padding: 8px 0; }
 }
+
+.dashboard-panel,
+.dashboard-header-card,
+.dashboard-section,
+.dashboard-card {
+  background: var(--primary-dark) !important;
+}
