@@ -315,6 +315,54 @@ html, body {
   color: #fff;
 }
 
+.area-status-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+.area-status-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+}
+.area-status-table td {
+  padding: 8px 18px;
+  font-size: 1.08em;
+  font-weight: 600;
+  vertical-align: middle;
+  background: none;
+  border: none;
+}
+.area-status-location {
+  position: relative;
+  text-align: left;
+}
+.area-status-indicator {
+  display: block;
+  margin: 0 auto;
+  margin-top: 5px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: 0 0 12px 4px rgba(0,0,0,0.12);
+}
+.area-status-indicator.green {
+  background: #28e640;
+  box-shadow: 0 0 12px 4px #28e64088;
+}
+.area-status-indicator.yellow {
+  background: #ffd600;
+  box-shadow: 0 0 12px 4px #ffd60088;
+}
+.area-status-indicator.red {
+  background: #ff5050;
+  box-shadow: 0 0 12px 4px #ff505088;
+}
+.area-status-count {
+  font-size: 0.98em;
+  color: #bbb;
+  font-weight: 400;
+}
+
 @media (max-width: 1300px) {
   .dashboard-header,
   .dashboard-main,
