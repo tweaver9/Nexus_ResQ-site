@@ -27,7 +27,11 @@ window.addEventListener('DOMContentLoaded', async function() {
   sessionStorage.setItem('tenant_id', clientId);
 
   // --- 4. Set only the client logo (no Nexus logo, no color variables) ---
-  if (client.logo_url && logoImg) logoImg.src = client.logo_url;
+  if ((client.logoUrl || client.logo_url) && logoImg) {
+  logoImg.src = client.logoUrl || client.logo_url;
+} else {
+  logoImg.src = "logos/nexusresq.jpg";
+}
 
   // (Optional: set the login heading if you want)
   const loginTitleEl = document.getElementById('client-login-title');
