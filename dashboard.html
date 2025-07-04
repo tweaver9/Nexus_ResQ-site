@@ -221,6 +221,8 @@
       <img src="" alt="Client Logo" class="sidebar-logo" id="client-logo">
       <span class="sidebar-title" id="dashboard-title">Dashboard</span>
     </div>
+    <!-- Add this where you want the welcome message to appear -->
+<span id="welcome-message"></span>
     <nav class="sidebar-nav" id="sidebar-nav">
       <button class="sidebar-btn active" id="btn-home">Home</button>
       <button class="sidebar-btn" id="btn-users">Manage Users</button>
@@ -280,20 +282,5 @@
     </div>
   </div>
   <script type="module" src="dashboard.js"></script>
-  <script>
-    const calendarEl = document.getElementById('calendar');
-if (calendarEl) {
-  const calendar = new Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    height: 400,
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay'
-    }
-  });
-  calendar.render();
-}
-  </script>
 </body>
 </html>
