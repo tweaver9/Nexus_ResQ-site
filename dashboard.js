@@ -133,7 +133,6 @@ window.addEventListener('DOMContentLoaded', () => {
   // Initialize FullCalendar
   const calendarEl = document.getElementById('calendar');
   if (calendarEl) {
-    // Use Calendar instead of FullCalendar.Calendar
     const calendar = new Calendar(calendarEl, {
       initialView: 'dayGridMonth',
       height: 400,
