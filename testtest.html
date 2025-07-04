@@ -1,0 +1,16 @@
+<!-- Save this as test.html in your project root and open it in your browser -->
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+</head>
+<body>
+  <div id="calendar"></div>
+  <script type="module">
+    import { Calendar } from 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/+esm';
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new Calendar(calendarEl, { initialView: 'dayGridMonth' });
+    calendar.render();
+  </script>
+</body>
+</html>
