@@ -853,33 +853,69 @@ document.getElementById('finishBtn').onclick = async function() {
       logoUrl = await logoRef.getDownloadURL();
     }
 
-    // 3. Save client doc
+    // 3. Save root client doc (minimal fields)
     await db.collection('clients').doc(subdomain).set({
       name: onboardingData.clientName,
-      logoUrl,
-      subdomain,
-      assetTypes: onboardingData.assetTypes || [],
-      assetFrequencies: onboardingData.assetFrequencies || {},
-      importedAssetsCsv: onboardingData.assetCsv || '',
-      customQuestions: onboardingData.customQuestions || {},
-      mapDivide: onboardingData.mapDivide,
-      preciseLoc: onboardingData.preciseLoc,
-      hasNaming: onboardingData.hasNaming,
-      wantsNexusGen: onboardingData.wantsNexusGen,
-      generatedDivCodes: onboardingData.generatedDivCodes || [],
-      scanOnly: onboardingData.scanOnly,
+      logo_url: logoUrl,
+      subdomain: subdomain,
+      primary_color: "#fdd835",
+      secondary_color: "#12233d"
+    });
+
+    // 4. Create subcollections with starter/blank docs
+    const clientRef = db.collection('clients').doc(subdomain);
+
+    // asset_types
+    await clientRef.collection('asset_types').doc('starter').set({
+      types: onboardingData.assetTypes || []
+    });
+
+    // users (admin user)
+    await clientRef.collection('users').doc('admin').set({
+      first_name: onboardingData.adminFirst,
+      last_name: onboardingData.adminLast,
+      username: onboardingData.adminUsername,
+      password: onboardingData.adminPassword, // Hash in prod!
+      role: "admin",
+      must_change_password: true,
       created: new Date().toISOString()
     });
 
-    // 4. Save admin user
-    await db.collection('clients').doc(subdomain).collection('users').add({
-      firstName: onboardingData.adminFirst,
-      lastName: onboardingData.adminLast,
-      username: onboardingData.adminUsername,
-      password: onboardingData.adminPassword, // Remember to hash in prod!
-      role: "admin",
-      mustChangePassword: true,
-      created: new Date().toISOString()
+    // locations
+    await clientRef.collection('locations').doc('starter').set({
+      map_divide: onboardingData.mapDivide || "",
+      precise_loc: onboardingData.preciseLoc || "",
+      has_naming: onboardingData.hasNaming || "",
+      wants_nexus_gen: onboardingData.wantsNexusGen || "",
+      generated_div_codes: onboardingData.generatedDivCodes || [],
+      scan_only: onboardingData.scanOnly || ""
+    });
+
+    // asset_frequencies
+    await clientRef.collection('asset_frequencies').doc('starter').set({
+      frequencies: onboardingData.assetFrequencies || {}
+    });
+
+    // logs
+    await clientRef.collection('logs').doc('starter').set({
+      message: "Client onboarded",
+      timestamp: new Date().toISOString()
+    });
+
+    // assignments
+    await clientRef.collection('assignments').doc('starter').set({});
+
+    // billing
+    await clientRef.collection('billing').doc('starter').set({});
+
+    // assets (imported CSV if present)
+    await clientRef.collection('assets').doc('starter').set({
+      imported_csv: onboardingData.assetCsv || ""
+    });
+
+    // custom_questions
+    await clientRef.collection('custom_questions').doc('starter').set({
+      questions: onboardingData.customQuestions || {}
     });
 
     alert("Onboarding Complete! Client and admin user have been saved to Firebase.");
