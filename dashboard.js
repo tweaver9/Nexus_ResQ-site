@@ -129,22 +129,6 @@ window.addEventListener('DOMContentLoaded', () => {
       inspectionList.innerHTML = `<div class="dashboard-placeholder">Error loading inspections.</div>`;
     }
   }
-
-  // Initialize FullCalendar
-  const calendarEl = document.getElementById('calendar');
-  if (calendarEl) {
-    const calendar = new Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      height: 400,
-      headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-      }
-    });
-    calendar.render();
-  }
-
   // Load area statuses
   async function loadAreaStatuses() {
     const table = document.getElementById('area-status-table').querySelector('tbody');
