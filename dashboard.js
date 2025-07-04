@@ -31,7 +31,8 @@ const username = sessionStorage.getItem('username');
 const role = sessionStorage.getItem('role');
 
 // ---------- 3. Redirect if not logged in ----------
-if (!clientId || !username) {
+const loggedIn = localStorage.getItem('nexus_logged_in');
+if (!loggedIn) {
   window.location.href = "login.html";
 }
 
