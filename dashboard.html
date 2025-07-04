@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="CSS/dashboard.css">
+  <!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -281,8 +283,7 @@
     <div class="dashboard-right">
       <div class="calendar-section">
         <div class="section-title">Calendar</div>
-        <!-- You can use a calendar library or static markup here -->
-        <div style="color:#888;">[Calendar Placeholder]</div>
+        <div id="calendar"></div>
       </div>
       <div class="tasks-section">
         <div class="section-title">Your Task</div>
