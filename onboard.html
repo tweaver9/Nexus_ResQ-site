@@ -825,73 +825,76 @@ function showStep8() {
     <button class="next-btn" id="finishBtn" style="background:#fdd835;color:#18203a;font-size:1.19em;font-weight:700;padding:14px 0;margin-bottom:8px;margin-top:10px;">Finish & Submit</button>
     <button class="next-btn" type="button" style="background:#ececec;color:#23263a;" id="backTo7">Back</button>
   `;
+document.getElementById('finishBtn').onclick = async function() {
+  document.getElementById('finishBtn').disabled = true;
+  document.getElementById('finishBtn').textContent = 'Submitting...';
 
-  document.getElementById('finishBtn').onclick = async function() {
-    document.getElementById('finishBtn').disabled = true;
-    document.getElementById('finishBtn').textContent = 'Submitting...';
+  const subdomain = onboardingData.clientName
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
 
-    const slug = onboardingData.clientName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .substring(0, 30)
-      + '-' + Math.random().toString(36).substr(2, 6);
-
-    let logoUrl = '';
-    try {
-      // Upload logo file
-      if (onboardingData.logoFile) {
-        const ext = onboardingData.logoFile.name.split('.').pop();
-        const safeFileName = 'logo.' + ext;
-        const logoRef = storage.ref().child(`client_logos/${slug}/${safeFileName}`);
-        await logoRef.put(onboardingData.logoFile);
-        logoUrl = await logoRef.getDownloadURL();
-      }
-
-      // Save client doc
-      const clientDoc = {
-        name: onboardingData.clientName,
-        logoUrl: logoUrl,
-        assetTypes: onboardingData.assetTypes || [],
-        assetFrequencies: onboardingData.assetFrequencies || {},
-        importedAssetsCsv: onboardingData.assetCsv || '',
-        customQuestions: onboardingData.customQuestions || {},
-        mapDivide: onboardingData.mapDivide,
-        preciseLoc: onboardingData.preciseLoc,
-        hasNaming: onboardingData.hasNaming,
-        wantsNexusGen: onboardingData.wantsNexusGen,
-        generatedDivCodes: onboardingData.generatedDivCodes || [],
-        scanOnly: onboardingData.scanOnly,
-        created: new Date().toISOString()
-      };
-
-      await db.collection('clients').doc(slug).set(clientDoc);
-
-      // Save admin user in subcollection with mustChangePassword=true
-      await db.collection('clients').doc(slug).collection('users').add({
-        firstName: onboardingData.adminFirst,
-        lastName: onboardingData.adminLast,
-        username: onboardingData.adminUsername,
-        password: onboardingData.adminPassword, // In production, hash this!
-        role: "admin",
-        mustChangePassword: true,
-        created: new Date().toISOString()
-      });
-
-      alert("Onboarding Complete! Client and admin user have been saved to Firebase.");
-      // You might want to redirect or clear the wizard here.
-      location.reload();
-    } catch (err) {
-      alert("Error saving to Firebase: " + err.message);
+  let logoUrl = '';
+  try {
+    // 1. Check for existing client with same subdomain
+    const clientDoc = await db.collection('clients').doc(subdomain).get();
+    if (clientDoc.exists) {
+      alert('A client with this name already exists. Please choose a different name.');
       document.getElementById('finishBtn').disabled = false;
       document.getElementById('finishBtn').textContent = 'Finish & Submit';
+      return;
     }
-  };
-  document.getElementById('backTo7').onclick = function() {
-    showStep7();
-  };
-}
 
+    // 2. Upload logo
+    if (onboardingData.logoFile) {
+      const ext = onboardingData.logoFile.name.split('.').pop();
+      const safeFileName = 'logo.' + ext;
+      const logoRef = storage.ref().child(`client_logos/${subdomain}/${safeFileName}`);
+      await logoRef.put(onboardingData.logoFile);
+      logoUrl = await logoRef.getDownloadURL();
+    }
+
+    // 3. Save client doc
+    await db.collection('clients').doc(subdomain).set({
+      name: onboardingData.clientName,
+      logoUrl,
+      subdomain,
+      assetTypes: onboardingData.assetTypes || [],
+      assetFrequencies: onboardingData.assetFrequencies || {},
+      importedAssetsCsv: onboardingData.assetCsv || '',
+      customQuestions: onboardingData.customQuestions || {},
+      mapDivide: onboardingData.mapDivide,
+      preciseLoc: onboardingData.preciseLoc,
+      hasNaming: onboardingData.hasNaming,
+      wantsNexusGen: onboardingData.wantsNexusGen,
+      generatedDivCodes: onboardingData.generatedDivCodes || [],
+      scanOnly: onboardingData.scanOnly,
+      created: new Date().toISOString()
+    });
+
+    // 4. Save admin user
+    await db.collection('clients').doc(subdomain).collection('users').add({
+      firstName: onboardingData.adminFirst,
+      lastName: onboardingData.adminLast,
+      username: onboardingData.adminUsername,
+      password: onboardingData.adminPassword, // Remember to hash in prod!
+      role: "admin",
+      mustChangePassword: true,
+      created: new Date().toISOString()
+    });
+
+    alert("Onboarding Complete! Client and admin user have been saved to Firebase.");
+    location.reload();
+
+  } catch (err) {
+    alert("Error saving to Firebase: " + err.message);
+    document.getElementById('finishBtn').disabled = false;
+    document.getElementById('finishBtn').textContent = 'Finish & Submit';
+  }
+};
+
+document.getElementById('backTo7').onclick = function() {
+  showStep7();
+};
 </script>
 </body>
 </html>
