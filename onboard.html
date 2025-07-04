@@ -326,7 +326,7 @@ function showStep2() {
     let f = (adminFirst.value || '').trim().toLowerCase();
     let l = (adminLast.value || '').trim().toLowerCase();
     if (f && l && c) {
-      adminUsername.value = `${f[0]}.${l}@${c}`;
+      adminUsername.value = `${f[0]}${l}@${c}`;
       adminPassword.value = c;
     } else {
       adminUsername.value = '';
