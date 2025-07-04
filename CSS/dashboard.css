@@ -315,52 +315,29 @@ html, body {
   color: #fff;
 }
 
-.area-status-table-container {
-  width: 100%;
-  overflow-x: auto;
-}
+/* Make area status table more compact */
 .area-status-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 12px;
+  border-spacing: 0 6px;      /* Reduce row spacing */
+  font-size: 0.97em;          /* Slightly smaller font */
 }
+
 .area-status-table td {
-  padding: 8px 18px;
-  font-size: 1.08em;
-  font-weight: 600;
-  vertical-align: middle;
-  background: none;
-  border: none;
+  padding: 5px 10px;          /* Less padding */
+  font-size: 0.97em;          /* Slightly smaller text */
 }
+
 .area-status-location {
-  position: relative;
-  text-align: left;
+  font-size: 1em;             /* Slightly smaller location name */
 }
+
 .area-status-indicator {
-  display: block;
-  margin: 0 auto;
-  margin-top: 5px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  box-shadow: 0 0 12px 4px rgba(0,0,0,0.12);
+  width: 14px;                /* Smaller indicator */
+  height: 14px;
+  margin-top: 2px;
 }
-.area-status-indicator.green {
-  background: #28e640;
-  box-shadow: 0 0 12px 4px #28e64088;
-}
-.area-status-indicator.yellow {
-  background: #ffd600;
-  box-shadow: 0 0 12px 4px #ffd60088;
-}
-.area-status-indicator.red {
-  background: #ff5050;
-  box-shadow: 0 0 12px 4px #ff505088;
-}
+
 .area-status-count {
-  font-size: 0.98em;
-  color: #bbb;
-  font-weight: 400;
+  font-size: 0.93em;          /* Slightly smaller count text */
 }
 
 @media (max-width: 1300px) {
