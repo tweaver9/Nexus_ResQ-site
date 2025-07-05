@@ -57,6 +57,12 @@ window.addEventListener('DOMContentLoaded', () => {
       } else {
         document.querySelector('.dashboard-right').style.display = '';
       }
+      // Only load these when Home is shown
+      if (panelId === 'panel-home') {
+        loadFailedAssets();
+        loadRecentInspections();
+        loadAreaStatuses();
+      }
     });
   });
   document.getElementById('btn-home').classList.add('active');
@@ -600,12 +606,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
       }
       cleanup();
-      onSave(obj);
-    };
-    document.getElementById('explorer-form-cancel').onclick = cleanup;
-  }
-
-  // --- INITIAL LOAD ---
   loadFailedAssets();
   loadRecentInspections();
   loadAreaStatuses();
@@ -640,4 +640,14 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  document.getElementById('btn-manage-users').onclick = function() {
+    window.showManageUsersModal(clientName); // pass the correct client name
+  };
+
+  document.getElementById('btn-users').addEventListener('click', function() {
+    // Use the client name or ID from sessionStorage
+    const clientName = sessionStorage.getItem('tenant_id');
+    window.showManageUsersModal(clientName);
+  });
 });
