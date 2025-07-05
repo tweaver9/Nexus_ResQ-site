@@ -1,476 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Nexus Res-Q | Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="CSS/dashboard.css">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Oswald', Arial, sans-serif;
-      background: #f5f6fa;
-      color: #23263a;
-      min-height: 100vh;
-      display: flex;
-    }
-    .sidebar {
-      width: 220px;
-      background: linear-gradient(180deg, #181b24, #23263a);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      min-height: 100vh;
-      box-shadow: 2px 0 12px #0002;
-      z-index: 2;
-    }
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 28px 24px 18px 24px;
-      border-bottom: 1px solid #23263a;
-    }
-    .sidebar-logo {
-      height: 40px;
-      border-radius: 7px;
-      background: #fff;
-      padding: 2px 8px;
-    }
-    .sidebar-title {
-      font-size: 1.25em;
-      font-weight: 700;
-      color: #fdd835;
-      letter-spacing: 1px;
-    }
-    .sidebar-nav {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 30px;
-      padding: 0 12px;
-    }
-    .sidebar-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      text-align: left;
-      font-size: 1.08em;
-      font-family: 'Oswald', Arial, sans-serif;
-      font-weight: 500;
-      padding: 12px 18px;
-      border-radius: 7px;
-      margin-bottom: 2px;
-      cursor: pointer;
-      transition: background 0.13s, color 0.13s;
-      outline: none;
-    }
-    .sidebar-btn.active, .sidebar-btn:hover {
-      background: linear-gradient(90deg, #fdd835 60%, #ffe45e 100%);
-      color: #23263a;
-      font-weight: 700;
-    }
-    .sidebar-footer {
-      margin-top: auto;
-      padding: 18px 24px;
-      font-size: 0.97em;
-      color: #fdd835;
-      cursor: pointer;
-      text-align: left;
-      border-top: 1px solid #23263a;
-    }
-    .dashboard-main {
-      flex: 1;
-      display: flex;
-      flex-direction: row;
-      min-height: 100vh;
-      background: #f5f6fa;
-    }
-    .dashboard-center {
-      flex: 2;
-      padding: 36px 32px 36px 32px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-    .dashboard-header-card {
-      background: var(--primary-mid); /* was #fff */
-      border-radius: 16px;
-      box-shadow: 0 2px 14px #0001;
-      padding: 28px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 18px;
-    }
-    .dashboard-header-card .welcome {
-      font-size: 1.35em;
-      font-weight: 700;
-      color: #23263a;
-    }
-    .dashboard-header-card .upgrade-btn {
-      background: linear-gradient(90deg, #fdd835 60%, #ffe45e 100%);
-      color: #23263a;
-      border: none;
-      border-radius: 7px;
-      padding: 10px 22px;
-      font-size: 1em;
-      font-weight: 600;
-      cursor: pointer;
-      margin-left: 24px;
-    }
-    .dashboard-cards {
-      display: flex;
-      gap: 24px;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-    }
-    .dashboard-card {
-      flex: 1 1 220px;
-      min-width: 220px;
-      background: var(--primary-mid); /* was #fff */
-      border-radius: 16px;
-      box-shadow: 0 2px 14px #0001;
-      padding: 22px 18px 18px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .dashboard-card.red { background: linear-gradient(120deg, #ff5050 60%, #ffb300 100%); color: #fff; }
-    .dashboard-card.blue { background: linear-gradient(120deg, #3b82f6 60%, #a5b4fc 100%); color: #fff; }
-    .dashboard-card.yellow { background: linear-gradient(120deg, #fdd835 60%, #ffe45e 100%); color: #23263a; }
-    .dashboard-card .card-title {
-      font-size: 1.1em;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    .dashboard-card .card-meta {
-      font-size: 0.97em;
-      opacity: 0.9;
-    }
-    .dashboard-section {
-      background: var(--primary-mid); /* was #fff */
-      border-radius: 16px;
-      box-shadow: 0 2px 14px #0001;
-      padding: 22px 18px 18px 18px;
-      margin-bottom: 18px;
-    }
-    .dashboard-section .section-title {
-      font-size: 1.13em;
-      color: #fdd835;
-      font-weight: 600;
-      margin-bottom: 13px;
-    }
-    .dashboard-list {
-      max-height: 180px;
-      overflow-y: auto;
-      font-size: 0.98em;
-    }
-    .dashboard-list .list-item {
-      padding: 7px 0;
-      border-bottom: 1px solid #eee;
-    }
-    .dashboard-list .list-item:last-child {
-      border-bottom: none;
-    }
-    /* Right panel */
-    .dashboard-right {
-      flex: 1;
-      padding: 36px 24px 36px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      min-width: 320px;
-    }
-    .dashboard-right .calendar-section,
-    .dashboard-right .tasks-section,
-    .dashboard-right .storage-section {
-      background: var(--primary-mid); /* was #fff */
-      border-radius: 16px;
-      box-shadow: 0 2px 14px #0001;
-      padding: 18px 18px 14px 18px;
-      margin-bottom: 12px;
-    }
-    .section-title {
-      font-size: 1.1em;
-      color: #fdd835;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-    #simple-calendar {
-  max-width: 320px;
-  margin: 0 auto;
-}
+window.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('changePasswordForm');
+  const msgDiv = document.getElementById('changePasswordMsg');
 
-.calendar-section {
-  overflow-x: auto;
-  padding: 18px 0 0 0;
-  /* Optional: set a min-height or height if needed */
-}
-.simple-calendar-table {
-  width: 100%;
-  max-width: 320px;
-  margin: 0 auto;
-  border-radius: 16px;
-  box-shadow: 0 2px 14px #0001;
-  background: #142b47;
-}
-    @media (max-width: 1100px) {
-      .dashboard-main { flex-direction: column; }
-      .dashboard-right { min-width: unset; padding: 18px 8px; }
-      .dashboard-center { padding: 18px 8px; }
-    }
-    @media (max-width: 700px) {
-      .dashboard-cards { flex-direction: column; gap: 12px; }
-      .dashboard-main { flex-direction: column; }
-      .dashboard-right { padding: 8px 0; }
-      .dashboard-center { padding: 8px 0; }
-    }
-    .area-status-indicator.green {
-  background: #28e640;
-}
-.area-status-indicator.red {
-  background: #ff5050;
-}
-.area-status-indicator.yellow {
-  background: #fdd835;
-}
-.area-status-indicator {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  margin-left: 8px;
-  vertical-align: middle;
-}
-  </style>
-</head>
-<body>
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <img src="" alt="Client Logo" class="sidebar-logo" id="client-logo">
-      <span class="sidebar-title" id="dashboard-title">Dashboard</span>
-    </div>
-    <!-- Add this where you want the welcome message to appear -->
-<span id="welcome-message"></span>
-    <nav class="sidebar-nav" id="sidebar-nav">
-      <button class="sidebar-btn active" id="btn-home">Home</button>
-      <button class="sidebar-btn" id="btn-users">Manage Users</button>
-      <button class="sidebar-btn" id="btn-assets">Manage Assets</button>
-      <button class="sidebar-btn" id="btn-inspections">Inspections</button>
-      <button class="sidebar-btn" id="btn-logs">Logs</button>
-      <button class="sidebar-btn" id="btn-analytics">Analytics</button>
-      <button class="sidebar-btn" id="btn-assignments">Assignments</button>
-      <button class="sidebar-btn" id="btn-help">Help</button>
-      <button class="sidebar-btn" id="btn-firebase">Firebase Manager</button>
-      <button class="sidebar-btn" id="btn-onboard">Onboard Client</button>
-    </nav>
-    <div class="sidebar-footer" id="logout-link">Log Out</div>
-  </aside>
-  <div class="dashboard-main">
-    <div class="dashboard-center">
-      <div id="panel-home" class="dashboard-panel" style="display:block;">
-  <div class="dashboard-section">
-    <div class="section-title">Area Status</div>
-    <div class="area-status-table-container">
-      <table class="area-status-table" id="area-status-table">
-        <tbody>
-          <!-- JS will populate rows here -->
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <!-- ...other sections like dashboard-header-card, dashboard-cards, etc... -->
-  <div id="failed-assets-list"></div>
-  <div id="inspection-list"></div>
-</div>
-      <div id="panel-users" class="dashboard-panel" style="display:none;">User management here...</div>
-      <div id="panel-assets" class="dashboard-panel" style="display:none;">Asset management here...</div>
-      <div id="panel-inspections" class="dashboard-panel" style="display:none;">Inspections here...</div>
-      <div id="panel-logs" class="dashboard-panel" style="display:none;">Logs here...</div>
-      <div id="panel-analytics" class="dashboard-panel" style="display:none;">Analytics here...</div>
-      <div id="panel-assignments" class="dashboard-panel" style="display:none;">Assignments here...</div>
-      <div id="panel-billing" class="dashboard-panel" style="display:none;">Billing here...</div>
-      <div id="panel-help" class="dashboard-panel" style="display:none;">Help here...</div>
-      <div id="panel-firebase" class="dashboard-panel" style="display:none;">
-        <div class="firebase-explorer">
-  <div class="explorer-sidebar">
-    <!-- Folders/collections will go here -->
-    <div class="explorer-folder active">/clients</div>
-    <div class="explorer-folder">/users</div>
-    <!-- ... -->
-  </div>
-  <div class="explorer-main">
-    <!-- Files/fields will go here -->
-    <div class="explorer-header">Select a collection to view documents</div>
-    <div class="explorer-content"></div>
-  </div>
-</div>
-      </div>
-      
-      <div id="panel-onboard" class="dashboard-panel" style="display:none;">Onboard Client here...</div>
-    </div>
-    <div class="dashboard-right">
-      <div class="calendar-section dashboard-panel" id="panel-calendar">
-  <div class="section-title">Calendar</div>
-  <div id="simple-calendar"></div>
-</div>
-      <div class="tasks-section">
-        <div class="section-title">Your Task</div>
-        <div class="dashboard-list">
-          <div class="list-item">Review health care app with team <span style="color:#ff5050;">• Dec 2, 2019</span></div>
-        </div>
-      </div>
-      <div class="storage-section">
-        <div class="section-title">Storage</div>
-        <div style="color:#888;">[Storage Chart Placeholder]</div>
-      </div>
-    </div>
-  </div>
-  <!-- Modal for Add/Edit -->
-<div id="explorer-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
-  <div style="background:#22345a;padding:28px 24px;border-radius:12px;min-width:320px;max-width:90vw;">
-    <div id="explorer-modal-title" style="font-weight:600;font-size:1.1em;margin-bottom:10px;"></div>
-    <textarea id="explorer-modal-textarea" style="width:100%;height:160px;border-radius:7px;border:none;padding:10px;font-size:1em;background:#1c2942;color:#fff;"></textarea>
-    <div style="margin-top:14px;text-align:right;">
-      <button id="explorer-modal-cancel" class="explorer-btn danger">Cancel</button>
-      <button id="explorer-modal-save" class="explorer-btn">Save</button>
-    </div>
-  </div>
-</div>
-<!-- Form Modal for Add/Edit -->
-<div id="explorer-form-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
-  <div style="background:#22345a;padding:28px 24px;border-radius:12px;min-width:320px;max-width:90vw;">
-    <div id="explorer-form-title" style="font-weight:600;font-size:1.1em;margin-bottom:10px;"></div>
-    <form id="explorer-form-fields"></form>
-    <div style="margin-top:14px;text-align:right;">
-      <button id="explorer-form-cancel" class="explorer-btn danger" type="button">Cancel</button>
-      <button id="explorer-form-save" class="explorer-btn" type="submit">Save</button>
-    </div>
-  </div>
-</div>
-  <script>
-function renderSimpleCalendar(containerId) {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
-  const day = today.getDate();
+  const username = sessionStorage.getItem('username');
+  const tenantId = sessionStorage.getItem('tenant_id');
 
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-
-  // First day of the month
-  const firstDay = new Date(year, month, 1).getDay();
-  // Days in month
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  let html = `<table class="simple-calendar-table">
-    <caption>${monthNames[month]} ${year}</caption>
-    <thead>
-      <tr>
-        <th>Su</th><th>Mo</th><th>Tu</th><th>We</th>
-        <th>Th</th><th>Fr</th><th>Sa</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-  `;
-
-  let dayCount = 1;
-  // Fill initial empty cells
-  for (let i = 0; i < firstDay; i++) html += "<td></td>";
-
-  for (let i = firstDay; i < 7; i++) {
-    html += `<td${dayCount === day ? ' class="today"' : ''}>${dayCount}</td>`;
-    dayCount++;
+  if (!tenantId || !username) {
+    msgDiv.textContent = "Session expired. Please log in again.";
+    form.style.display = "none";
+    return;
   }
-  html += "</tr>";
 
-  while (dayCount <= daysInMonth) {
-    html += "<tr>";
-    for (let i = 0; i < 7; i++) {
-      if (dayCount > daysInMonth) {
-        html += "<td></td>";
-      } else {
-        html += `<td${dayCount === day ? ' class="today"' : ''}>${dayCount}</td>`;
+  form.onsubmit = async function(e) {
+    e.preventDefault();
+    msgDiv.textContent = "";
+
+    const newPass = document.getElementById('newPassword').value.trim();
+    const confirm = document.getElementById('confirmPassword').value.trim();
+
+    if (newPass.length < 6) {
+      msgDiv.textContent = "Password must be at least 6 characters.";
+      return;
+    }
+
+    if (newPass !== confirm) {
+      msgDiv.textContent = "Passwords do not match.";
+      return;
+    }
+
+    try {
+      const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          newPassword: newPass,
+          tenantId
+        })
+      });
+
+      if (!res.ok) {
+        const errMsg = await res.text();
+        throw new Error(errMsg);
       }
-      dayCount++;
+
+      msgDiv.style.color = "#28e640";
+      msgDiv.textContent = "Password changed! Redirecting...";
+
+      setTimeout(() => {
+        window.location.href = "dashboard.html";
+      }, 1200);
+    } catch (err) {
+      msgDiv.style.color = "#ff5050";
+      msgDiv.textContent = "Update failed: " + err.message;
     }
-    html += "</tr>";
-  }
-
-  html += "</tbody></table>";
-
-  document.getElementById(containerId).innerHTML = html;
-}
-renderSimpleCalendar("simple-calendar");
-</script>
-
-<style>
-.simple-calendar-table {
-  width: 100%;
-  max-width: 320px;
-  margin: 0 auto;
-  border-radius: 16px;
-  box-shadow: 0 2px 14px #0001;
-  background: #142b47;
-}
-.simple-calendar-table caption {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #fdd835;
-  padding: 10px 0 6px 0;
-  background: #181b24;
-  letter-spacing: 1px;
-}
-.simple-calendar-table th, .simple-calendar-table td {
-  width: 14.2%;
-  text-align: center;
-  padding: 8px 0;
-  border: none;
-}
-.simple-calendar-table th {
-  background: #22345a;
-  color: #fdd835;
-  font-weight: 600;
-  font-size: 1em;
-}
-.simple-calendar-table td.today {
-  background: #fdd835;
-  color: #23263a;
-  font-weight: bold;
-  border-radius: 50%;
-}
-.simple-calendar-table td {
-  font-size: 1em;
-  border-radius: 50%;
-  transition: background 0.2s;
-}
-</style>
-  <!-- Firebase App (the core Firebase SDK) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>
-  // Only needed if you haven't already initialized compat elsewhere
-  if (!firebase.apps.length) {
-    firebase.initializeApp({
-      apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
-      authDomain: "nexus-res-q.firebaseapp.com",
-      projectId: "nexus-res-q",
-      storageBucket: "nexus-res-q.firebasestorage.app",
-      messagingSenderId: "203995658810",
-      appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303",
-      measurementId: "G-B7B1QZVWFG"
-    });
-  }
-  window.firestoreCompat = firebase.firestore();
-</script>
-<script src="dashboard.js"></script>
-<script src="manage-users.js"></script>
-</body>
-</html>
+  };
+});
