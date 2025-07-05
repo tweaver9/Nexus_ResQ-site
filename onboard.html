@@ -257,7 +257,6 @@
     </form>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
 <script>
 // --- FIREBASE SETUP ---
 const firebaseConfig = {
@@ -845,7 +844,7 @@ document.getElementById('finishBtn').onclick = async function() {
       return;
     }
 
-    // 2. Upload logo
+    // 2. Upload logo to Firebase Storage (optional, keep if you want)
     if (onboardingData.logoFile) {
       const ext = onboardingData.logoFile.name.split('.').pop();
       const safeFileName = 'logo.' + ext;
@@ -854,76 +853,42 @@ document.getElementById('finishBtn').onclick = async function() {
       logoUrl = await logoRef.getDownloadURL();
     }
 
-    // 3. Save root client doc (minimal fields)
-    await db.collection('clients').doc(subdomain).set({
-      name: onboardingData.clientName,
-      logo_url: logoUrl,
-      subdomain: subdomain,
-      primary_color: "#fdd835",
-      secondary_color: "#12233d"
+    // 3. Send all onboarding data to backend API
+    const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/onboard-client", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clientName: onboardingData.clientName,
+        logoUrl,
+        subdomain,
+        adminFirst: onboardingData.adminFirst,
+        adminLast: onboardingData.adminLast,
+        adminUsername: onboardingData.adminUsername,
+        adminPassword: onboardingData.adminPassword,
+        adminMustChange: onboardingData.adminMustChange,
+        mapDivide: onboardingData.mapDivide,
+        preciseLoc: onboardingData.preciseLoc,
+        hasNaming: onboardingData.hasNaming,
+        wantsNexusGen: onboardingData.wantsNexusGen,
+        generatedDivCodes: onboardingData.generatedDivCodes,
+        scanOnly: onboardingData.scanOnly,
+        assetTypes: onboardingData.assetTypes,
+        assetFrequencies: onboardingData.assetFrequencies,
+        assetCsv: onboardingData.assetCsv,
+        customQuestions: onboardingData.customQuestions
+      })
     });
 
-    // 4. Create subcollections with starter/blank docs
-    const clientRef = db.collection('clients').doc(subdomain);
+    if (!res.ok) {
+      const msg = await res.text();
+      throw new Error(msg);
+    }
 
-    // asset_types
-    await clientRef.collection('asset_types').doc('starter').set({
-      types: onboardingData.assetTypes || []
-    });
-
-    // users (admin user)
-    await clientRef.collection('users').doc('admin').set({
-      first_name: onboardingData.adminFirst,
-      last_name: onboardingData.adminLast,
-      username: onboardingData.adminUsername,
-      password: bcrypt.hashSync(onboardingData.adminPassword, 10),
-      role: "admin",
-      must_change_password: true,
-      created: new Date().toISOString()
-    });
-
-    // locations
-    await clientRef.collection('locations').doc('starter').set({
-      map_divide: onboardingData.mapDivide || "",
-      precise_loc: onboardingData.preciseLoc || "",
-      has_naming: onboardingData.hasNaming || "",
-      wants_nexus_gen: onboardingData.wantsNexusGen || "",
-      generated_div_codes: onboardingData.generatedDivCodes || [],
-      scan_only: onboardingData.scanOnly || ""
-    });
-
-    // asset_frequencies
-    await clientRef.collection('asset_frequencies').doc('starter').set({
-      frequencies: onboardingData.assetFrequencies || {}
-    });
-
-    // logs
-    await clientRef.collection('logs').doc('starter').set({
-      message: "Client onboarded",
-      timestamp: new Date().toISOString()
-    });
-
-    // assignments
-    await clientRef.collection('assignments').doc('starter').set({});
-
-    // billing
-    await clientRef.collection('billing').doc('starter').set({});
-
-    // assets (imported CSV if present)
-    await clientRef.collection('assets').doc('starter').set({
-      imported_csv: onboardingData.assetCsv || ""
-    });
-
-    // custom_questions
-    await clientRef.collection('custom_questions').doc('starter').set({
-      questions: onboardingData.customQuestions || {}
-    });
-
-    alert("Onboarding Complete! Client and admin user have been saved to Firebase.");
+    alert("Onboarding Complete! Client and admin user have been saved.");
     location.reload();
 
   } catch (err) {
-    alert("Error saving to Firebase: " + err.message);
+    alert("Error saving to backend: " + err.message);
     document.getElementById('finishBtn').disabled = false;
     document.getElementById('finishBtn').textContent = 'Finish & Submit';
   }
