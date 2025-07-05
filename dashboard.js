@@ -211,6 +211,99 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Show only Firebase Manager panel and hide right panel
+  document.getElementById('btn-firebase').addEventListener('click', () => {
+    document.querySelectorAll('.dashboard-panel').forEach(p => p.style.display = 'none');
+    document.getElementById('panel-firebase').style.display = 'block';
+    const rightPanel = document.querySelector('.dashboard-right');
+    if (rightPanel) rightPanel.style.display = 'none';
+    loadCollections();
+  });
+
+  // Restore right panel when leaving Firebase Manager
+  document.querySelectorAll('.sidebar-btn:not(#btn-firebase)').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const rightPanel = document.querySelector('.dashboard-right');
+      if (rightPanel) rightPanel.style.display = '';
+    });
+  });
+
+  // Load collections into explorer sidebar
+  function loadCollections() {
+    const sidebar = document.querySelector('.explorer-sidebar');
+    sidebar.innerHTML = '';
+    const collections = ['clients', 'users']; // Add more as needed
+    collections.forEach(col => {
+      const div = document.createElement('div');
+      div.className = 'explorer-folder';
+      div.textContent = '/' + col;
+      div.onclick = function() { loadDocuments(col, div); };
+      sidebar.appendChild(div);
+    });
+  }
+
+  // Load documents for a collection
+  function loadDocuments(collection, folderDiv) {
+    document.querySelectorAll('.explorer-folder').forEach(f => f.classList.remove('active'));
+    folderDiv.classList.add('active');
+    const main = document.querySelector('.explorer-main');
+    main.innerHTML = `<div class="explorer-header">/${collection}</div><div class="explorer-content">Loading...</div>`;
+    db.collection(collection).get().then(snapshot => {
+      const content = main.querySelector('.explorer-content');
+      content.innerHTML = '';
+      snapshot.forEach(doc => {
+        const docDiv = document.createElement('div');
+        docDiv.className = 'explorer-doc';
+        docDiv.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:600;">${doc.id}</span>
+            <span>
+              <button onclick="editDoc('${collection}','${doc.id}')">Edit</button>
+              <button onclick="deleteDoc('${collection}','${doc.id}')">Delete</button>
+            </span>
+          </div>
+          <pre>${JSON.stringify(doc.data(), null, 2)}</pre>
+        `;
+        content.appendChild(docDiv);
+      });
+      // Add button to create new doc
+      const addBtn = document.createElement('button');
+      addBtn.textContent = 'Add New Document';
+      addBtn.onclick = () => addDocPrompt(collection);
+      content.appendChild(addBtn);
+    });
+  }
+
+  // Add, Edit, Delete functions
+  window.addDocPrompt = function(collection) {
+    const data = prompt('Enter JSON for new document:');
+    if (!data) return;
+    try {
+      const obj = JSON.parse(data);
+      db.collection(collection).add(obj).then(() => loadDocuments(collection, document.querySelector(`.explorer-folder.active`)));
+    } catch (e) {
+      alert('Invalid JSON');
+    }
+  }
+
+  window.editDoc = function(collection, docId) {
+    const ref = db.collection(collection).doc(docId);
+    ref.get().then(doc => {
+      const data = prompt('Edit JSON:', JSON.stringify(doc.data(), null, 2));
+      if (!data) return;
+      try {
+        const obj = JSON.parse(data);
+        ref.set(obj).then(() => loadDocuments(collection, document.querySelector(`.explorer-folder.active`)));
+      } catch (e) {
+        alert('Invalid JSON');
+      }
+    });
+  }
+
+  window.deleteDoc = function(collection, docId) {
+    if (!confirm('Delete this document?')) return;
+    db.collection(collection).doc(docId).delete().then(() => loadDocuments(collection, document.querySelector(`.explorer-folder.active`)));
+  }
   // Initial load
   loadFailedAssets();
   loadRecentInspections();
