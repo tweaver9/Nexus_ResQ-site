@@ -213,8 +213,10 @@ window.addEventListener('DOMContentLoaded', () => {
           const collectionNames = (metaDoc.exists && metaDoc.data().collections) || [];
           collectionsList = collectionNames.map(name => db.collection(name));
         } else {
-          let docPath = pathSegments.join('/');
-          collectionsList = await db.doc(docPath).listCollections();
+          // Only try to list subcollections if the path points to a document
+          // But here, pathSegments.length is even, so it's a collection, not a document
+          // So we should NOT call listCollections here!
+          collectionsList = []; // No subcollections under a collection in Firestore
         }
       } catch (e) {
         sidebar.innerHTML = '<div style="color:#ff5050;">Error loading collections.</div>';
@@ -282,7 +284,14 @@ window.addEventListener('DOMContentLoaded', () => {
     } else {
       // Document level, show subcollections
       let docPath = pathSegments.join('/');
-      const subcollections = await db.doc(docPath).listCollections();
+      let subcollections = [];
+      try {
+        subcollections = await db.doc(docPath).listCollections();
+      } catch (e) {
+        sidebar.innerHTML = '<div style="color:#ff5050;">Error loading subcollections.</div>';
+        console.error(e);
+        return;
+      }
       sidebar.innerHTML = '';
       for (const colRef of subcollections) {
         const div = document.createElement('div');
