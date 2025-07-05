@@ -642,11 +642,11 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   document.getElementById('btn-manage-users').onclick = function() {
-    window.showManageUsersModal(clientName); // pass the correct client name
+    const clientName = sessionStorage.getItem('tenant_id');
+    window.showManageUsersModal(clientName);
   };
 
   document.getElementById('btn-users').addEventListener('click', function() {
-    // Use the client name or ID from sessionStorage
     const clientName = sessionStorage.getItem('tenant_id');
     window.showManageUsersModal(clientName);
   });
