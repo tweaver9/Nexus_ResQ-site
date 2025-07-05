@@ -432,6 +432,50 @@ html, body {
   .dashboard-center { padding: 8px 0; }
 }
 
+/* Explorer layout */
+.firebase-explorer {
+  display: flex;
+  height: 60vh;
+  min-height: 400px;
+  background: var(--primary-mid);
+  border-radius: 12px;
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+}
+.explorer-sidebar {
+  width: 180px;
+  background: #18243a;
+  color: #fdd835;
+  padding: 0;
+  border-right: 2px solid #22345a;
+  display: flex;
+  flex-direction: column;
+}
+.explorer-folder {
+  padding: 14px 18px;
+  cursor: pointer;
+  border-bottom: 1px solid #22345a;
+  transition: background 0.15s;
+}
+.explorer-folder.active,
+.explorer-folder:hover {
+  background: #22345a;
+  color: #fff;
+}
+.explorer-main {
+  flex: 1;
+  background: #1c2942;
+  color: #fff;
+  padding: 24px;
+  overflow-y: auto;
+}
+.explorer-header {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 18px;
+  color: var(--primary-light);
+}
+
 body, .dashboard-main, .dashboard-center {
   background: #0d1b2a !important;
 }
