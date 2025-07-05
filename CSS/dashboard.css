@@ -476,6 +476,67 @@ html, body {
   color: var(--primary-light);
 }
 
+/* Explorer buttons */
+.explorer-btn {
+  background: var(--primary-light);
+  color: #23263a;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 14px;
+  margin-left: 6px;
+  font-size: 0.97em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.13s, color 0.13s;
+}
+.explorer-btn:hover {
+  background: #ffe45e;
+  color: #0d1b2a;
+}
+.explorer-btn.danger {
+  background: #ff5050;
+  color: #fff;
+}
+.explorer-btn.danger:hover {
+  background: #ff2222;
+  color: #fff;
+}
+.explorer-doc {
+  background: #22345a;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px #0002;
+}
+.explorer-doc pre {
+  background: #1c2942;
+  color: #f2f2f2;
+  border-radius: 6px;
+  padding: 8px;
+  margin: 8px 0 0 0;
+  font-size: 0.97em;
+  overflow-x: auto;
+}
+.explorer-header {
+  margin-bottom: 16px;
+}
+.explorer-content > button {
+  margin-top: 10px;
+  background: #11c442;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 18px;
+  font-size: 1em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, box-shadow 0.16s;
+}
+.explorer-content > button:hover {
+  background: #23e26a;
+  color: #23263a;
+}
+
 body, .dashboard-main, .dashboard-center {
   background: #0d1b2a !important;
 }
@@ -490,4 +551,34 @@ body, .dashboard-main, .dashboard-center {
 .dashboard-main,
 .dashboard-center {
   background: var(--primary-dark) !important;
+}
+
+#explorer-form-modal .explorer-btn {
+  margin-left: 8px;
+}
+#explorer-form-modal form label {
+  color: var(--primary-light);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+#explorer-form-modal input, #explorer-form-modal select {
+  margin-top: 2px;
+  margin-bottom: 8px;
+  background: #1c2942;
+  color: #fff;
+  border: 1px solid #233c60;
+  border-radius: 6px;
+  font-size: 1em;
+  transition: border 0.13s;
+}
+#explorer-form-modal input:focus, #explorer-form-modal select:focus {
+  border: 1.5px solid var(--primary-light);
+  outline: none;
+}
+#explorer-form-modal {
+  animation: fadeIn 0.2s;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
