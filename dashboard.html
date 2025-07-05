@@ -330,6 +330,28 @@
   </div>
   <div id="failed-assets-list"></div>
 <div id="inspection-list"></div>
+  <!-- Modal for Add/Edit -->
+<div id="explorer-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div style="background:#22345a;padding:28px 24px;border-radius:12px;min-width:320px;max-width:90vw;">
+    <div id="explorer-modal-title" style="font-weight:600;font-size:1.1em;margin-bottom:10px;"></div>
+    <textarea id="explorer-modal-textarea" style="width:100%;height:160px;border-radius:7px;border:none;padding:10px;font-size:1em;background:#1c2942;color:#fff;"></textarea>
+    <div style="margin-top:14px;text-align:right;">
+      <button id="explorer-modal-cancel" class="explorer-btn danger">Cancel</button>
+      <button id="explorer-modal-save" class="explorer-btn">Save</button>
+    </div>
+  </div>
+</div>
+<!-- Form Modal for Add/Edit -->
+<div id="explorer-form-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div style="background:#22345a;padding:28px 24px;border-radius:12px;min-width:320px;max-width:90vw;">
+    <div id="explorer-form-title" style="font-weight:600;font-size:1.1em;margin-bottom:10px;"></div>
+    <form id="explorer-form-fields"></form>
+    <div style="margin-top:14px;text-align:right;">
+      <button id="explorer-form-cancel" class="explorer-btn danger" type="button">Cancel</button>
+      <button id="explorer-form-save" class="explorer-btn" type="submit">Save</button>
+    </div>
+  </div>
+</div>
   <script>
 function renderSimpleCalendar(containerId) {
   const today = new Date();
@@ -434,17 +456,19 @@ renderSimpleCalendar("simple-calendar");
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
-    authDomain: "nexus-res-q.firebaseapp.com",
-    projectId: "nexus-res-q",
-    storageBucket: "nexus-res-q.firebasestorage.app",
-    messagingSenderId: "203995658810",
-    appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303",
-    measurementId: "G-B7B1QZVWFG"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  // Only needed if you haven't already initialized compat elsewhere
+  if (!firebase.apps.length) {
+    firebase.initializeApp({
+      apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
+      authDomain: "nexus-res-q.firebaseapp.com",
+      projectId: "nexus-res-q",
+      storageBucket: "nexus-res-q.firebasestorage.app",
+      messagingSenderId: "203995658810",
+      appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303",
+      measurementId: "G-B7B1QZVWFG"
+    });
+  }
+  window.firestoreCompat = firebase.firestore();
 </script>
   <script type="module" src="dashboard.js"></script>
 </body>
