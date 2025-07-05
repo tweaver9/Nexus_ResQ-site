@@ -1,3 +1,6 @@
+if (!window.firestoreCompat && window.firebase && window.firebase.firestore) {
+  window.firestoreCompat = window.firebase.firestore();
+}
 import { db } from './firebase.js';
 import {
   collection,
@@ -253,14 +256,18 @@ window.addEventListener('DOMContentLoaded', () => {
     // At root: list all collections
     if (pathSegments.length % 2 === 0) {
       // Even: collection level (or root)
-      let collectionsList;
-      if (pathSegments.length === 0) {
-        // Use compat API to list root collections
-        collectionsList = await window.firestoreCompat.listCollections();
-      } else {
-        // Subcollections
-        let docPath = pathSegments.join('/');
-        collectionsList = await window.firestoreCompat.doc(docPath).listCollections();
+      let collectionsList = [];
+      try {
+        if (pathSegments.length === 0) {
+          collectionsList = await window.firestoreCompat.listCollections();
+        } else {
+          let docPath = pathSegments.join('/');
+          collectionsList = await window.firestoreCompat.doc(docPath).listCollections();
+        }
+      } catch (e) {
+        sidebar.innerHTML = '<div style="color:#ff5050;">Error loading collections.</div>';
+        console.error(e);
+        return;
       }
       sidebar.innerHTML = '';
       for (const colRef of collectionsList) {
