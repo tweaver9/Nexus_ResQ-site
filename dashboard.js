@@ -203,115 +203,100 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     main.innerHTML = `<div class="explorer-header">${breadcrumb}</div><div class="explorer-content">Loading...</div>`;
 
-    // At root or collection: list collections
-    if (pathSegments.length % 2 === 0) {
-      let collectionsList = [];
-      try {
-        if (pathSegments.length === 0) {
-          // Fetch root collections from meta doc
-          const metaDoc = await db.collection('meta').doc('rootCollections').get();
-          const collectionNames = (metaDoc.exists && metaDoc.data().collections) || [];
-          collectionsList = collectionNames.map(name => db.collection(name));
-        } else {
-          // Only try to list subcollections if the path points to a document
-          // But here, pathSegments.length is even, so it's a collection, not a document
-          // So we should NOT call listCollections here!
-          collectionsList = []; // No subcollections under a collection in Firestore
-        }
-      } catch (e) {
-        sidebar.innerHTML = '<div style="color:#ff5050;">Error loading collections.</div>';
-        console.error(e);
-        return;
-      }
+    if (pathSegments.length === 0) {
+      // ROOT: show root collections from meta doc
+      const metaDoc = await db.collection('meta').doc('rootCollections').get();
+      const collectionNames = (metaDoc.exists && metaDoc.data().collections) || [];
       sidebar.innerHTML = '';
-      for (const colRef of collectionsList) {
+      for (const name of collectionNames) {
         const div = document.createElement('div');
         div.className = 'explorer-folder';
-        div.textContent = '/' + colRef.id;
-        div.onclick = () => window.openFirestorePath([...pathSegments, colRef.id]);
+        div.textContent = '/' + name;
+        div.onclick = () => window.openFirestorePath([name]);
         sidebar.appendChild(div);
       }
-      // Show documents in main
-      if (pathSegments.length > 0) {
-        const colRef = db.collection(pathSegments.join('/'));
-        const snapshot = await colRef.get();
-        const content = main.querySelector('.explorer-content');
-        content.innerHTML = '';
-        snapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          const friendly = data.name || data.title || data.label || '';
-          const displayName = friendly ? friendly : `(ID: ${docSnap.id.slice(0, 6)}…)`;
-          const docDiv = document.createElement('div');
-          docDiv.className = 'explorer-doc';
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.className = 'bulk-select';
-          checkbox.dataset.docid = docSnap.id;
-          docDiv.prepend(checkbox);
-          docDiv.innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-weight:600;">${displayName}</span>
-              <span>
-                <button class="explorer-btn" onclick="window.openFirestorePath(${JSON.stringify([...pathSegments, docSnap.id])})">Open</button>
-                <button class="explorer-btn" onclick="window.editDoc('${pathSegments.join('/')}', '${docSnap.id}')">Edit</button>
-                <button class="explorer-btn danger" onclick="window.deleteDocPrompt('${pathSegments.join('/')}', '${docSnap.id}')">Delete</button>
-              </span>
-            </div>
-            <pre>${JSON.stringify(data, null, 2)}</pre>
-          `;
-          content.appendChild(docDiv);
-        });
-        // Add button to create new doc
-        const addBtn = document.createElement('button');
-        addBtn.textContent = 'Add New Document';
-        addBtn.onclick = () => window.addDocPrompt(pathSegments.join('/'));
-        content.appendChild(addBtn);
-
-        // Bulk actions buttons
-        const bulkDiv = document.createElement('div');
-        bulkDiv.style.margin = '18px 0 8px 0';
-        bulkDiv.innerHTML = `
-          <button class="explorer-btn" onclick="window.showBulkAddModal('${pathSegments.join('/')}')">Bulk Add</button>
-          <button class="explorer-btn danger" onclick="window.bulkDeleteSelected('${pathSegments.join('/')}')">Bulk Delete</button>
-          <button class="explorer-btn" onclick="window.exportCollectionCSV('${pathSegments.join('/')}')">Export CSV</button>
-          <button class="explorer-btn" onclick="window.importCSVModal('${pathSegments.join('/')}')">Import CSV</button>
-        `;
-        content.appendChild(bulkDiv);
-      } else {
-        const content = main.querySelector('.explorer-content');
-        content.innerHTML = '<div style="color:#bbb;">Select a collection to view documents.</div>';
-      }
-    } else {
-      // Document level, show subcollections
-      let docPath = pathSegments.join('/');
-      let subcollections = [];
-      try {
-        subcollections = await db.doc(docPath).listCollections();
-      } catch (e) {
-        sidebar.innerHTML = '<div style="color:#ff5050;">Error loading subcollections.</div>';
-        console.error(e);
-        return;
-      }
-      sidebar.innerHTML = '';
-      for (const colRef of subcollections) {
-        const div = document.createElement('div');
-        div.className = 'explorer-folder';
-        div.textContent = '/' + colRef.id;
-        div.onclick = () => window.openFirestorePath([...pathSegments, colRef.id]);
-        sidebar.appendChild(div);
-      }
-      // Show document data in main
-      const docRef = db.doc(docPath);
-      const docSnap = await docRef.get();
-      const content = main.querySelector('.explorer-content');
-      content.innerHTML = `<pre>${JSON.stringify(docSnap.data(), null, 2)}</pre>`;
-      const btns = document.createElement('div');
-      btns.innerHTML = `
-        <button onclick="window.editDoc('${pathSegments.slice(0, -1).join('/')}', '${pathSegments[pathSegments.length - 1]}')">Edit</button>
-        <button onclick="window.deleteDocPrompt('${pathSegments.slice(0, -1).join('/')}', '${pathSegments[pathSegments.length - 1]}')">Delete</button>
-      `;
-      content.appendChild(btns);
+      main.querySelector('.explorer-content').innerHTML = '<div style="color:#bbb;">Select a collection to view documents.</div>';
+      return;
     }
+
+    // Odd segments: COLLECTION
+    if (pathSegments.length % 2 === 1) {
+      const colRef = db.collection(pathSegments.join('/'));
+      const snapshot = await colRef.get();
+      sidebar.innerHTML = '';
+      main.querySelector('.explorer-content').innerHTML = '';
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const friendly = data.name || data.title || data.label || '';
+        const displayName = friendly ? friendly : `(ID: ${docSnap.id.slice(0, 6)}…)`;
+        const docDiv = document.createElement('div');
+        docDiv.className = 'explorer-doc';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'bulk-select';
+        checkbox.dataset.docid = docSnap.id;
+        docDiv.prepend(checkbox);
+        docDiv.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:600;">${displayName}</span>
+            <span>
+              <button class="explorer-btn" onclick="window.openFirestorePath(${JSON.stringify([...pathSegments, docSnap.id])})">Open</button>
+              <button class="explorer-btn" onclick="window.editDoc('${pathSegments.join('/')}', '${docSnap.id}')">Edit</button>
+              <button class="explorer-btn danger" onclick="window.deleteDocPrompt('${pathSegments.join('/')}', '${docSnap.id}')">Delete</button>
+            </span>
+          </div>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+        main.querySelector('.explorer-content').appendChild(docDiv);
+      });
+      // Add button to create new doc
+      const addBtn = document.createElement('button');
+      addBtn.textContent = 'Add New Document';
+      addBtn.onclick = () => window.addDocPrompt(pathSegments.join('/'));
+      main.querySelector('.explorer-content').appendChild(addBtn);
+
+      // Bulk actions buttons
+      const bulkDiv = document.createElement('div');
+      bulkDiv.style.margin = '18px 0 8px 0';
+      bulkDiv.innerHTML = `
+        <button class="explorer-btn" onclick="window.showBulkAddModal('${pathSegments.join('/')}')">Bulk Add</button>
+        <button class="explorer-btn danger" onclick="window.bulkDeleteSelected('${pathSegments.join('/')}')">Bulk Delete</button>
+        <button class="explorer-btn" onclick="window.exportCollectionCSV('${pathSegments.join('/')}')">Export CSV</button>
+        <button class="explorer-btn" onclick="window.importCSVModal('${pathSegments.join('/')}')">Import CSV</button>
+      `;
+      main.querySelector('.explorer-content').appendChild(bulkDiv);
+      return;
+    }
+
+    // Even segments: DOCUMENT
+    let docPath = pathSegments.join('/');
+    let subcollections = [];
+    try {
+      subcollections = await db.doc(docPath).listCollections();
+    } catch (e) {
+      sidebar.innerHTML = '<div style="color:#ff5050;">Error loading subcollections.</div>';
+      console.error(e);
+      return;
+    }
+    sidebar.innerHTML = '';
+    for (const colRef of subcollections) {
+      const div = document.createElement('div');
+      div.className = 'explorer-folder';
+      div.textContent = '/' + colRef.id;
+      div.onclick = () => window.openFirestorePath([...pathSegments, colRef.id]);
+      sidebar.appendChild(div);
+    }
+    // Show document data in main
+    const docRef = db.doc(docPath);
+    const docSnap = await docRef.get();
+    const content = main.querySelector('.explorer-content');
+    content.innerHTML = `<pre>${JSON.stringify(docSnap.data(), null, 2)}</pre>`;
+    const btns = document.createElement('div');
+    btns.innerHTML = `
+      <button onclick="window.editDoc('${pathSegments.slice(0, -1).join('/')}', '${pathSegments[pathSegments.length - 1]}')">Edit</button>
+      <button onclick="window.deleteDocPrompt('${pathSegments.slice(0, -1).join('/')}', '${pathSegments[pathSegments.length - 1]}')">Delete</button>
+    `;
+    content.appendChild(btns);
 
     // Audit Log button
     const auditBtn = document.createElement('button');
