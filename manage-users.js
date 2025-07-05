@@ -18,16 +18,20 @@ function generateResetCode(length = 6) {
   return code;
 }
 
-export async function showManageUsersModal(clientName) {
+window.showManageUsersModal = async function(clientName) {
   // Remove any existing modal
   let modal = document.getElementById('manage-users-modal');
   if (modal) modal.remove();
 
-  // Fetch users
+  // Fetch users from backend API
   let users = [];
   try {
-    const snap = await getDocs(collection(db, 'clients', clientName, 'users'));
-    users = snap.docs.map(doc => doc.data());
+    const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/list-users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clientName })
+    });
+    users = await res.json();
   } catch (e) {
     users = [];
   }
@@ -95,9 +99,13 @@ export async function showManageUsersModal(clientName) {
     btn.onclick = async function() {
       const username = btn.getAttribute('data-username');
       if (!confirm(`Remove user "${username}"?`)) return;
-      await deleteDoc(doc(db, 'clients', clientName, 'users', username));
+      await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/remove-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientName, username })
+      });
       modal.remove();
-      showManageUsersModal(clientName); // Refresh
+      window.showManageUsersModal(clientName); // Refresh
     };
   });
 
@@ -107,14 +115,14 @@ export async function showManageUsersModal(clientName) {
       const username = btn.getAttribute('data-username');
       if (!confirm(`Generate a password reset code for "${username}"?`)) return;
       const resetCode = generateResetCode();
-      await updateDoc(doc(db, 'clients', clientName, 'users', username), {
-        reset_code: resetCode,
-        reset_code_created: Timestamp.now(),
-        must_change_password: true
+      await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/reset-user-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientName, username, resetCode })
       });
       alert(`Password reset code for ${username}: ${resetCode}\n\nSend this code to the user. They will be prompted to enter it and set a new password on next login.`);
       modal.remove();
-      showManageUsersModal(clientName); // Refresh
+      window.showManageUsersModal(clientName); // Refresh
     };
   });
 
@@ -127,22 +135,20 @@ export async function showManageUsersModal(clientName) {
     const role = modal.querySelector('#role').value;
     const username = `${first_name[0]}${last_name}`.toLowerCase() + '@' + slugify(clientName);
 
-    // Hash the password before storing
-    const defaultPassword = clientName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
-
-    const userDoc = {
-      first_name,
-      last_name,
-      password: hashedPassword,
-      role,
-      username,
-      created: Timestamp.now(),
-      must_change_password: true
-    };
-    await setDoc(doc(db, 'clients', clientName, 'users', username), userDoc);
+    await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/add-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clientName,
+        first_name,
+        last_name,
+        password,
+        role,
+        username
+      })
+    });
     modal.remove();
-    showManageUsersModal(clientName); // Refresh
+    window.showManageUsersModal(clientName); // Refresh
   };
 
   // --- BULK ADD USERS ---
@@ -212,19 +218,19 @@ function showBulkAddUsersModal(clientName) {
       const [first_name, last_name, role] = line.split(',').map(s => s.trim());
       if (!first_name || !last_name || !role) { failed++; continue; }
       const username = `${first_name[0]}${last_name}`.toLowerCase() + '@' + slugify(clientName);
-      const defaultPassword = clientName.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
-      const userDoc = {
-        first_name,
-        last_name,
-        password: hashedPassword,
-        role,
-        username,
-        created: Timestamp.now(),
-        must_change_password: true
-      };
       try {
-        await setDoc(doc(db, 'clients', clientName, 'users', username), userDoc);
+        await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/add-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clientName,
+            first_name,
+            last_name,
+            password: '', // Backend should assign default password
+            role,
+            username
+          })
+        });
         added++;
       } catch (e) {
         failed++;
@@ -232,7 +238,7 @@ function showBulkAddUsersModal(clientName) {
     }
     alert(`Bulk add complete!\nAdded: ${added}\nFailed: ${failed}`);
     modal.remove();
-    showManageUsersModal(clientName); // Refresh
+    window.showManageUsersModal(clientName); // Refresh
   };
 }
 
