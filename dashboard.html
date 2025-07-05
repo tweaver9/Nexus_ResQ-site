@@ -229,6 +229,23 @@
       .dashboard-right { padding: 8px 0; }
       .dashboard-center { padding: 8px 0; }
     }
+    .area-status-indicator.green {
+  background: #28e640;
+}
+.area-status-indicator.red {
+  background: #ff5050;
+}
+.area-status-indicator.yellow {
+  background: #fdd835;
+}
+.area-status-indicator {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-left: 8px;
+  vertical-align: middle;
+}
   </style>
 </head>
 <body>
@@ -276,7 +293,22 @@
       <div id="panel-assignments" class="dashboard-panel" style="display:none;">Assignments here...</div>
       <div id="panel-billing" class="dashboard-panel" style="display:none;">Billing here...</div>
       <div id="panel-help" class="dashboard-panel" style="display:none;">Help here...</div>
-      <div id="panel-firebase" class="dashboard-panel" style="display:none;">Firebase Manager here...</div>
+      <div id="panel-firebase" class="dashboard-panel" style="display:none;">
+        <div class="firebase-explorer">
+  <div class="explorer-sidebar">
+    <!-- Folders/collections will go here -->
+    <div class="explorer-folder active">/clients</div>
+    <div class="explorer-folder">/users</div>
+    <!-- ... -->
+  </div>
+  <div class="explorer-main">
+    <!-- Files/fields will go here -->
+    <div class="explorer-header">Select a collection to view documents</div>
+    <div class="explorer-content"></div>
+  </div>
+</div>
+      </div>
+      
       <div id="panel-onboard" class="dashboard-panel" style="display:none;">Onboard Client here...</div>
     </div>
     <div class="dashboard-right">
@@ -398,7 +430,22 @@ renderSimpleCalendar("simple-calendar");
   transition: background 0.2s;
 }
 </style>
-  </div>
+  <!-- Firebase App (the core Firebase SDK) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
+    authDomain: "nexus-res-q.firebaseapp.com",
+    projectId: "nexus-res-q",
+    storageBucket: "nexus-res-q.firebasestorage.app",
+    messagingSenderId: "203995658810",
+    appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303",
+    measurementId: "G-B7B1QZVWFG"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
   <script type="module" src="dashboard.js"></script>
 </body>
 </html>
