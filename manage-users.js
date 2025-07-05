@@ -1,6 +1,6 @@
 import { db } from './firebase.js';
 import {
-  collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc, query, where, Timestamp
+  collection, doc, getDocs, setDoc, updateDoc, deleteDoc, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Helper to slugify client name for username
@@ -18,105 +18,118 @@ function generateResetCode(length = 6) {
   return code;
 }
 
-// --- CONFIG ---
-const clientName = sessionStorage.getItem('tenant_id') || 'testclient'; // or however you get the client
+export async function showManageUsersModal(clientName) {
+  // Remove any existing modal
+  let modal = document.getElementById('manage-users-modal');
+  if (modal) modal.remove();
 
-// --- DOM ELEMENTS ---
-const userList = document.getElementById('userList');
-const noUsersMsg = document.getElementById('noUsersMsg');
-const addUserBtn = document.getElementById('addUserBtn');
-const modalRoot = document.getElementById('modal-root');
-
-// --- RENDER USERS ---
-async function renderUsers() {
-  userList.innerHTML = '';
-  noUsersMsg.style.display = 'none';
-
-  const usersCol = collection(db, 'clients', clientName, 'users');
-  const snap = await getDocs(usersCol);
-  if (snap.empty) {
-    noUsersMsg.style.display = '';
-    return;
+  // Fetch users
+  let users = [];
+  try {
+    const snap = await getDocs(collection(db, 'clients', clientName, 'users'));
+    users = snap.docs.map(doc => doc.data());
+  } catch (e) {
+    users = [];
   }
-  snap.forEach(docSnap => {
-    const u = docSnap.data();
-    const card = document.createElement('div');
-    card.className = 'user-card';
-    card.innerHTML = `
-      <div class="user-header">
-        <span><b>${u.first_name} ${u.last_name}</b> <span class="user-role">(${u.role})</span></span>
-        <span class="user-meta">${u.username}</span>
-      </div>
-      <div class="user-meta">Created: ${u.created?.toDate ? u.created.toDate().toLocaleString() : ''}</div>
-      <div class="user-actions">
-        <button class="users-action-btn danger" data-username="${u.username}" data-action="remove">Remove</button>
-        <button class="users-action-btn" data-username="${u.username}" data-action="reset">Reset Password</button>
-      </div>
-    `;
-    userList.appendChild(card);
-  });
 
-  // Attach action handlers
-  userList.querySelectorAll('button[data-action="remove"]').forEach(btn => {
-    btn.onclick = async () => {
-      if (!confirm('Remove this user?')) return;
-      await deleteDoc(doc(db, 'clients', clientName, 'users', btn.dataset.username));
-      renderUsers();
-    };
-  });
-  userList.querySelectorAll('button[data-action="reset"]').forEach(btn => {
-    btn.onclick = async () => {
-      if (!confirm('Generate a password reset code for this user?')) return;
-      const resetCode = generateResetCode();
-      await updateDoc(doc(db, 'clients', clientName, 'users', btn.dataset.username), {
-        reset_code: resetCode,
-        reset_code_created: Timestamp.now(),
-        must_change_password: true
-      });
-      alert(`Password reset code for ${btn.dataset.username}: ${resetCode}\n\nSend this code to the user. They will be prompted to enter it and set a new password on next login.`);
-      renderUsers();
-    };
-  });
-}
-
-// --- ADD USER MODAL ---
-addUserBtn.onclick = () => {
-  modalRoot.innerHTML = `
-    <div style="background:#22345a;padding:28px 24px;border-radius:12px;min-width:320px;max-width:90vw;">
-      <div style="font-weight:600;font-size:1.1em;margin-bottom:10px;">Add User</div>
+  // Modal HTML
+  modal = document.createElement('div');
+  modal.id = 'manage-users-modal';
+  modal.className = 'manage-users-modal-bg';
+  modal.innerHTML = `
+    <div class="manage-users-modal-content">
+      <div class="manage-users-modal-title">Manage Users</div>
+      <div>
+        <div class="manage-users-section-title">Existing Users</div>
+        <table class="manage-users-table" id="existing-users-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${users.map(u => `
+              <tr data-username="${u.username}">
+                <td>${u.username}</td>
+                <td>${u.first_name} ${u.last_name}</td>
+                <td>${u.role}</td>
+                <td>
+                  <button type="button" class="remove-user explorer-btn danger" data-username="${u.username}">Remove</button>
+                  <button type="button" class="reset-password explorer-btn" data-username="${u.username}">Reset Password</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="manage-users-section-title">Add New User</div>
+        <button type="button" id="bulk-add-users-btn" class="explorer-btn">Bulk Add</button>
+      </div>
       <form id="add-user-form">
-        <input type="text" id="first_name" placeholder="First Name" required style="width:100%;margin-bottom:10px;">
-        <input type="text" id="last_name" placeholder="Last Name" required style="width:100%;margin-bottom:10px;">
-        <input type="password" id="password" placeholder="Password" required style="width:100%;margin-bottom:10px;">
-        <select id="role" required style="width:100%;margin-bottom:10px;">
+        <input type="text" id="first_name" placeholder="First Name" required>
+        <input type="text" id="last_name" placeholder="Last Name" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <select id="role" required>
           <option value="user">User</option>
           <option value="manager">Manager</option>
           <option value="admin">Admin</option>
         </select>
         <div style="text-align:right;">
-          <button type="button" id="cancel-add-user" class="users-action-btn danger">Cancel</button>
-          <button type="submit" class="users-action-btn">Add User</button>
+          <button type="button" id="cancel-manage-users" class="explorer-btn danger">Cancel</button>
+          <button type="submit" class="explorer-btn">Add User</button>
         </div>
       </form>
     </div>
   `;
-  modalRoot.style.display = 'flex';
+  document.body.appendChild(modal);
 
-  document.getElementById('cancel-add-user').onclick = () => {
-    modalRoot.style.display = 'none';
-    modalRoot.innerHTML = '';
-  };
+  // Remove modal on cancel
+  modal.querySelector('#cancel-manage-users').onclick = () => modal.remove();
 
-  document.getElementById('add-user-form').onsubmit = async (e) => {
+  // Remove user
+  modal.querySelectorAll('.remove-user').forEach(btn => {
+    btn.onclick = async function() {
+      const username = btn.getAttribute('data-username');
+      if (!confirm(`Remove user "${username}"?`)) return;
+      await deleteDoc(doc(db, 'clients', clientName, 'users', username));
+      modal.remove();
+      showManageUsersModal(clientName); // Refresh
+    };
+  });
+
+  // Reset password
+  modal.querySelectorAll('.reset-password').forEach(btn => {
+    btn.onclick = async function() {
+      const username = btn.getAttribute('data-username');
+      if (!confirm(`Generate a password reset code for "${username}"?`)) return;
+      const resetCode = generateResetCode();
+      await updateDoc(doc(db, 'clients', clientName, 'users', username), {
+        reset_code: resetCode,
+        reset_code_created: Timestamp.now(),
+        must_change_password: true
+      });
+      alert(`Password reset code for ${username}: ${resetCode}\n\nSend this code to the user. They will be prompted to enter it and set a new password on next login.`);
+      modal.remove();
+      showManageUsersModal(clientName); // Refresh
+    };
+  });
+
+  // Add user
+  modal.querySelector('#add-user-form').onsubmit = async (e) => {
     e.preventDefault();
-    const first_name = document.getElementById('first_name').value.trim();
-    const last_name = document.getElementById('last_name').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const role = document.getElementById('role').value;
+    const first_name = modal.querySelector('#first_name').value.trim();
+    const last_name = modal.querySelector('#last_name').value.trim();
+    const password = modal.querySelector('#password').value.trim();
+    const role = modal.querySelector('#role').value;
     const username = `${first_name[0]}${last_name}`.toLowerCase() + '@' + slugify(clientName);
 
     // Hash the password before storing
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    const defaultPassword = clientName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
 
     const userDoc = {
       first_name,
@@ -128,12 +141,98 @@ addUserBtn.onclick = () => {
       must_change_password: true
     };
     await setDoc(doc(db, 'clients', clientName, 'users', username), userDoc);
-    modalRoot.style.display = 'none';
-    modalRoot.innerHTML = '';
-    renderUsers();
+    modal.remove();
+    showManageUsersModal(clientName); // Refresh
   };
-};
 
-// --- INITIAL LOAD ---
-renderUsers();
+  // --- BULK ADD USERS ---
+  modal.querySelector('#bulk-add-users-btn').onclick = () => {
+    showBulkAddUsersModal(clientName);
+  };
+}
+
+// Bulk Add Users Modal
+function showBulkAddUsersModal(clientName) {
+  let modal = document.getElementById('bulk-add-users-modal');
+  if (modal) modal.remove();
+
+  const templateUrl = "https://firebasestorage.googleapis.com/v0/b/nexus-res-q.appspot.com/o/Bulk%20Add%20Template%2FBulk%20User%20Add%20CSV%20Template.csv?alt=media";
+
+  modal = document.createElement('div');
+  modal.id = 'bulk-add-users-modal';
+  modal.className = 'manage-users-modal-bg';
+  modal.innerHTML = `
+    <div class="manage-users-modal-content">
+      <div class="manage-users-modal-title">Bulk Add Users</div>
+      <div style="margin-bottom:10px;">
+        <div style="font-size:0.98em;color:#fdd835;margin-bottom:6px;">
+          <a href="${templateUrl}" download style="color:#fdd835;text-decoration:underline;">Download CSV Template</a>
+          <br>
+          Paste CSV rows below (First Name,Last Name,Role):<br>
+          <span style="font-size:0.93em;color:#ffe066;">All users will start with the default password for this client.</span>
+        </div>
+        <textarea id="bulk-users-textarea" style="width:100%;height:120px;"></textarea>
+        <div style="margin:8px 0 0 0;">
+          <label style="color:#fdd835;cursor:pointer;">
+            Or upload CSV file:
+            <input type="file" id="bulk-users-file" accept=".csv" style="display:inline-block;margin-left:8px;">
+          </label>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <button id="bulk-add-cancel" class="explorer-btn danger">Cancel</button>
+        <button id="bulk-add-save" class="explorer-btn">Add Users</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  modal.querySelector('#bulk-add-cancel').onclick = () => modal.remove();
+
+  // File upload handler
+  modal.querySelector('#bulk-users-file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      let text = evt.target.result;
+      // Remove header if present
+      text = text.replace(/^First Name,Last Name,Role\s*\n?/i, '');
+      modal.querySelector('#bulk-users-textarea').value = text.trim();
+    };
+    reader.readAsText(file);
+  });
+
+  modal.querySelector('#bulk-add-save').onclick = async () => {
+    const textarea = modal.querySelector('#bulk-users-textarea');
+    const lines = textarea.value.trim().split('\n').filter(Boolean);
+    if (!lines.length) return;
+    let added = 0, failed = 0;
+    for (const line of lines) {
+      const [first_name, last_name, role] = line.split(',').map(s => s.trim());
+      if (!first_name || !last_name || !role) { failed++; continue; }
+      const username = `${first_name[0]}${last_name}`.toLowerCase() + '@' + slugify(clientName);
+      const defaultPassword = clientName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
+      const userDoc = {
+        first_name,
+        last_name,
+        password: hashedPassword,
+        role,
+        username,
+        created: Timestamp.now(),
+        must_change_password: true
+      };
+      try {
+        await setDoc(doc(db, 'clients', clientName, 'users', username), userDoc);
+        added++;
+      } catch (e) {
+        failed++;
+      }
+    }
+    alert(`Bulk add complete!\nAdded: ${added}\nFailed: ${failed}`);
+    modal.remove();
+    showManageUsersModal(clientName); // Refresh
+  };
+}
 
