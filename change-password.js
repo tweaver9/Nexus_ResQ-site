@@ -30,10 +30,13 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     try {
+      // Hash the new password
+      const hashedPassword = bcrypt.hashSync(newPass, 10);
+
       // Update password and disable must_change_password
       const userRef = doc(db, `clients/${tenantId}/users`, userDocId);
       await updateDoc(userRef, {
-        password: newPass,
+        password: hashedPassword,
         must_change_password: false // <-- Use snake_case as in Firestore
       });
       msgDiv.style.color = "#28e640";
