@@ -66,6 +66,13 @@ window.addEventListener('DOMContentLoaded', () => {
       const panelId = 'panel-' + btn.id.replace('btn-', '');
       const panel = document.getElementById(panelId);
       if (panel) panel.style.display = 'block';
+
+      // Special: If Firebase Manager, hide dashboard-right as well
+      if (panelId === 'panel-firebase') {
+        document.querySelector('.dashboard-right').style.display = 'none';
+      } else {
+        document.querySelector('.dashboard-right').style.display = '';
+      }
     });
   });
   // Set Home as active by default
