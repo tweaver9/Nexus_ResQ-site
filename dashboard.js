@@ -208,7 +208,10 @@ window.addEventListener('DOMContentLoaded', () => {
       let collectionsList = [];
       try {
         if (pathSegments.length === 0) {
-          collectionsList = await db.listCollections();
+          // Fetch root collections from meta doc
+          const metaDoc = await db.collection('meta').doc('rootCollections').get();
+          const collectionNames = (metaDoc.exists && metaDoc.data().collections) || [];
+          collectionsList = collectionNames.map(name => db.collection(name));
         } else {
           let docPath = pathSegments.join('/');
           collectionsList = await db.doc(docPath).listCollections();
@@ -598,4 +601,35 @@ window.addEventListener('DOMContentLoaded', () => {
   loadFailedAssets();
   loadRecentInspections();
   loadAreaStatuses();
+
+  // --- TEST CODE FOR NEW FIRESTORE STRUCTURE ---
+  (async () => {
+    // This writes a document to a root-level collection
+    await db.collection('assetCategories').add({ name: 'New Category', description: 'Test category' });
+
+    // This updates the meta/rootCollections doc at the root
+    await db.collection('meta').doc('rootCollections').set(
+      { collections: ['clients', 'inspections', 'assets', 'users', 'logs', 'analytics', 'billing', 'help', 'firebase', 'onboard', 'assetCategories'] },
+      { merge: true }
+    );
+  })();
+
+  async function deleteRootCollection(collectionName) {
+    // Delete all docs in the collection
+    const snapshot = await db.collection(collectionName).get();
+    const batch = db.batch();
+    snapshot.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+
+    // Remove from meta/rootCollections
+    const metaRef = db.collection('meta').doc('rootCollections');
+    await db.runTransaction(async (transaction) => {
+      const metaDoc = await transaction.get(metaRef);
+      if (metaDoc.exists) {
+        let collections = metaDoc.data().collections || [];
+        collections = collections.filter(name => name !== collectionName);
+        transaction.set(metaRef, { collections }, { merge: true });
+      }
+    });
+  }
 });
