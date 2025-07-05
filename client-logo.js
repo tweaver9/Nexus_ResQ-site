@@ -1,6 +1,6 @@
 // client-logo.js
 import { db } from './firebase.js';
-import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 async function loadClientLogos() {
   const grid = document.getElementById('logoGrid');
@@ -9,16 +9,27 @@ async function loadClientLogos() {
   grid.innerHTML = "Loading companies...";
 
   try {
-    // Get all clients, order by name ascending
-    const q = query(collection(db, "clients"), orderBy("name", "asc"));
-    const snapshot = await getDocs(q);
+    // Get all clients (removed orderBy to avoid index requirement)
+    const snapshot = await getDocs(collection(db, "clients"));
 
     grid.innerHTML = ""; // Clear loading text
 
     if (!snapshot.empty) {
+      // Convert to array and sort by name client-side
+      const clients = [];
       snapshot.forEach(docSnap => {
-        const client = docSnap.data();
-        const subdomain = client.subdomain || docSnap.id; // fallback to doc id if subdomain missing
+        clients.push({ id: docSnap.id, data: docSnap.data() });
+      });
+      
+      // Sort alphabetically by name
+      clients.sort((a, b) => {
+        const nameA = (a.data.name || a.id).toLowerCase();
+        const nameB = (b.data.name || b.id).toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+
+      clients.forEach(({ id, data: client }) => {
+        const subdomain = client.subdomain || id; // fallback to doc id if subdomain missing
 
         // Use camelCase only, fallback to snake_case if needed (legacy)
         let logoUrl = client.logoUrl || client.logo_url || "";
