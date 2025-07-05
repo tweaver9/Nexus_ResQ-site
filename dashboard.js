@@ -215,11 +215,30 @@ window.addEventListener('DOMContentLoaded', () => {
         div.onclick = () => window.openFirestorePath([name]);
         sidebar.appendChild(div);
       }
+      // Add "Create Collection" button
+      const addBtn = document.createElement('button');
+      addBtn.textContent = 'Add New Root Collection';
+      addBtn.className = 'explorer-btn';
+      addBtn.onclick = async () => {
+        const name = prompt('Enter new collection name:');
+        if (!name) return;
+        // Create a dummy doc to make the collection exist
+        await db.collection(name).add({ _created: new Date().toISOString() });
+        // Update meta/rootCollections
+        const metaRef = db.collection('meta').doc('rootCollections');
+        await metaRef.set(
+          { collections: Array.from(new Set([...collectionNames, name])) },
+          { merge: true }
+        );
+        window.openFirestorePath([]);
+      };
+      sidebar.appendChild(addBtn);
+
       main.querySelector('.explorer-content').innerHTML = '<div style="color:#bbb;">Select a collection to view documents.</div>';
       return;
     }
 
-    // Odd segments: COLLECTION
+    // Odd segments: COLLECTION (show documents)
     if (pathSegments.length % 2 === 1) {
       const colRef = db.collection(pathSegments.join('/'));
       const snapshot = await colRef.get();
@@ -227,15 +246,10 @@ window.addEventListener('DOMContentLoaded', () => {
       main.querySelector('.explorer-content').innerHTML = '';
       snapshot.forEach(docSnap => {
         const data = docSnap.data();
-        const friendly = data.name || data.title || data.label || '';
+        const friendly = data.name || data.title || data.label || docSnap.id;
         const displayName = friendly ? friendly : `(ID: ${docSnap.id.slice(0, 6)}…)`;
         const docDiv = document.createElement('div');
         docDiv.className = 'explorer-doc';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'bulk-select';
-        checkbox.dataset.docid = docSnap.id;
-        docDiv.prepend(checkbox);
         docDiv.innerHTML = `
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-weight:600;">${displayName}</span>
@@ -268,7 +282,7 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Even segments: DOCUMENT
+    // Even segments: DOCUMENT (show subcollections)
     let docPath = pathSegments.join('/');
     let subcollections = [];
     try {
