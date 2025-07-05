@@ -284,6 +284,8 @@
     </div>
   </div>
   <!-- ...other sections like dashboard-header-card, dashboard-cards, etc... -->
+  <div id="failed-assets-list"></div>
+  <div id="inspection-list"></div>
 </div>
       <div id="panel-users" class="dashboard-panel" style="display:none;">User management here...</div>
       <div id="panel-assets" class="dashboard-panel" style="display:none;">Asset management here...</div>
@@ -328,8 +330,6 @@
       </div>
     </div>
   </div>
-  <div id="failed-assets-list"></div>
-<div id="inspection-list"></div>
   <!-- Modal for Add/Edit -->
 <div id="explorer-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
   <div style="background:#22345a;padding:28px 24px;border-radius:12px;min-width:320px;max-width:90vw;">
@@ -470,6 +470,7 @@ renderSimpleCalendar("simple-calendar");
   }
   window.firestoreCompat = firebase.firestore();
 </script>
-  <script type="module" src="dashboard.js"></script>
+  <script src="dashboard.js"></script>
+<script src="manage-users.js"></script>
 </body>
 </html>
