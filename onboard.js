@@ -1,165 +1,113 @@
 
-// ===== Firebase Setup & Nexus Access Check =====
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore, collection, doc, setDoc, addDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {
-  getStorage, ref, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
-  authDomain: "nexus-res-q.firebaseapp.com",
-  projectId: "nexus-res-q",
-  storageBucket: "nexus-res-q.firebasestorage.app",
-  messagingSenderId: "203995658810",
-  appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-// Role Check
-if (sessionStorage.role !== 'nexus') {
-  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;">Access Denied<br>This page is restricted to Nexus Owners.</div>';
-  throw new Error("Unauthorized Access");
-}
-
-// DOM References
-const clientForm = document.getElementById('addClientForm');
-const clientNameInput = document.getElementById('clientName');
-const clientLogoInput = document.getElementById('clientLogo');
-const primaryColorInput = document.getElementById('primaryColor');
-const secondaryColorInput = document.getElementById('secondaryColor');
-const subdomainInput = document.getElementById('subdomain');
-const adminFirstInput = document.getElementById('adminFirstName');
-const adminLastInput = document.getElementById('adminLastName');
-const adminUsernameInput = document.getElementById('adminUsername');
-const adminPasswordInput = document.getElementById('adminPassword');
-const precisionToggle = document.getElementById('precisionEnabled');
-const namingSystemToggle = document.getElementById('namingSystem');
-const autoCreateToggle = document.getElementById('autoGenerateBarcodes');
-
-// Upload logo and return URL
-async function uploadLogo(file, subdomain) {
-  const fileRef = ref(storage, `logos/${subdomain}.webp`);
-  const snapshot = await uploadBytes(fileRef, file);
-  return await getDownloadURL(snapshot.ref);
-}
-
-// Create core subcollections
-async function createSubcollections(subdomain) {
-  const colNames = [
-    "users", "locations", "assets", "assignments",
-    "asset_frequencies", "billing", "logs", "custom_questions"
-  ];
-  for (const col of colNames) {
-    await setDoc(doc(db, `clients/${subdomain}/${col}/init`), { initialized: true });
-  }
-}
-
-// Create default zones/locations if requested
-async function createDefaultLocations(subdomain, usePrecision, autoGenerate) {
-  if (!usePrecision) {
-    const id = "3370000";
-    await setDoc(doc(db, `clients/${subdomain}/locations/${id}`), {
-      name: "Default Unit",
-      zone: "Zone 1",
-      unit_code: "337",
-      locationUUID: id,
-      barcode: id,
-      precision: false
-    });
-  } else if (autoGenerate) {
-    const units = ["Coker II", "Crude", "Blending"];
-    for (let u = 0; u < units.length; u++) {
-      const unitCode = 337 + u;
-      const unitID = `${unitCode}0000`;
-      await setDoc(doc(db, `clients/${subdomain}/locations/${unitID}`), {
-        name: units[u],
-        zone: "Zone 1",
-        unit_code: String(unitCode),
-        locationUUID: unitID,
-        barcode: unitID,
-        precision: false
-      });
-
-      for (let i = 1; i <= 5; i++) {
-        const rackUUID = `${unitCode}${6100 + i}`;
-        await setDoc(doc(db, `clients/${subdomain}/locations/${rackUUID}`), {
-          name: `Rack ${i}`,
-          zone: "Zone 1",
-          unit: units[u],
-          unit_code: String(unitCode),
-          locationUUID: rackUUID,
-          barcode: rackUUID,
-          precision: true,
-          parentUUID: unitID
-        });
-      }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Onboard Client</title>
+  <link rel="stylesheet" href="CSS/onboard.css" />
+  <style>
+    .customDivisionBlock {
+      margin-left: 16px;
+      margin-bottom: 8px;
     }
-  }
-}
+    .add-btn {
+      background-color: #fdd835;
+      border: none;
+      color: #000;
+      padding: 4px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-wrapper">
+    <h1>Client Onboarding</h1>
+    <form id="addClientForm">
+      <label>Client Name: <input type="text" id="clientName" required></label><br>
+      <label>Logo Upload: <input type="file" id="clientLogo" accept="image/*" required></label><br>
+      <label>Primary Color: <input type="text" id="primaryColor" placeholder="#fdd835" required></label><br>
+      <label>Secondary Color: <input type="text" id="secondaryColor" placeholder="#142b47" required></label><br>
+      <label>Subdomain: <input type="text" id="subdomain" placeholder="e.g. citgo" required></label><br>
 
-// Create admin user
-async function createAdminUser(subdomain, first, last, username, password) {
-  await addDoc(collection(db, `clients/${subdomain}/users`), {
-    firstName: first,
-    lastName: last,
-    username: username.toLowerCase(),
-    password,
-    role: "admin",
-    must_change_password: true,
-    soft_deleted: false,
-    created: serverTimestamp()
-  });
-}
+      <hr>
 
-// Submit Handler
-clientForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
+      <label>Admin First Name: <input type="text" id="adminFirstName" required></label><br>
+      <label>Admin Last Name: <input type="text" id="adminLastName" required></label><br>
+      <label>Admin Username: <input type="text" id="adminUsername" required></label><br>
+      <label>Admin Password: <input type="password" id="adminPassword" required></label><br>
 
-  const name = clientNameInput.value.trim();
-  const logo = clientLogoInput.files[0];
-  const primary_color = primaryColorInput.value.trim();
-  const secondary_color = secondaryColorInput.value.trim();
-  const subdomain = subdomainInput.value.trim().toLowerCase();
-  const first = adminFirstInput.value.trim();
-  const last = adminLastInput.value.trim();
-  const username = adminUsernameInput.value.trim();
-  const password = adminPasswordInput.value.trim();
-  const usePrecision = precisionToggle.checked;
-  const hasNamingSystem = namingSystemToggle.checked;
-  const autoGenerate = autoCreateToggle.checked;
+      <hr>
 
-  if (!name || !logo || !primary_color || !secondary_color || !subdomain || !first || !last || !username || !password) {
-    alert("Please complete all fields.");
-    return;
-  }
+      <label><input type="checkbox" id="precisionEnabled" /> Enable Precision Scanning?</label><br>
 
-  try {
-    const logo_url = await uploadLogo(logo, subdomain);
+      <div id="precisionOptions" style="display: none; margin-left: 16px">
+        <label>Precision Scan Threshold: <input type="number" id="precisionThreshold" value="0.5" step="0.01" min="0" max="1"></label><br>
+        <label>Precision Scan Timeout (ms): <input type="number" id="precisionTimeout" value="5000" min="1000"></label><br>
+        <label><input type="checkbox" id="namingSystem" /> Client Has Existing Naming System?</label><br>
+        <label><input type="checkbox" id="autoGenerateBarcodes" /> Auto-Generate Barcode Locations?</label><br>
+      </div>
 
-    await setDoc(doc(db, `clients/${subdomain}`), {
-      name,
-      logo_url,
-      primary_color,
-      secondary_color,
-      subdomain,
-      precisionEnabled: usePrecision,
-      namingSystemExists: hasNamingSystem,
-      autoGenerateLocations: autoGenerate
+      <hr>
+
+      <label>How is your map divided? <input type="text" id="divisionLabel" placeholder="Zone / Area / custom" required></label><br>
+      <div id="divisionCountSection">
+        <label>How many divisions? <input type="number" id="divisionCount" min="1" /></label><br>
+      </div>
+      <div id="customNamesContainer" style="display: none;"></div>
+
+      <hr>
+
+      <button type="submit">Create Client</button>
+    </form>
+  </div>
+
+  <script type="module" src="onboard.js"></script>
+  <script>
+    const precisionToggle = document.getElementById('precisionEnabled');
+    const precisionOptions = document.getElementById('precisionOptions');
+    const divisionLabelInput = document.getElementById('divisionLabel');
+    const divisionCountInput = document.getElementById('divisionCount');
+    const customNamesContainer = document.getElementById('customNamesContainer');
+
+    precisionToggle.addEventListener('change', () => {
+      precisionOptions.style.display = precisionToggle.checked ? 'block' : 'none';
     });
 
-    await createSubcollections(subdomain);
-    await createDefaultLocations(subdomain, usePrecision, autoGenerate);
-    await createAdminUser(subdomain, first, last, username, password);
+    divisionLabelInput.addEventListener('input', () => {
+      const label = divisionLabelInput.value.trim().toLowerCase();
+      customNamesContainer.innerHTML = '';
+      customNamesContainer.style.display = label === 'custom' ? 'block' : 'none';
 
-    alert("Client created successfully!");
-    clientForm.reset();
-  } catch (err) {
-    console.error("Onboarding Error:", err);
-    alert("Error creating client. Check console for details.");
-  }
-});
+      if (label === 'custom') {
+        addCustomDivisionField(); // start with one
+      }
+    });
+
+    function addCustomDivisionField() {
+      const block = document.createElement('div');
+      block.className = 'customDivisionBlock';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'customDivisionInput';
+      input.placeholder = 'Enter division name...';
+      input.style.width = '80%';
+
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'add-btn';
+      addBtn.textContent = '+';
+      addBtn.onclick = addCustomDivisionField;
+
+      block.appendChild(input);
+      block.appendChild(document.createElement('br'));
+      block.appendChild(addBtn);
+
+      customNamesContainer.appendChild(block);
+    }
+  </script>
+</body>
+</html>
