@@ -1,40 +1,169 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Onboard Client</title>
-  <link rel="stylesheet" href="CSS/onboard.css" />
-</head>
-<body>
-  <div class="form-wrapper">
-    <h1>Client Onboarding</h1>
-    <form id="addClientForm">
-      <label>Client Name: <input type="text" id="clientName" required></label><br>
-      <label>Logo Upload: <input type="file" id="clientLogo" accept="image/*" required></label><br>
-      <label>Primary Color: <input type="text" id="primaryColor" placeholder="#fdd835" required></label><br>
-      <label>Secondary Color: <input type="text" id="secondaryColor" placeholder="#142b47" required></label><br>
-      <label>Subdomain: <input type="text" id="subdomain" placeholder="e.g. citgo" required></label><br>
+// ===== Firebase Setup & Nexus Access Check =====
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, addDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getStorage, ref, uploadBytes, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-      <hr>
+const firebaseConfig = {
+  apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
+  authDomain: "nexus-res-q.firebaseapp.com",
+  projectId: "nexus-res-q",
+  storageBucket: "nexus-res-q.firebasestorage.app",
+  messagingSenderId: "203995658810",
+  appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-      <label>Admin First Name: <input type="text" id="adminFirstName" required></label><br>
-      <label>Admin Last Name: <input type="text" id="adminLastName" required></label><br>
-      <label>Admin Username: <input type="text" id="adminUsername" required></label><br>
-      <label>Admin Password: <input type="password" id="adminPassword" required></label><br>
+// Role Check
+if (sessionStorage.role !== 'nexus') {
+  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;">Access Denied<br>This page is restricted to Nexus Owners.</div>';
+  throw new Error("Unauthorized Access");
+}
 
-      <hr>
+// DOM References
+const clientForm = document.getElementById('addClientForm');
+const clientNameInput = document.getElementById('clientName');
+const clientLogoInput = document.getElementById('clientLogo');
+const primaryColorInput = document.getElementById('primaryColor');
+const secondaryColorInput = document.getElementById('secondaryColor');
+const subdomainInput = document.getElementById('subdomain');
+const adminFirstInput = document.getElementById('adminFirstName');
+const adminLastInput = document.getElementById('adminLastName');
+const adminUsernameInput = document.getElementById('adminUsername');
+const adminPasswordInput = document.getElementById('adminPassword');
+const precisionToggle = document.getElementById('precisionEnabled');
+const namingSystemToggle = document.getElementById('namingSystem');
+const autoCreateToggle = document.getElementById('autoGenerateBarcodes');
+const divisionLabelInput = document.getElementById('divisionLabel');
 
-      <label><input type="checkbox" id="precisionEnabled" /> Enable Precision Scanning?</label><br>
-      <label><input type="checkbox" id="namingSystem" /> Client Has Existing Naming System?</label><br>
-      <label><input type="checkbox" id="autoGenerateBarcodes" /> Auto-Generate Barcode Locations?</label><br>
+// Upload logo and return URL
+async function uploadLogo(file, subdomain) {
+  const fileRef = ref(storage, `logos/${subdomain}.webp`);
+  const snapshot = await uploadBytes(fileRef, file);
+  return await getDownloadURL(snapshot.ref);
+}
 
-      <hr>
+// Create core subcollections
+async function createSubcollections(subdomain) {
+  const colNames = [
+    "users", "locations", "assets", "assignments",
+    "asset_frequencies", "billing", "logs", "custom_questions"
+  ];
+  for (const col of colNames) {
+    await setDoc(doc(db, `clients/${subdomain}/${col}/init`), { initialized: true });
+  }
+}
 
-      <button type="submit">Create Client</button>
-    </form>
-  </div>
-  <script type="module" src="onboard.js"></script>
-</body>
-</html>
+// Create division-level locations
+async function createMapDivisions(subdomain, divisionLabel, customNames = []) {
+  const isCustom = divisionLabel.toLowerCase() === 'custom';
+  const divisions = isCustom ? customNames : [];
+
+  if (!isCustom) {
+    const divisionCount = parseInt(document.getElementById('divisionCount').value.trim());
+    for (let i = 1; i <= divisionCount; i++) {
+      divisions.push(`${divisionLabel} ${i}`);
+    }
+  }
+
+  for (const name of divisions) {
+    const docId = name.replace(/\s+/g, '_').toLowerCase();
+    await setDoc(doc(db, `clients/${subdomain}/locations/${docId}`), {
+      name: name,
+      divisionLabel: divisionLabel,
+      locationUUID: docId,
+      precision: false
+    });
+  }
+}
+
+// Create admin user
+async function createAdminUser(subdomain, first, last, username, password) {
+  await addDoc(collection(db, `clients/${subdomain}/users`), {
+    firstName: first,
+    lastName: last,
+    username: username.toLowerCase(),
+    password,
+    role: "admin",
+    must_change_password: true,
+    soft_deleted: false,
+    created: serverTimestamp()
+  });
+}
+
+// Submit Handler
+clientForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const name = clientNameInput.value.trim();
+  const logo = clientLogoInput.files[0];
+  const primary_color = primaryColorInput.value.trim();
+  const secondary_color = secondaryColorInput.value.trim();
+  const subdomain = subdomainInput.value.trim().toLowerCase();
+  const first = adminFirstInput.value.trim();
+  const last = adminLastInput.value.trim();
+  const username = adminUsernameInput.value.trim();
+  const password = adminPasswordInput.value.trim();
+  const usePrecision = precisionToggle.checked;
+  const hasNamingSystem = namingSystemToggle.checked;
+  const autoGenerate = autoCreateToggle.checked;
+  const threshold = parseFloat(document.getElementById('precisionThreshold').value);
+  const timeout = parseInt(document.getElementById('precisionTimeout').value);
+  const divisionLabel = divisionLabelInput.value.trim();
+
+  let customNames = [];
+  if (divisionLabel.toLowerCase() === 'custom') {
+    const customInputs = document.querySelectorAll('.customDivisionInput');
+    customInputs.forEach(input => {
+      const val = input.value.trim();
+      if (val) customNames.push(val);
+    });
+  }
+
+  if (!name || !logo || !primary_color || !secondary_color || !subdomain || !first || !last || !username || !password || !divisionLabel) {
+    alert("Please complete all fields.");
+    return;
+  }
+
+  if (divisionLabel.toLowerCase() !== 'custom') {
+    const countVal = document.getElementById('divisionCount').value.trim();
+    if (!countVal || isNaN(parseInt(countVal))) {
+      alert("Please specify a valid number of divisions.");
+      return;
+    }
+  }
+
+  try {
+    const logo_url = await uploadLogo(logo, subdomain);
+
+    await setDoc(doc(db, `clients/${subdomain}`), {
+      name,
+      logo_url,
+      primary_color,
+      secondary_color,
+      subdomain,
+      precisionEnabled: usePrecision,
+      namingSystemExists: hasNamingSystem,
+      autoGenerateLocations: autoGenerate,
+      precisionThreshold: threshold,
+      precisionTimeout: timeout,
+      divisionLabel: divisionLabel
+    });
+
+    await createSubcollections(subdomain);
+    await createMapDivisions(subdomain, divisionLabel, customNames);
+    await createAdminUser(subdomain, first, last, username, password);
+
+    alert("Client created successfully!");
+    clientForm.reset();
+  } catch (err) {
+    console.error("Onboarding Error:", err);
+    alert("Error creating client. Check console for details.");
+  }
+});
