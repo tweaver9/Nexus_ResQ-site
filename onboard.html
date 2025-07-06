@@ -1,13 +1,325 @@
 
-// ===== Firebase Setup & Nexus Access Check =====
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore, collection, doc, setDoc, addDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {
-  getStorage, ref, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Firebase App (ESM) -->
+<script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script>
+<meta charset="UTF-8">
+<title>Nexus Res-Q | Client Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --nexus-yellow: #fdd835;
+    --nexus-bg: #12233d;
+    --nexus-card: #1c3050;
+    --nexus-input: #203358;
+    --nexus-light: #e6e6f1;
+    --nexus-shadow: 0 12px 28px 0 rgba(0,0,0,0.16);
+    --radius: 18px;
+  }
+  html, body {
+    height: 100%;
+    background: var(--nexus-bg);
+    font-family: 'Oswald', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .onboard-root {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 0;
+  }
+  .onboard-left {
+    width: 400px;
+    height: 540px;
+    background: var(--nexus-card);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 44px 38px 44px 44px;
+    border-radius: var(--radius) 0 0 var(--radius);
+    position: relative;
+    box-shadow: 0 0 0 2px #23263a44 inset;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin: 0;
+  }
+  .nexus-logo {
+    height: 46px;
+    width: auto;
+    margin-bottom: 28px;
+    filter: drop-shadow(0 3px 7px #0008);
+  }
+  .onboard-headline {
+    font-size: 1.55em;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: var(--nexus-yellow);
+    letter-spacing: 1px;
+  }
+  .feature-blurb {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .feature-icon {
+    font-size: 1.5em;
+    color: var(--nexus-yellow);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .feature-text strong {
+    color: var(--nexus-yellow);
+    font-weight: 500;
+  }
+  .feature-text {
+    font-size: 1.01em;
+    color: #ececec;
+    line-height: 1.2;
+    margin-right: 10px;
+  }
+  .lines-bg {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.19;
+    background: repeating-linear-gradient(115deg, transparent 0 55px, var(--nexus-yellow) 60px 63px, transparent 70px 180px);
+  }
+  .onboard-right {
+    width: 430px;
+    height: 540px;
+    background: var(--nexus-card);
+    color: var(--nexus-light);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    box-shadow: var(--nexus-shadow);
+    padding: 46px 38px 38px 38px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    overflow-y: auto;
+    max-height: 540px;
+  }
+  .step-label {
+    font-size: 1.18em;
+    font-weight: 600;
+    color: var(--nexus-yellow);
+    margin-bottom: 25px;
+    letter-spacing: 0.4px;
+  }
+  .form-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 22px;
+  }
+  label {
+    font-size: 1.08em;
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: var(--nexus-yellow);
+    letter-spacing: 0.04em;
+  }
+  input[type="text"], input[type="file"], input[type="password"], select {
+    font-family: 'Oswald', Arial, sans-serif;
+    font-size: 1.07em;
+    padding: 11px 13px;
+    border: 2px solid var(--nexus-card);
+    border-radius: 7px;
+    background: var(--nexus-input);
+    color: var(--nexus-light);
+    outline: none;
+    transition: border 0.18s, box-shadow 0.18s;
+  }
+  input[type="text"]:focus, input[type="file"]:focus {
+    border: 2.3px solid var(--nexus-yellow);
+    background: var(--nexus-input);
+    color: var(--nexus-light);
+    box-shadow: 0 0 0 2px #fdd83544;
+  }
+  input::placeholder {
+    color: #93a7c6;
+    opacity: 1;
+  }
 
+  .freq-btn {
+    background: #18203a;
+    color: #fdd835;
+    font-family: 'Oswald', Arial, sans-serif;
+    font-size: 1.09em;
+    border: 2px solid #233358;
+    border-radius: 7px;
+    padding: 8px 14px;
+    margin: 0 7px 12px 0;
+    cursor: pointer;
+    transition: background 0.14s, color 0.14s, border 0.13s;
+    outline: none;
+  }
+  .freq-btn.selected, .freq-btn.hydro {
+    background: #fdd835;
+    color: #18203a;
+    border-color: #fdd835;
+    font-weight: 700;
+  }
+  .freq-btn:disabled {
+    opacity: 0.84;
+    cursor: not-allowed;
+  }
+
+  .add-division-btn, .remove-division-btn {
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 700;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    min-width: 40px;
+  }
+  
+  .add-division-btn {
+    background: #28a745;
+    color: #fff;
+  }
+  
+  .add-division-btn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+  }
+  
+  .remove-division-btn {
+    background: #dc3545;
+    color: #fff;
+  }
+  
+  .remove-division-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+  }
+
+  .custom-division-row {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .next-btn {
+    width: 100%;
+    margin-top: 17px;
+    background: var(--nexus-yellow);
+    color: var(--nexus-bg);
+    font-size: 1.13em;
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 0 10px 0;
+    box-shadow: 0 2px 10px #d7b70011;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    transition: background 0.13s, color 0.13s;
+  }
+  .next-btn:hover, .next-btn:focus {
+    background: #ffe45e;
+    color: var(--nexus-card);
+    box-shadow: 0 5px 18px #fdd83544;
+  }
+  table {
+    border-collapse: collapse;
+    background: #203358;
+    border-radius: 9px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  th, td {
+    padding: 6px 11px;
+    font-size: 1em;
+  }
+  th {
+    color: #fdd835;
+    text-align: left;
+    border-bottom: 1.5px solid #1c3050;
+  }
+  td {
+    color: #ececec;
+  }
+  @media (max-width: 1000px) {
+    .onboard-root { transform: scale(0.94);}
+  }
+</style>
+
+</head>
+<body>
+<div class="onboard-root">
+  <div class="onboard-left">
+    <img src="logos/nexusresq.jpg" alt="Nexus Res-Q Logo" class="nexus-logo" />
+    <div class="onboard-headline">Client Onboarding!</div>
+    <div class="feature-blurb">
+      <span class="feature-icon">🛡️</span>
+      <div class="feature-text"><strong>Intuitive Database</strong><br>No guesswork—every field is mapped and checked, ensuring consistency.</div>
+    </div>
+    <div class="feature-blurb">
+      <span class="feature-icon">🔗</span>
+      <div class="feature-text"><strong>Secure Asset Management</strong><br>Assets, users, locations—automated and connected from day one.</div>
+    </div>
+    <div class="feature-blurb">
+      <span class="feature-icon">🔍</span>
+      <div class="feature-text"><strong>Audit Ready</strong><br>Inspections are dated, signed, and kept secure in our cloud!</div>
+    </div>
+    <div class="lines-bg"></div>
+  </div>
+  <div class="onboard-right">
+    <div class="step-label">Step 1: Client Details</div>
+    <form id="step1Form" autocomplete="off">
+      <div class="form-row">
+        <label for="clientName">Client Name</label>
+        <input type="text" id="clientName" name="clientName" maxlength="48" required autocomplete="off" placeholder="Enter client name..." />
+      </div>
+      <div class="form-row">
+        <label for="clientLogo">Upload Client Logo</label>
+        <input type="file" id="clientLogo" name="clientLogo" accept="image/*" required />
+        <div style="font-size:0.9em;color:#555; margin-top:5px;">SVG or PNG recommended, max 1MB.</div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+    </form>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+<script type="module">
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+// Role Check - Only allow nexus users
+const userRole = sessionStorage.getItem('role');
+if (userRole !== 'nexus') {
+  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">Access Denied<br><br>This page is restricted to Nexus Owners.<br><br><a href="dashboard.html" style="color:#fdd835;">Return to Dashboard</a></div>';
+  throw new Error("Unauthorized Access");
+}
+
+// --- FIREBASE SETUP ---
 const firebaseConfig = {
   apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
   authDomain: "nexus-res-q.firebaseapp.com",
@@ -20,150 +332,862 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Role Check
-if (sessionStorage.role !== 'nexus') {
-  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;">Access Denied<br>This page is restricted to Nexus Owners.</div>';
-  throw new Error("Unauthorized Access");
-}
+const onboardingData = {};
+const onboardRight = document.querySelector('.onboard-right');
+const step1Form = document.getElementById('step1Form');
+step1Form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const clientName = document.getElementById('clientName').value.trim();
+  const clientLogoFile = document.getElementById('clientLogo').files[0];
+  if (!clientName) return alert('Please enter a client name.');
+  if (!clientLogoFile) return alert('Please upload a client logo.');
+  onboardingData.clientName = clientName;
+  onboardingData.logoFile = clientLogoFile;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    onboardingData.clientName = clientName;
+    onboardingData.clientLogo = evt.target.result;
+    showStep2();
+  };
+  reader.readAsDataURL(clientLogoFile);
+});
 
-// DOM References
-const clientForm = document.getElementById('addClientForm');
-const clientNameInput = document.getElementById('clientName');
-const clientLogoInput = document.getElementById('clientLogo');
-const primaryColorInput = document.getElementById('primaryColor');
-const secondaryColorInput = document.getElementById('secondaryColor');
-const subdomainInput = document.getElementById('subdomain');
-const adminFirstInput = document.getElementById('adminFirstName');
-const adminLastInput = document.getElementById('adminLastName');
-const adminUsernameInput = document.getElementById('adminUsername');
-const adminPasswordInput = document.getElementById('adminPassword');
-const precisionToggle = document.getElementById('precisionEnabled');
-const namingSystemToggle = document.getElementById('namingSystem');
-const autoCreateToggle = document.getElementById('autoGenerateBarcodes');
-const divisionLabelInput = document.getElementById('divisionLabel');
-
-// Upload logo and return URL
-async function uploadLogo(file, subdomain) {
-  const fileRef = ref(storage, `logos/${subdomain}.webp`);
-  const snapshot = await uploadBytes(fileRef, file);
-  return await getDownloadURL(snapshot.ref);
-}
-
-// Create core subcollections
-async function createSubcollections(subdomain) {
-  const colNames = [
-    "users", "locations", "assets", "assignments",
-    "asset_frequencies", "billing", "logs", "custom_questions"
-  ];
-  for (const col of colNames) {
-    await setDoc(doc(db, `clients/${subdomain}/${col}/init`), { initialized: true });
-  }
-}
-
-// Create division-level locations
-async function createMapDivisions(subdomain, divisionLabel, customNames = []) {
-  const isCustom = divisionLabel.toLowerCase() === 'custom';
-  const divisions = isCustom ? customNames : [];
-
-  if (!isCustom) {
-    const divisionCount = parseInt(document.getElementById('divisionCount').value.trim());
-    for (let i = 1; i <= divisionCount; i++) {
-      divisions.push(`${divisionLabel} ${i}`);
+// ---- STEP 2: ADMIN SETUP ----
+function showStep2() {
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 2: Client Admin Setup</div>
+    <form id="step2Form" autocomplete="off">
+      <div class="form-row">
+        <label for="adminFirst">Admin First Name</label>
+        <input type="text" id="adminFirst" maxlength="40" required placeholder="First name..." />
+      </div>
+      <div class="form-row">
+        <label for="adminLast">Admin Last Name</label>
+        <input type="text" id="adminLast" maxlength="40" required placeholder="Last name..." />
+      </div>
+      <div class="form-row">
+        <label>Username</label>
+        <input type="text" id="adminUsername" readonly style="background:#2224;" />
+      </div>
+      <div class="form-row">
+        <label>Default Password</label>
+        <input type="text" id="adminPassword" readonly style="background:#2224;" />
+        <div style="font-size:0.9em;color:#ffd;">Admin will be required to change password on first login.</div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+      <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo1">Back</button>
+    </form>
+  `;
+  const adminFirst = document.getElementById('adminFirst');
+  const adminLast = document.getElementById('adminLast');
+  const adminUsername = document.getElementById('adminUsername');
+  const adminPassword = document.getElementById('adminPassword');
+  function updateUserPass() {
+    let c = (onboardingData.clientName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    let f = (adminFirst.value || '').trim().toLowerCase().replace(/[^a-z]/g, "");
+    let l = (adminLast.value || '').trim().toLowerCase().replace(/[^a-z]/g, "");
+    if (f && l && c) {
+      adminUsername.value = `${f[0]}${l}@${c}`;
+      adminPassword.value = c;
+    } else {
+      adminUsername.value = '';
+      adminPassword.value = '';
     }
   }
+  adminFirst.addEventListener('input', updateUserPass);
+  adminLast.addEventListener('input', updateUserPass);
 
-  for (const name of divisions) {
-    const docId = name.replace(/\s+/g, '_').toLowerCase();
-    await setDoc(doc(db, `clients/${subdomain}/locations/${docId}`), {
-      name: name,
-      divisionLabel: divisionLabel,
-      locationUUID: docId,
-      precision: false
-    });
-  }
+  document.getElementById('step2Form').onsubmit = function(e) {
+    e.preventDefault();
+    let f = adminFirst.value.trim().toLowerCase().replace(/[^a-z]/g, '');
+    let l = adminLast.value.trim().toLowerCase().replace(/[^a-z]/g, '');
+    let c = (onboardingData.clientName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!f || !l) return alert("Please enter both names.");
+    onboardingData.adminFirst = f;
+    onboardingData.adminLast = l;
+    onboardingData.adminUsername = `${f[0].toLowerCase()}${l.toLowerCase()}@${c}`;
+    onboardingData.adminPassword = c;
+    onboardingData.adminMustChange = true;
+    showStep3();
+  };
+  document.getElementById('backTo1').onclick = function() { showStep1(true); };
 }
 
-// Create admin user
-async function createAdminUser(subdomain, first, last, username, password) {
-  await addDoc(collection(db, `clients/${subdomain}/users`), {
-    firstName: first,
-    lastName: last,
-    username: username.toLowerCase(),
-    password,
-    role: "admin",
-    must_change_password: true,
-    soft_deleted: false,
-    created: serverTimestamp()
+// ---- STEP 3: MAP/DIVISION/SCAN SETUP ----
+function showStep3() {
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 3: Map & Scanning Setup</div>
+    <form id="step3Form" autocomplete="off">
+      <div class="form-row">
+        <label for="mapDivide">How is your map divided up?</label>
+        <input type="text" id="mapDivide" required maxlength="60" placeholder="e.g., Zone, Building, Area, or 'Custom' for unique names..." />
+        <div style="font-size:0.95em; color:#555; margin-top:6px;">
+          Type "Custom" if each division has a unique name instead of repeated labels.
+        </div>
+      </div>
+      <div id="customDivisions" style="display:none;">
+        <div class="form-row">
+          <label>Enter your division names:</label>
+          <div id="customDivisionInputs">
+            <div class="custom-division-row" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <input type="text" class="customDivisionInput" placeholder="Division name..." style="flex:1;" />
+              <button type="button" class="add-division-btn" style="background:#28a745;color:#fff;border:none;border-radius:4px;padding:8px 12px;font-size:1.1em;cursor:pointer;">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="divisionCount" style="display:none;">
+        <div class="form-row">
+          <label for="numDivisions">How many <span id="divisionLabel"></span> do you have?</label>
+          <input type="number" id="numDivisions" min="1" max="999" placeholder="Enter number..." />
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Are users required to scan a <strong>precise</strong> location? (Unique barcode for each asset location, not just a broad area.)</label>
+        <div>
+          <label><input type="radio" name="preciseLoc" value="yes" required> Yes</label>
+          <label><input type="radio" name="preciseLoc" value="no" style="margin-left:17px;"> No</label>
+        </div>
+      </div>
+      <div id="preciseFollowup"></div>
+      <div class="form-row">
+        <label>Can users type entries or are they forced to scan?</label>
+        <div>
+          <label><input type="radio" name="scanOnly" value="no" required> Typing allowed</label>
+          <label><input type="radio" name="scanOnly" value="yes" style="margin-left:17px;"> Must scan</label>
+        </div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+      <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo2">Back</button>
+    </form>
+  `;
+
+  const mapDivideInput = document.getElementById('mapDivide');
+  const customDivisions = document.getElementById('customDivisions');
+  const divisionCount = document.getElementById('divisionCount');
+  const divisionLabel = document.getElementById('divisionLabel');
+
+  // Handle map division input change
+  mapDivideInput.addEventListener('input', function() {
+    const value = this.value.trim().toLowerCase();
+    if (value === 'custom') {
+      customDivisions.style.display = 'block';
+      divisionCount.style.display = 'none';
+    } else if (value) {
+      customDivisions.style.display = 'none';
+      divisionCount.style.display = 'block';
+      divisionLabel.textContent = value + 's';
+    } else {
+      customDivisions.style.display = 'none';
+      divisionCount.style.display = 'none';
+    }
   });
-}
 
-// Submit Handler
-clientForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
+  // Handle adding new custom division inputs
+  function addDivisionInput() {
+    const container = document.getElementById('customDivisionInputs');
+    const newRow = document.createElement('div');
+    newRow.className = 'custom-division-row';
+    newRow.style = 'display:flex;align-items:center;gap:10px;margin-bottom:10px;';
+    newRow.innerHTML = `
+      <input type="text" class="customDivisionInput" placeholder="Division name..." style="flex:1;" />
+      <button type="button" class="remove-division-btn" style="background:#dc3545;color:#fff;border:none;border-radius:4px;padding:8px 12px;font-size:1.1em;cursor:pointer;">−</button>
+    `;
+    container.appendChild(newRow);
 
-  const name = clientNameInput.value.trim();
-  const logo = clientLogoInput.files[0];
-  const primary_color = primaryColorInput.value.trim();
-  const secondary_color = secondaryColorInput.value.trim();
-  const subdomain = subdomainInput.value.trim().toLowerCase();
-  const first = adminFirstInput.value.trim();
-  const last = adminLastInput.value.trim();
-  const username = adminUsernameInput.value.trim();
-  const password = adminPasswordInput.value.trim();
-  const usePrecision = precisionToggle.checked;
-  const hasNamingSystem = namingSystemToggle.checked;
-  const autoGenerate = autoCreateToggle.checked;
-  const threshold = parseFloat(document.getElementById('precisionThreshold').value);
-  const timeout = parseInt(document.getElementById('precisionTimeout').value);
-  const divisionLabel = divisionLabelInput.value.trim();
-
-  let customNames = [];
-  if (divisionLabel.toLowerCase() === 'custom') {
-    const customInputs = document.querySelectorAll('.customDivisionInput');
-    customInputs.forEach(input => {
-      const val = input.value.trim();
-      if (val) customNames.push(val);
-    });
+    // Add event listener to remove button
+    newRow.querySelector('.remove-division-btn').onclick = function() {
+      newRow.remove();
+    };
   }
 
-  if (!name || !logo || !primary_color || !secondary_color || !subdomain || !first || !last || !username || !password || !divisionLabel) {
-    alert("Please complete all fields.");
+  // Add event listener to the first + button
+  document.querySelector('.add-division-btn').onclick = addDivisionInput;
+
+  // Handle precision location followup
+  document.querySelectorAll('input[name="preciseLoc"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      const val = document.querySelector('input[name="preciseLoc"]:checked').value;
+      const followup = document.getElementById('preciseFollowup');
+      if (val === "yes") {
+        followup.innerHTML = `
+          <div class="form-row">
+            <label>Do you already have a system for naming sub-locations?</label>
+            <div>
+              <label><input type="radio" name="hasNaming" value="yes" required> Yes</label>
+              <label><input type="radio" name="hasNaming" value="no" style="margin-left:17px;"> No</label>
+            </div>
+          </div>
+          <div id="namingFollowup"></div>
+        `;
+        document.querySelectorAll('input[name="hasNaming"]').forEach(r => {
+          r.addEventListener('change', function() {
+            const nVal = document.querySelector('input[name="hasNaming"]:checked').value;
+            const nFollow = document.getElementById('namingFollowup');
+            if (nVal === "no") {
+              nFollow.innerHTML = `
+                <div class="form-row">
+                  <label>Would you like Nexus to create a UUID system for you?</label>
+                  <div>
+                    <label><input type="radio" name="nexusGen" value="yes" required> Yes</label>
+                    <label><input type="radio" name="nexusGen" value="no" style="margin-left:17px;"> No</label>
+                  </div>
+                </div>
+              `;
+            } else {
+              nFollow.innerHTML = '';
+            }
+          });
+        });
+      } else {
+        followup.innerHTML = '';
+      }
+    });
+  });
+
+  document.getElementById('step3Form').onsubmit = function(e) {
+    e.preventDefault();
+    const mapDivide = mapDivideInput.value.trim();
+    const isCustom = mapDivide.toLowerCase() === 'custom';
+    
+    let divisions = [];
+    let numDivisions = 0;
+
+    if (isCustom) {
+      // Collect custom division names
+      const inputs = document.querySelectorAll('.customDivisionInput');
+      inputs.forEach(input => {
+        const name = input.value.trim();
+        if (name) divisions.push(name);
+      });
+      if (divisions.length === 0) {
+        alert('Please enter at least one division name.');
+        return;
+      }
+    } else {
+      // Get number of standard divisions
+      numDivisions = parseInt(document.getElementById('numDivisions').value);
+      if (!numDivisions || numDivisions < 1) {
+        alert('Please enter the number of ' + mapDivide + 's.');
+        return;
+      }
+      // Generate standard division names
+      for (let i = 1; i <= numDivisions; i++) {
+        divisions.push(`${mapDivide} ${i}`);
+      }
+    }
+
+    const preciseLoc = document.querySelector('input[name="preciseLoc"]:checked').value;
+    let hasNaming = "";
+    let wantsNexusGen = "";
+    
+    if (preciseLoc === "yes") {
+      hasNaming = document.querySelector('input[name="hasNaming"]:checked') ? document.querySelector('input[name="hasNaming"]:checked').value : "";
+      if (hasNaming === "no") {
+        wantsNexusGen = document.querySelector('input[name="nexusGen"]:checked') ? document.querySelector('input[name="nexusGen"]:checked').value : "";
+      }
+    }
+    
+    const scanOnly = document.querySelector('input[name="scanOnly"]:checked').value;
+
+    // Store all the data
+    onboardingData.mapDivide = mapDivide;
+    onboardingData.isCustomDivisions = isCustom;
+    onboardingData.divisions = divisions;
+    onboardingData.numDivisions = numDivisions;
+    onboardingData.preciseLoc = preciseLoc;
+    onboardingData.hasNaming = hasNaming;
+    onboardingData.wantsNexusGen = wantsNexusGen;
+    onboardingData.scanOnly = scanOnly;
+
+    // Generate UUIDs if needed
+    if (preciseLoc === "yes" && hasNaming === "no" && wantsNexusGen === "yes") {
+      onboardingData.generatedLocationUUIDs = divisions.map((divName, index) => {
+        const uuid = String(index + 1).padStart(3, "0");
+        return {
+          name: divName,
+          uuid: uuid,
+          subLocationUUID: preciseLoc === "yes" ? "0000" : "0000" // Default for new sub-locations
+        };
+      });
+    } else if (preciseLoc === "no") {
+      // No precision scanning - use 0000 for all
+      onboardingData.generatedLocationUUIDs = divisions.map(divName => ({
+        name: divName,
+        uuid: "0000",
+        subLocationUUID: "0000"
+      }));
+    } else {
+      // They have their own naming system or don't want Nexus to generate
+      onboardingData.generatedLocationUUIDs = divisions.map(divName => ({
+        name: divName,
+        uuid: hasNaming === "yes" ? "CUSTOM" : "0000",
+        subLocationUUID: "0000"
+      }));
+    }
+
+    showStep4();
+  };
+
+  document.getElementById('backTo2').onclick = function() { showStep2(); };
+}
+
+// ---- STEP 4: ASSET TYPES ----
+function showStep4() {
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 4: Asset Types</div>
+    <form id="step4Form">
+      <div class="form-row">
+        <label for="assetTypes">List all asset types to track</label>
+        <input type="text" id="assetTypes" name="assetTypes" maxlength="120" required placeholder="e.g., Extinguishers, Vehicles, Warehouses..." />
+        <div style="font-size:0.95em; color:#555; margin-top:6px;">
+          Don't forget vehicles, warehouses, trailers, etc.
+        </div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+      <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo3">Back</button>
+    </form>
+  `;
+  document.getElementById('backTo3').onclick = function() {
+    showStep3();
+  };
+  document.getElementById('step4Form').onsubmit = function(e) {
+    e.preventDefault();
+    const assetTypes = document.getElementById('assetTypes').value.trim();
+    if (!assetTypes) return alert('Please enter at least one asset type.');
+    let clean = assetTypes.replace(/\s+and\s+/ig, ', ');
+    onboardingData.assetTypes = clean.split(',').map(s => s.trim()).filter(Boolean);
+    showStep5();
+  };
+}
+
+// ---- STEP 5: ASSET FREQUENCIES ----
+function showStep5() {
+  const assetTypes = onboardingData.assetTypes || [];
+  onboardingData.assetFrequencies = onboardingData.assetFrequencies || {};
+  let current = 0;
+
+  function renderAssetFreq(idx) {
+    const type = assetTypes[idx];
+    let freqList = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'BiAnnually',  'Annually'];
+    let hydroList = [];
+    if (type.toLowerCase().includes('extinguisher')) {
+      hydroList = ['5yr Hydro', '10yr Hydro'];
+    }
+    const prevFreqs = onboardingData.assetFrequencies[type] || [];
+    onboardRight.innerHTML = `
+      <div class="step-label">Step 5: How often are these inspected?</div>
+      <div style="color:#fdd835; font-size:1.10em; margin-bottom:10px;">${type}</div>
+      <div id="freqBtns" style="margin-bottom:24px;">
+        ${freqList.map(f =>
+          `<button class="freq-btn${prevFreqs.includes(f) ? ' selected' : ''}" type="button" data-freq="${f}">${f}</button>`
+        ).join('')}
+        ${hydroList.map(h =>
+          `<button class="freq-btn selected hydro" type="button" data-freq="${h}" disabled>${h}</button>`
+        ).join('')}
+      </div>
+      <div style="display:flex;gap:15px;">
+        <button class="next-btn" type="button" id="prevAsset"${idx === 0 ? ' style="visibility:hidden;"' : ''}>Back</button>
+        <button class="next-btn" type="button" id="nextAsset">${idx < assetTypes.length - 1 ? 'Continue' : 'Done'}</button>
+      </div>
+    `;
+
+    // Toggle freq selection (not hydro)
+    document.querySelectorAll('.freq-btn:not(.hydro)').forEach(btn => {
+      btn.onclick = function() {
+        btn.classList.toggle('selected');
+      }
+    });
+
+    // Next/Done button
+    document.getElementById('nextAsset').onclick = function() {
+      // Save selected
+      const selected = [];
+      document.querySelectorAll('.freq-btn.selected').forEach(btn => {
+        selected.push(btn.getAttribute('data-freq'));
+      });
+      // Always add Hydro for extinguishers
+      if (hydroList.length) {
+        selected.push(...hydroList);
+      }
+      onboardingData.assetFrequencies[type] = selected;
+
+      if (idx < assetTypes.length - 1) {
+        renderAssetFreq(idx + 1);
+      } else {
+        showStep6(); // CSV Import comes next!
+      }
+    }
+    // Back button
+    document.getElementById('prevAsset').onclick = function() {
+      if (idx > 0) renderAssetFreq(idx - 1);
+    }
+  }
+  renderAssetFreq(0);
+}
+
+// ---- STEP 6: CSV IMPORT ----
+function showStep6() {
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 6: Import Asset List (CSV)</div>
+    <div style="color:#fdd835; font-size:1.08em; margin-bottom:10px;">
+      Optional: Import a CSV to quickly add assets. <br>
+      <span style="color:#ececec; font-size:0.96em;">
+        You can skip this and add assets manually after onboarding.
+      </span>
+    </div>
+    <a href="#" id="downloadCsv" style="color:#fdd835;font-size:1em;text-decoration:underline;cursor:pointer;display:inline-block;margin-bottom:17px;">Download CSV Template</a>
+    <form id="csvImportForm" enctype="multipart/form-data">
+      <div class="form-row">
+        <label for="assetCsv">Upload CSV File</label>
+        <input type="file" id="assetCsv" accept=".csv,text/csv" style="background:#18203a;color:#fff;" />
+        <div id="csvStatus" style="margin-top:7px;font-size:0.98em;"></div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+      <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo5">Back</button>
+    </form>
+  `;
+  document.getElementById('downloadCsv').onclick = function(e) {
+    e.preventDefault();
+    const csvTemplate = "Asset Name,Asset Type,Serial Number,Location,Notes\n";
+    const blob = new Blob([csvTemplate], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "nexus_asset_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  document.getElementById('backTo5').onclick = function() {
+    showStep5();
+  };
+  document.getElementById('assetCsv').onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const status = document.getElementById('csvStatus');
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const text = evt.target.result;
+      const lines = text.trim().split('\n');
+      if (lines.length < 2) {
+        status.textContent = "File is empty or missing data.";
+        status.style.color = "#ff5656";
+        return;
+      }
+      const columns = lines[0].split(',');
+      const required = ["Asset Name", "Asset Type", "Serial Number", "Location", "Notes"];
+      const missing = required.filter(col => !columns.includes(col));
+      if (missing.length) {
+        status.textContent = "Missing columns: " + missing.join(', ');
+        status.style.color = "#ff5656";
+        return;
+      }
+      status.textContent = "File looks good! " + (lines.length-1) + " assets detected.";
+      status.style.color = "#43ff7a";
+      onboardingData.assetCsv = text;
+    };
+    reader.readAsText(file);
+  };
+  document.getElementById('csvImportForm').onsubmit = function(e) {
+    e.preventDefault();
+    if (!onboardingData.assetCsv && document.getElementById('assetCsv').files.length > 0) {
+      document.getElementById('csvStatus').textContent = "Please upload a valid CSV template.";
+      document.getElementById('csvStatus').style.color = "#ff5656";
+      return;
+    }
+    showStep7();
+  };
+}
+
+// ---- STEP 7: CUSTOM QUESTIONS ----
+function showStep7() {
+  // Asset Types must be present!
+  if (!onboardingData.assetTypes || onboardingData.assetTypes.length === 0) {
+    alert("No asset types found. Please complete Step 4.");
+    showStep4();
     return;
   }
 
-  if (divisionLabel.toLowerCase() !== 'custom') {
-    const countVal = document.getElementById('divisionCount').value.trim();
-    if (!countVal || isNaN(parseInt(countVal))) {
-      alert("Please specify a valid number of divisions.");
+  onboardingData.customQuestions = onboardingData.customQuestions || {};
+
+  // Build options for dropdown
+  const options = onboardingData.assetTypes
+    .map(type => `<option value="${type}">${type}</option>`)
+    .join('');
+
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 7: Add Custom Questions</div>
+    <div style="color:#fdd835; font-size:1.08em; margin-bottom:10px;">
+      Do you have any additional questions beyond the industry standard? <br>
+      <span style="color:#ececec; font-size:0.96em;">
+        Add them here, or skip and add questions later.
+      </span>
+    </div>
+    <form id="customQuestionForm" autocomplete="off" style="margin-bottom:18px;">
+      <div class="form-row">
+        <label for="questionAssetType">Asset Type</label>
+        <select id="questionAssetType" style="font-family:'Oswald';font-size:1.07em;padding:9px 12px;border-radius:7px;background:#203358;color:#e6e6f1;border:2px solid #1c3050;">
+          ${options}
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="customQuestion">Additional Question</label>
+        <input type="text" id="customQuestion" maxlength="90" placeholder="e.g., Is the serial number legible?" autocomplete="off" />
+      </div>
+      <button class="next-btn" type="submit" style="width:auto;max-width:130px;margin-bottom:0;">Add</button>
+    </form>
+    <div id="questionList" style="margin-bottom:20px;"></div>
+    <button class="next-btn" id="continueStep7">Continue</button>
+    <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo6">Back</button>
+  `;
+
+  // Render question list per asset type
+  function renderQuestions() {
+    const list = document.getElementById('questionList');
+    let html = '';
+    const q = onboardingData.customQuestions;
+    if (Object.keys(q).length === 0) {
+      list.innerHTML = `<div style="color:#ececec;font-size:0.99em;">No custom questions added yet.</div>`;
       return;
+    }
+    for (const type in q) {
+      html += `<div style="margin-bottom:6px;">
+        <strong style="color:#fdd835">${type}:</strong><ul style="margin:3px 0 5px 12px;">`;
+      q[type].forEach((question, idx) => {
+        html += `<li style="color:#e6e6f1;">
+          ${question}
+          <button type="button" data-type="${type}" data-idx="${idx}" style="margin-left:8px;font-size:0.93em;background:#233358;border:none;color:#fdd835;border-radius:5px;padding:1px 8px;cursor:pointer;">Remove</button>
+        </li>`;
+      });
+      html += `</ul></div>`;
+    }
+    list.innerHTML = html;
+    // Remove buttons
+    document.querySelectorAll('#questionList button[data-type]').forEach(btn => {
+      btn.onclick = function() {
+        const type = btn.getAttribute('data-type');
+        const idx = +btn.getAttribute('data-idx');
+        onboardingData.customQuestions[type].splice(idx, 1);
+        if (onboardingData.customQuestions[type].length === 0) delete onboardingData.customQuestions[type];
+        renderQuestions();
+      };
+    });
+  }
+  renderQuestions();
+
+  // Add question
+  document.getElementById('customQuestionForm').onsubmit = function(e) {
+    e.preventDefault();
+    const type = document.getElementById('questionAssetType').value;
+    const question = document.getElementById('customQuestion').value.trim();
+    if (!question) {
+      alert('Please enter a question.');
+      return;
+    }
+    onboardingData.customQuestions[type] = onboardingData.customQuestions[type] || [];
+    onboardingData.customQuestions[type].push(question);
+    document.getElementById('customQuestion').value = '';
+    renderQuestions();
+  };
+
+  document.getElementById('continueStep7').onclick = function() {
+    showStep8();
+  };
+  document.getElementById('backTo6').onclick = function() {
+    showStep6();
+  };
+}
+
+// ---- STEP 8: REVIEW & CONFIRM ----
+function showStep8() {
+  // 1. Client Info
+  const clientName = onboardingData.clientName || '';
+  const clientLogo = onboardingData.clientLogo
+    ? `<img src="${onboardingData.clientLogo}" alt="Logo" style="height:48px;max-width:120px;display:block;background:#fff;padding:3px 9px;border-radius:8px;margin-bottom:8px;">`
+    : '';
+
+  // 2. Admin Account
+  const adminSection = `
+    <div style="margin-bottom:17px;">
+      <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Admin Account:</div>
+      <div style="color:#fff;font-size:1.09em;margin-bottom:2px;">
+        ${onboardingData.adminFirst || ''} ${onboardingData.adminLast || ''}<br>
+        <span style="color:#fdd835">${onboardingData.adminUsername || ''}</span>
+        <span style="color:#ccc;font-size:0.96em;display:block;">(Default password: ${onboardingData.adminPassword || ''})</span>
+      </div>
+    </div>
+  `;
+
+  // 3. Map & Scanning Setup
+  let locationDetails = '';
+  if (onboardingData.generatedLocationUUIDs && onboardingData.generatedLocationUUIDs.length) {
+    locationDetails = `<div style="margin:8px 0 2px 0;"><span style="color:#fdd835;">Generated Location Structure:</span><ul style="margin:2px 0 6px 18px;">` +
+      onboardingData.generatedLocationUUIDs.map(loc => {
+        const uuidDisplay = loc.uuid === "CUSTOM" ? "Custom naming" : 
+                           loc.uuid === "0000" ? "No precision" : 
+                           `UUID: ${loc.uuid}`;
+        return `<li>${loc.name}: <strong>${uuidDisplay}</strong></li>`;
+      }).join('') + `</ul></div>`;
+  }
+  
+  const mapSection = `
+    <div style="margin-bottom:17px;">
+      <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Map/Location Setup:</div>
+      <div style="color:#fff;font-size:1.04em;">
+        <div><b>Division Type:</b> ${onboardingData.isCustomDivisions ? 'Custom Names' : onboardingData.mapDivide}</div>
+        ${onboardingData.numDivisions ? `<div><b>Number of ${onboardingData.mapDivide}s:</b> ${onboardingData.numDivisions}</div>` : ''}
+        <div><b>Total Divisions:</b> ${onboardingData.divisions ? onboardingData.divisions.length : 0}</div>
+        <div><b>Precise Scan Required:</b> ${onboardingData.preciseLoc === "yes" ? "Yes" : "No"}</div>
+        ${onboardingData.preciseLoc === "yes" ? `<div><b>Has Sub-location Naming:</b> ${onboardingData.hasNaming || ''}</div>` : ""}
+        ${(onboardingData.preciseLoc === "yes" && onboardingData.hasNaming === "no") ? `<div><b>Nexus-generated UUIDs:</b> ${onboardingData.wantsNexusGen === "yes" ? "Yes" : "No"}</div>` : ""}
+        <div><b>Typing Allowed:</b> ${onboardingData.scanOnly === "no" ? "Yes" : "No"}</div>
+        ${locationDetails}
+      </div>
+    </div>
+  `;
+
+  // 4. Asset Types
+  const assetTypes = onboardingData.assetTypes ? onboardingData.assetTypes.join(', ') : '';
+  // 5. Asset Frequencies
+  let freqSummary = '';
+  if (onboardingData.assetFrequencies && Object.keys(onboardingData.assetFrequencies).length) {
+    freqSummary = '<div style="margin-bottom:17px;"><div style="color:#ececec;font-weight:600;margin-bottom:2px;">Inspection Frequencies:</div>';
+    for (const [type, freqs] of Object.entries(onboardingData.assetFrequencies)) {
+      freqSummary += `<div style="margin-bottom:6px;">
+        <strong style="color:#fdd835">${type}:</strong>
+        <span style="color:#ececec;font-size:1em;">${(freqs || []).join(', ')}</span>
+      </div>`;
+    }
+    freqSummary += '</div>';
+  }
+  // 6. CSV Import
+  let assetTable = '<div style="color:#ccc;font-size:1em;">No CSV imported.</div>';
+  if (onboardingData.assetCsv) {
+    const rows = onboardingData.assetCsv.trim().split('\n');
+    const headers = rows[0].split(',');
+    assetTable = `<table style="border-collapse:collapse;margin-bottom:9px;font-size:0.98em;background:#203358;border-radius:9px;overflow:hidden;">
+      <tr>${headers.map(h => `<th style="padding:6px 11px;color:#fdd835;text-align:left;border-bottom:1.5px solid #1c3050;">${h}</th>`).join('')}</tr>`;
+    for (let i = 1; i < Math.min(6, rows.length); i++) {
+      const cells = rows[i].split(',');
+      assetTable += `<tr>${cells.map(c => `<td style="padding:6px 11px;color:#ececec;">${c}</td>`).join('')}</tr>`;
+    }
+    if (rows.length > 6) {
+      assetTable += `<tr><td colspan="${headers.length}" style="padding:6px 11px;color:#aaa;text-align:center;">...and ${rows.length - 6} more</td></tr>`;
+    }
+    assetTable += '</table>';
+  }
+
+  // 7. Custom Questions
+  let questionSummary = '<div style="color:#ccc;font-size:1em;">None added</div>';
+  if (onboardingData.customQuestions && Object.keys(onboardingData.customQuestions).length) {
+    questionSummary = '';
+    for (const [type, qs] of Object.entries(onboardingData.customQuestions)) {
+      questionSummary += `<div style="margin-bottom:8px;"><strong style="color:#fdd835">${type}:</strong><ul style="margin:4px 0 0 18px;">`;
+      for (const q of qs) questionSummary += `<li style="color:#ececec;font-size:0.99em;">${q}</li>`;
+      questionSummary += '</ul></div>';
     }
   }
 
-  try {
-    const logo_url = await uploadLogo(logo, subdomain);
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 8: Review & Confirm</div>
+    <div style="font-size:1.07em;color:#fdd835;margin-bottom:5px;">Review your onboarding details:</div>
+    <div style="background:#18203a;padding:23px 20px 13px 20px;border-radius:13px;margin-bottom:25px;box-shadow:0 2px 14px #0003;">
+      <div style="margin-bottom:17px;">
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Client Name:</div>
+        <div style="font-size:1.1em;color:#fff;font-weight:700;margin-bottom:2px;">${clientName}</div>
+        ${clientLogo}
+      </div>
+      ${adminSection}
+      ${mapSection}
+      <div style="margin-bottom:17px;">
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Asset Types:</div>
+        <div style="color:#fdd835;font-size:1.07em;font-weight:600;">${assetTypes}</div>
+      </div>
+      ${freqSummary}
+      <div style="margin-bottom:17px;">
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Imported Assets (CSV):</div>
+        ${assetTable}
+      </div>
+      <div>
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Custom Questions:</div>
+        ${questionSummary}
+      </div>
+    </div>
+    <button class="next-btn" id="finishBtn" style="background:#fdd835;color:#18203a;font-size:1.19em;font-weight:700;padding:14px 0;margin-bottom:8px;margin-top:10px;">Finish & Submit</button>
+    <button class="next-btn" type="button" style="background:#ececec;color:#23263a;" id="backTo7">Back</button>
+  `;
+document.getElementById('finishBtn').onclick = async function() {
+  document.getElementById('finishBtn').disabled = true;
+  document.getElementById('finishBtn').textContent = 'Submitting...';
 
-    await setDoc(doc(db, `clients/${subdomain}`), {
-      name,
-      logo_url,
-      primary_color,
-      secondary_color,
-      subdomain,
-      precisionEnabled: usePrecision,
-      namingSystemExists: hasNamingSystem,
-      autoGenerateLocations: autoGenerate,
-      precisionThreshold: threshold,
-      precisionTimeout: timeout,
-      divisionLabel: divisionLabel
+  const subdomain = onboardingData.clientName
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+
+  let logoUrl = '';
+  try {
+    // 1. Check for existing client with same subdomain
+    const clientDoc = await getDoc(doc(db, 'clients', subdomain));
+    if (clientDoc.exists()) {
+      alert('A client with this name already exists. Please choose a different name.');
+      document.getElementById('finishBtn').disabled = false;
+      document.getElementById('finishBtn').textContent = 'Finish & Submit';
+      return;
+    }
+
+    // 2. Upload logo
+    if (onboardingData.logoFile) {
+      const ext = onboardingData.logoFile.name.split('.').pop();
+      const safeFileName = 'logo.' + ext;
+      const logoRef = ref(storage, `client_logos/${subdomain}/${safeFileName}`);
+      await uploadBytes(logoRef, onboardingData.logoFile);
+      logoUrl = await getDownloadURL(logoRef);
+    }
+
+    // 3. Save root client doc (minimal fields)
+    await setDoc(doc(db, 'clients', subdomain), {
+      name: onboardingData.clientName,
+      logo_url: logoUrl,
+      subdomain: subdomain,
+      primary_color: "#fdd835",
+      secondary_color: "#12233d"
     });
 
-    await createSubcollections(subdomain);
-    await createMapDivisions(subdomain, divisionLabel, customNames);
-    await createAdminUser(subdomain, first, last, username, password);
+    // 4. Create subcollections with starter/blank docs
+    const clientRef = doc(db, 'clients', subdomain);
 
-    alert("Client created successfully!");
-    clientForm.reset();
+    // asset_types
+    await setDoc(doc(collection(clientRef, 'asset_types'), 'starter'), {
+      types: onboardingData.assetTypes || []
+    });
+
+    // users (admin user)
+    await setDoc(doc(collection(clientRef, 'users'), onboardingData.adminUsername), {
+      firstName: onboardingData.adminFirst,
+      lastName: onboardingData.adminLast,
+      username: onboardingData.adminUsername,
+      hashedPassword: bcrypt.hashSync(onboardingData.adminPassword, 10),
+      role: "admin",
+      active: true,
+      soft_deleted: false,
+      must_change_password: true,
+      createdAt: new Date().toISOString()
+    });
+
+    // locations - Create individual location documents with UUIDs
+    if (onboardingData.generatedLocationUUIDs && onboardingData.generatedLocationUUIDs.length) {
+      for (const location of onboardingData.generatedLocationUUIDs) {
+        await setDoc(doc(collection(clientRef, 'locations'), location.name.toLowerCase().replace(/\s+/g, '_')), {
+          name: location.name,
+          uuid: location.uuid,
+          subLocationUUID: location.subLocationUUID,
+          divisionType: onboardingData.mapDivide,
+          isCustom: onboardingData.isCustomDivisions,
+          preciseScanEnabled: onboardingData.preciseLoc === "yes",
+          hasCustomNaming: onboardingData.hasNaming === "yes",
+          nexusGenerated: onboardingData.wantsNexusGen === "yes",
+          fullLocationCode: location.uuid !== "0000" && location.uuid !== "CUSTOM" ? 
+            `${location.uuid}-${location.subLocationUUID}` : "000-0000",
+          created: new Date().toISOString()
+        });
+      }
+    }
+
+    // location_config - Store the overall configuration
+    await setDoc(doc(collection(clientRef, 'location_config'), 'settings'), {
+      map_divide: onboardingData.mapDivide || "",
+      is_custom_divisions: onboardingData.isCustomDivisions || false,
+      num_divisions: onboardingData.numDivisions || 0,
+      total_divisions: onboardingData.divisions ? onboardingData.divisions.length : 0,
+      division_names: onboardingData.divisions || [],
+      precise_loc: onboardingData.preciseLoc || "",
+      has_naming: onboardingData.hasNaming || "",
+      wants_nexus_gen: onboardingData.wantsNexusGen || "",
+      scan_only: onboardingData.scanOnly || "",
+      location_uuids_generated: onboardingData.wantsNexusGen === "yes"
+    });
+
+    // asset_frequencies
+    await setDoc(doc(collection(clientRef, 'asset_frequencies'), 'starter'), {
+      frequencies: onboardingData.assetFrequencies || {}
+    });
+
+    // logs
+    await setDoc(doc(collection(clientRef, 'logs'), 'starter'), {
+      message: "Client onboarded",
+      timestamp: new Date().toISOString()
+    });
+
+    // assignments
+    await setDoc(doc(collection(clientRef, 'assignments'), 'starter'), {});
+
+    // billing
+    await setDoc(doc(collection(clientRef, 'billing'), 'starter'), {});
+
+    // assets (imported CSV if present)
+    await setDoc(doc(collection(clientRef, 'assets'), 'starter'), {
+      imported_csv: onboardingData.assetCsv || ""
+    });
+
+    // custom_questions
+    await setDoc(doc(collection(clientRef, 'custom_questions'), 'starter'), {
+      questions: onboardingData.customQuestions || {}
+    });
+
+    alert("Onboarding Complete! Client and admin user have been saved to Firebase.");
+    location.reload();
+
   } catch (err) {
-    console.error("Onboarding Error:", err);
-    alert("Error creating client. Check console for details.");
+    alert("Error saving to Firebase: " + err.message);
+    document.getElementById('finishBtn').disabled = false;
+    document.getElementById('finishBtn').textContent = 'Finish & Submit';
   }
-});
+};
+
+document.getElementById('backTo7').onclick = function() {
+  showStep7();
+};
+}
+
+function showStep1(isBack = false) {
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 1: Client Details</div>
+    <form id="step1Form" autocomplete="off">
+      <div class="form-row">
+        <label for="clientName">Client Name</label>
+        <input type="text" id="clientName" name="clientName" maxlength="48" required autocomplete="off" placeholder="Enter client name..." value="${onboardingData.clientName || ''}" />
+      </div>
+      <div class="form-row">
+        <label for="clientLogo">Upload Client Logo</label>
+        <input type="file" id="clientLogo" name="clientLogo" accept="image/*" ${!isBack ? 'required' : ''} />
+        <div style="font-size:0.9em;color:#555; margin-top:5px;">SVG or PNG recommended, max 1MB.</div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+    </form>
+  `;
+  
+  const step1Form = document.getElementById('step1Form');
+  step1Form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const clientName = document.getElementById('clientName').value.trim();
+    const clientLogoFile = document.getElementById('clientLogo').files[0];
+    if (!clientName) return alert('Please enter a client name.');
+    if (!clientLogoFile && !onboardingData.logoFile) return alert('Please upload a client logo.');
+    
+    onboardingData.clientName = clientName;
+    if (clientLogoFile) {
+      onboardingData.logoFile = clientLogoFile;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        onboardingData.clientLogo = evt.target.result;
+        showStep2();
+      };
+      reader.readAsDataURL(clientLogoFile);
+    } else {
+      showStep2();
+    }
+  });
+}
+</script>
+</body>
+</html>
