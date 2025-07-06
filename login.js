@@ -41,12 +41,12 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
       body: JSON.stringify({ username, password, subdomain })
     });
 
-    const data = await res.json(); // <-- You were missing this line
-
     if (!res.ok) {
-      const msg = await res.text();
-      throw new Error(msg);
+      const errorMsg = await res.text();
+      throw new Error(errorMsg);
     }
+
+    const data = await res.json();
 
     // Store session info from backend response
     sessionStorage.setItem("nexusUser", JSON.stringify(data.user));
