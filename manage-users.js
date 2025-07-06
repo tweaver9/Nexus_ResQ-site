@@ -8,14 +8,19 @@ function slugify(str) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
-// Helper to generate a random reset code
-function generateResetCode(length = 6) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < length; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
+// Helper to get current subdomain
+function getSubdomain() {
+  const tenant_id = sessionStorage.getItem('tenant_id');
+  return tenant_id || 'default';
+}
+
+// Helper to get current user info for API calls
+function getCurrentUser() {
+  return {
+    username: sessionStorage.getItem('username'),
+    role: sessionStorage.getItem('role'),
+    subdomain: getSubdomain()
+  };
 }
 
 window.showManageUsersModal = async function(clientName) {
@@ -23,16 +28,19 @@ window.showManageUsersModal = async function(clientName) {
   let modal = document.getElementById('manage-users-modal');
   if (modal) modal.remove();
 
-  // Fetch users from backend API
+  const subdomain = getSubdomain();
+
+  // Fetch users directly from Firestore (since backend doesn't have list-users endpoint)
   let users = [];
   try {
-    const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/list-users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clientName })
-    });
-    users = await res.json();
+    const usersRef = collection(db, 'clients', subdomain, 'users');
+    const snapshot = await getDocs(usersRef);
+    users = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })).filter(user => !user.soft_deleted);
   } catch (e) {
+    console.error('Error fetching users:', e);
     users = [];
   }
 
@@ -58,11 +66,17 @@ window.showManageUsersModal = async function(clientName) {
             ${users.map(u => `
               <tr data-username="${u.username}">
                 <td>${u.username}</td>
-                <td>${u.first_name} ${u.last_name}</td>
+                <td>${u.firstName} ${u.lastName}</td>
                 <td>${u.role}</td>
                 <td>
-                  <button type="button" class="remove-user explorer-btn danger" data-username="${u.username}">Remove</button>
+                  ${u.active ? 
+                    `<button type="button" class="deactivate-user explorer-btn danger" data-username="${u.username}">Deactivate</button>` :
+                    `<button type="button" class="reactivate-user explorer-btn" data-username="${u.username}">Reactivate</button>`
+                  }
                   <button type="button" class="reset-password explorer-btn" data-username="${u.username}">Reset Password</button>
+                  ${getCurrentUser().role === 'nexus' ? 
+                    `<button type="button" class="delete-user explorer-btn danger" data-username="${u.username}">Delete</button>` : ''
+                  }
                 </td>
               </tr>
             `).join('')}
@@ -74,9 +88,9 @@ window.showManageUsersModal = async function(clientName) {
         <button type="button" id="bulk-add-users-btn" class="explorer-btn">Bulk Add</button>
       </div>
       <form id="add-user-form">
-        <input type="text" id="first_name" placeholder="First Name" required>
-        <input type="text" id="last_name" placeholder="Last Name" required>
-        <input type="password" id="password" placeholder="Password" required>
+        <input type="text" id="firstName" placeholder="First Name" required>
+        <input type="text" id="lastName" placeholder="Last Name" required>
+        <input type="password" id="newPassword" placeholder="Password" required>
         <select id="role" required>
           <option value="user">User</option>
           <option value="manager">Manager</option>
@@ -94,61 +108,151 @@ window.showManageUsersModal = async function(clientName) {
   // Remove modal on cancel
   modal.querySelector('#cancel-manage-users').onclick = () => modal.remove();
 
-  // Remove user
-  modal.querySelectorAll('.remove-user').forEach(btn => {
+  // Deactivate user
+  modal.querySelectorAll('.deactivate-user').forEach(btn => {
     btn.onclick = async function() {
-      const username = btn.getAttribute('data-username');
-      if (!confirm(`Remove user "${username}"?`)) return;
-      await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/remove-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientName, username })
-      });
-      modal.remove();
-      window.showManageUsersModal(clientName); // Refresh
+      const targetUsername = btn.getAttribute('data-username');
+      if (!confirm(`Deactivate user "${targetUsername}"?`)) return;
+      
+      const currentUser = getCurrentUser();
+      try {
+        const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/deactivate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            subdomain: currentUser.subdomain,
+            username: currentUser.username,
+            targetUsername 
+          })
+        });
+        
+        if (!res.ok) throw new Error(await res.text());
+        
+        modal.remove();
+        window.showManageUsersModal(clientName); // Refresh
+      } catch (err) {
+        alert('Error deactivating user: ' + err.message);
+      }
+    };
+  });
+
+  // Reactivate user
+  modal.querySelectorAll('.reactivate-user').forEach(btn => {
+    btn.onclick = async function() {
+      const targetUsername = btn.getAttribute('data-username');
+      if (!confirm(`Reactivate user "${targetUsername}"?`)) return;
+      
+      const currentUser = getCurrentUser();
+      try {
+        const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/reactivate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            subdomain: currentUser.subdomain,
+            username: currentUser.username,
+            targetUsername 
+          })
+        });
+        
+        if (!res.ok) throw new Error(await res.text());
+        
+        modal.remove();
+        window.showManageUsersModal(clientName); // Refresh
+      } catch (err) {
+        alert('Error reactivating user: ' + err.message);
+      }
+    };
+  });
+
+  // Delete user (Nexus only)
+  modal.querySelectorAll('.delete-user').forEach(btn => {
+    btn.onclick = async function() {
+      const targetUsername = btn.getAttribute('data-username');
+      if (!confirm(`PERMANENTLY DELETE user "${targetUsername}"? This cannot be undone!`)) return;
+      
+      const currentUser = getCurrentUser();
+      try {
+        const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            subdomain: currentUser.subdomain,
+            username: currentUser.username,
+            targetUsername 
+          })
+        });
+        
+        if (!res.ok) throw new Error(await res.text());
+        
+        modal.remove();
+        window.showManageUsersModal(clientName); // Refresh
+      } catch (err) {
+        alert('Error deleting user: ' + err.message);
+      }
     };
   });
 
   // Reset password
   modal.querySelectorAll('.reset-password').forEach(btn => {
     btn.onclick = async function() {
-      const username = btn.getAttribute('data-username');
-      if (!confirm(`Generate a password reset code for "${username}"?`)) return;
-      const resetCode = generateResetCode();
-      await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/reset-user-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientName, username, resetCode })
-      });
-      alert(`Password reset code for ${username}: ${resetCode}\n\nSend this code to the user. They will be prompted to enter it and set a new password on next login.`);
-      modal.remove();
-      window.showManageUsersModal(clientName); // Refresh
+      const targetUsername = btn.getAttribute('data-username');
+      const newPassword = prompt(`Enter new password for "${targetUsername}":`);
+      if (!newPassword) return;
+      
+      const currentUser = getCurrentUser();
+      try {
+        const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/reset-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            subdomain: currentUser.subdomain,
+            username: targetUsername,
+            newPassword 
+          })
+        });
+        
+        if (!res.ok) throw new Error(await res.text());
+        
+        alert(`Password reset successfully for ${targetUsername}`);
+        modal.remove();
+        window.showManageUsersModal(clientName); // Refresh
+      } catch (err) {
+        alert('Error resetting password: ' + err.message);
+      }
     };
   });
 
   // Add user
   modal.querySelector('#add-user-form').onsubmit = async (e) => {
     e.preventDefault();
-    const first_name = modal.querySelector('#first_name').value.trim();
-    const last_name = modal.querySelector('#last_name').value.trim();
-    const password = modal.querySelector('#password').value.trim();
+    const firstName = modal.querySelector('#firstName').value.trim();
+    const lastName = modal.querySelector('#lastName').value.trim();
+    const newPassword = modal.querySelector('#newPassword').value.trim();
     const role = modal.querySelector('#role').value;
-    const username = `${first_name[0]}${last_name}`.toLowerCase() + '@' + slugify(clientName);
+    const newUsername = `${firstName[0]}${lastName}`.toLowerCase() + '@' + getSubdomain();
 
-    await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/add-user", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        clientName,
-        first_name,
-        last_name,
-        password,
-        role,
-        username
-      })
-    });
-    modal.remove();
-    window.showManageUsersModal(clientName); // Refresh
+    const currentUser = getCurrentUser();
+    try {
+      const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subdomain: currentUser.subdomain,
+          username: currentUser.username,
+          newUsername,
+          newPassword,
+          role
+        })
+      });
+      
+      if (!res.ok) throw new Error(await res.text());
+      
+      alert(`User created successfully!\nUsername: ${newUsername}\nPassword: ${newPassword}`);
+      modal.remove();
+      window.showManageUsersModal(clientName); // Refresh
+    } catch (err) {
+      alert('Error creating user: ' + err.message);
+    }
   };
 
   // --- BULK ADD USERS ---
@@ -213,26 +317,33 @@ function showBulkAddUsersModal(clientName) {
     const textarea = modal.querySelector('#bulk-users-textarea');
     const lines = textarea.value.trim().split('\n').filter(Boolean);
     if (!lines.length) return;
+    
+    const currentUser = getCurrentUser();
     let added = 0, failed = 0;
+    
     for (const line of lines) {
-      const [first_name, last_name, role] = line.split(',').map(s => s.trim());
-      if (!first_name || !last_name || !role) { failed++; continue; }
-      const username = `${first_name[0]}${last_name}`.toLowerCase() + '@' + slugify(clientName);
+      const [firstName, lastName, role] = line.split(',').map(s => s.trim());
+      if (!firstName || !lastName || !role) { failed++; continue; }
+      const newUsername = `${firstName[0]}${lastName}`.toLowerCase() + '@' + currentUser.subdomain;
+      const defaultPassword = currentUser.subdomain; // Use subdomain as default password
+      
       try {
-        await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/add-user", {
+        const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            clientName,
-            first_name,
-            last_name,
-            password: '', // Backend should assign default password
-            role,
-            username
+            subdomain: currentUser.subdomain,
+            username: currentUser.username,
+            newUsername,
+            newPassword: defaultPassword,
+            role
           })
         });
+        
+        if (!res.ok) throw new Error(await res.text());
         added++;
       } catch (e) {
+        console.error('Error adding user:', e);
         failed++;
       }
     }
