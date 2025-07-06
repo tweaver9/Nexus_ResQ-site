@@ -27,11 +27,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Sidebar role-based visibility
   const roleButtonMap = {
-    admin:    ['home', 'users', 'assets', 'inspections', 'logs', 'analytics', 'assignments', 'billing', 'help'],
-    manager:  ['home', 'users', 'assets', 'inspections', 'logs', 'analytics', 'assignments', 'help'],
-    user:     ['home', 'inspections', 'logs', 'analytics', 'assignments', 'help'],
+    admin:    ['home', 'assets', 'users', 'logs', 'analytics', 'billing', 'site-settings', 'help'],
+    manager:  ['home', 'assets', 'users', 'logs', 'analytics', 'site-settings', 'help'],
+    user:     ['home', 'assets', 'logs', 'analytics', 'help'],
     nexus:    [
-      'home', 'users', 'assets', 'inspections', 'logs', 'analytics', 'assignments', 'billing', 'help',
+      'home', 'assets', 'users', 'logs', 'analytics', 'billing', 'site-settings', 'help',
       'firebase', 'onboard'
     ]
   };

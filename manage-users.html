@@ -82,30 +82,37 @@
 
     /* === MAIN CONTENT === */
     .main-container {
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 3rem 2rem;
+      padding: 1rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     /* === MANAGEMENT CARDS === */
     .management-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 2rem;
-      margin-bottom: 3rem;
+      margin-bottom: 1.5rem;
       max-width: 1000px;
+      width: 100%;
+      justify-items: center;
     }
 
     .management-card {
       background: var(--gradient);
       border: 1px solid var(--nexus-border);
       border-radius: var(--radius);
-      padding: 2.5rem;
+      padding: 2rem;
       box-shadow: var(--shadow-light);
       transition: all 0.2s ease;
       position: relative;
       overflow: hidden;
-      min-height: 280px;
+      min-height: 250px;
+      width: 100%;
+      max-width: 360px;
     }
 
     .management-card::before {
@@ -216,7 +223,7 @@
       }
 
       .main-container {
-        padding: 2rem 1rem;
+        padding: 1rem;
       }
 
       .management-grid {
@@ -684,6 +691,7 @@
         <p class="card-description">Reset passwords, modify permissions, and manage user access levels.</p>
         <div class="card-actions">
           <button class="action-btn" id="resetPasswordBtn">Reset Passwords</button>
+          <button class="action-btn secondary" id="bulkAddUserBtn">Bulk Import</button>
         </div>
       </div>
 
@@ -693,7 +701,6 @@
         <h2 class="card-title">Bulk Operations</h2>
         <p class="card-description">Perform bulk operations including CSV import and batch user removal.</p>
         <div class="card-actions">
-          <button class="action-btn secondary" id="bulkAddUserBtn">Bulk Import</button>
           <button class="action-btn danger" id="bulkRemoveBtn">Bulk Remove</button>
         </div>
       </div>
