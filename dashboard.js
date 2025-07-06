@@ -48,8 +48,10 @@ window.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       // Skip onboard button - it has its own handler for redirect
       if (btn.id === 'btn-onboard') return;
-      // Skip users button - it has its own handler for modal
+      // Skip users button - it has its own handler for redirect
       if (btn.id === 'btn-users') return;
+      // Skip assets button - it has its own handler for redirect
+      if (btn.id === 'btn-assets') return;
       
       document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -653,10 +655,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // --- MANAGE USERS FUNCTIONALITY ---
   document.getElementById('btn-users').addEventListener('click', function() {
-    document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-users').classList.add('active');
-    const clientName = sessionStorage.getItem('tenant_id');
-    window.showManageUsersModal(clientName);
+    // Redirect to the modernized manage users page
+    window.location.href = 'manage-users.html';
+  });
+
+  // --- MANAGE ASSETS FUNCTIONALITY ---
+  document.getElementById('btn-assets').addEventListener('click', function() {
+    // Redirect to the modernized manage assets page
+    window.location.href = 'manage-assets.html';
   });
 
   // --- ONBOARD CLIENT FUNCTIONALITY ---
