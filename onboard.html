@@ -51,6 +51,29 @@
     align-items: flex-start;
     margin: 0;
   }
+  .back-arrow {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.8em;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+  }
+  .back-arrow:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(-2px);
+  }
   .nexus-logo {
     height: 46px;
     width: auto;
@@ -273,6 +296,7 @@
 <body>
 <div class="onboard-root">
   <div class="onboard-left">
+    <button class="back-arrow" onclick="window.location.href='dashboard.html'" title="Back to Dashboard">←</button>
     <img src="logos/nexusresq.jpg" alt="Nexus Res-Q Logo" class="nexus-logo" />
     <div class="onboard-headline">Client Onboarding!</div>
     <div class="feature-blurb">
