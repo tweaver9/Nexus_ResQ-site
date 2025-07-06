@@ -1,22 +1,10 @@
 // manage-assets.js
 
 // ========== FIREBASE IMPORTS ==========
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { db } from './firebase.js';
 import {
-  getFirestore, collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, getDoc
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-// ========== FIREBASE CONFIG ==========
-const firebaseConfig = {
-  apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
-  authDomain: "nexus-res-q.firebaseapp.com",
-  projectId: "nexus-res-q",
-  storageBucket: "nexus-res-q.appspot.com", // CORRECTED
-  messagingSenderId: "203995658810",
-  appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+  collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ========== DEFAULT CATEGORIES ==========
 const DEFAULT_CATEGORIES = [
