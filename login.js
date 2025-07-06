@@ -47,6 +47,9 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
     }
 
     // Store session info as needed
+    sessionStorage.setItem("nexusUser", JSON.stringify(data.user));
+    console.log("User stored in session:", data.user);
+    
     sessionStorage.setItem("tenant_id", subdomain);
     sessionStorage.setItem("username", username);
     sessionStorage.setItem("role", "user");
