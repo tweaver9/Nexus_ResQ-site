@@ -29,13 +29,13 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     try {
-      const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/change-password", {
+      const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          subdomain: tenantId,
           username,
-          newPassword: newPass,
-          tenantId
+          newPassword: newPass
         })
       });
 
