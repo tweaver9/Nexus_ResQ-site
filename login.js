@@ -48,13 +48,13 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
       throw new Error(msg);
     }
 
-    // Store session info as needed
+    // Store session info from backend response
     sessionStorage.setItem("nexusUser", JSON.stringify(data.user));
     console.log("User stored in session:", data.user);
     
     sessionStorage.setItem("tenant_id", subdomain);
-    sessionStorage.setItem("username", username);
-    sessionStorage.setItem("role", "user");
+    sessionStorage.setItem("username", data.user.username);
+    sessionStorage.setItem("role", data.user.role);
 
     window.location.href = "dashboard.html";
   } catch (err) {
@@ -114,10 +114,9 @@ document.getElementById('reset-password-form').onsubmit = async function(e) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        subdomain: clientName,
         username,
-        code,
-        newPassword,
-        clientName
+        newPassword
       })
     });
 
