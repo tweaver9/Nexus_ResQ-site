@@ -605,7 +605,12 @@ window.addEventListener('DOMContentLoaded', () => {
           obj[key] = input.value;
         }
       }
+      onSave(obj);
       cleanup();
+    };
+    document.getElementById('explorer-form-cancel').onclick = cleanup;
+  }
+
   loadFailedAssets();
   loadRecentInspections();
   loadAreaStatuses();
@@ -650,3 +655,17 @@ window.addEventListener('DOMContentLoaded', () => {
     const clientName = sessionStorage.getItem('tenant_id');
     window.showManageUsersModal(clientName);
   });
+
+  // --- ONBOARD CLIENT FUNCTIONALITY ---
+  
+  // Initialize onboard form when panel is shown
+  document.getElementById('btn-onboard').addEventListener('click', () => {
+    if (role !== 'nexus') {
+      alert('Access denied. This feature is restricted to Nexus users.');
+      return;
+    }
+    // Redirect to the standalone onboard page
+    window.location.href = 'onboard.html';
+  });
+
+});
