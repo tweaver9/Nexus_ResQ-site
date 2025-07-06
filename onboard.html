@@ -1066,7 +1066,7 @@ document.getElementById('finishBtn').onclick = async function() {
       firstName: onboardingData.adminFirst,
       lastName: onboardingData.adminLast,
       username: onboardingData.adminUsername,
-      hashedPassword: bcrypt.hashSync(onboardingData.adminPassword, 10),
+      hashedPassword: window.bcrypt.hashSync(onboardingData.adminPassword, 10),
       role: "admin",
       active: true,
       soft_deleted: false,
