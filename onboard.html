@@ -534,6 +534,28 @@ function showStep3() {
                   </div>
                 </div>
               `;
+            } else if (nVal === "yes") {
+              // Show division UUID input fields
+              let divisionInputs = '';
+              divisions.forEach((divName, index) => {
+                divisionInputs += `
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                    <label style="min-width:120px;font-size:1em;margin-bottom:0;">${divName}:</label>
+                    <input type="text" class="customUUIDInput" data-division="${divName}" maxlength="12" placeholder="Enter UUID/code..." style="flex:1;font-family:'Courier New',monospace;" />
+                  </div>
+                `;
+              });
+              nFollow.innerHTML = `
+                <div class="form-row">
+                  <label>Enter your UUID/code for each division (max 12 characters):</label>
+                  <div style="background:#18203a;padding:15px;border-radius:8px;margin-top:8px;">
+                    ${divisionInputs}
+                  </div>
+                  <div style="font-size:0.9em;color:#93a7c6;margin-top:6px;">
+                    These codes will be used to identify locations within each division.
+                  </div>
+                </div>
+              `;
             } else {
               nFollow.innerHTML = '';
             }
@@ -602,14 +624,44 @@ function showStep3() {
 
     // Generate UUIDs if needed
     if (preciseLoc === "yes" && hasNaming === "no" && wantsNexusGen === "yes") {
-      onboardingData.generatedLocationUUIDs = divisions.map((divName, index) => {
-        const uuid = String(index + 1).padStart(3, "0");
+      onboardingData.generatedLocationUUIDs = divisions.map((divName) => {
+        // Generate random 3-digit code (100-999)
+        const uuid = String(Math.floor(Math.random() * 900) + 100);
         return {
           name: divName,
           uuid: uuid,
           subLocationUUID: preciseLoc === "yes" ? "0000" : "0000" // Default for new sub-locations
         };
       });
+    } else if (preciseLoc === "yes" && hasNaming === "yes") {
+      // Collect custom UUIDs from user input
+      const customUUIDs = [];
+      const uuidInputs = document.querySelectorAll('.customUUIDInput');
+      let allValid = true;
+      
+      uuidInputs.forEach(input => {
+        const divisionName = input.getAttribute('data-division');
+        const uuid = input.value.trim();
+        if (!uuid) {
+          alert(`Please enter a UUID/code for ${divisionName}`);
+          allValid = false;
+          return;
+        }
+        if (uuid.length > 12) {
+          alert(`UUID for ${divisionName} must be 12 characters or less`);
+          allValid = false;
+          return;
+        }
+        customUUIDs.push({
+          name: divisionName,
+          uuid: uuid,
+          subLocationUUID: "0000" // Default for new sub-locations
+        });
+      });
+      
+      if (!allValid) return; // Stop form submission if validation fails
+      
+      onboardingData.generatedLocationUUIDs = customUUIDs;
     } else if (preciseLoc === "no") {
       // No precision scanning - use 0000 for all
       onboardingData.generatedLocationUUIDs = divisions.map(divName => ({
@@ -925,7 +977,7 @@ function showStep8() {
       onboardingData.generatedLocationUUIDs.map(loc => {
         const uuidDisplay = loc.uuid === "CUSTOM" ? "Custom naming" : 
                            loc.uuid === "0000" ? "No precision" : 
-                           `UUID: ${loc.uuid}`;
+                           `UUID: <code style="background:#12233d;padding:2px 6px;border-radius:4px;font-family:'Courier New',monospace;">${loc.uuid}</code>`;
         return `<li>${loc.name}: <strong>${uuidDisplay}</strong></li>`;
       }).join('') + `</ul></div>`;
   }
@@ -1134,8 +1186,8 @@ document.getElementById('finishBtn').onclick = async function() {
       questions: onboardingData.customQuestions || {}
     });
 
-    alert("Onboarding Complete! Client and admin user have been saved to Firebase.");
-    location.reload();
+    // Success! Show completion message
+    showOnboardingSuccess(subdomain);
 
   } catch (err) {
     alert("Error saving to Firebase: " + err.message);
@@ -1188,6 +1240,49 @@ function showStep1(isBack = false) {
     }
   });
 }
+
+// Success completion screen
+function showOnboardingSuccess(subdomain) {
+  onboardRight.innerHTML = `
+    <div style="text-align: center; padding: 3rem 2rem;">
+      <div style="font-size: 4rem; color: #28e640; margin-bottom: 1.5rem;">✅</div>
+      <div style="font-size: 2rem; font-weight: 700; color: #fdd835; margin-bottom: 1rem;">
+        Onboarding Complete!
+      </div>
+      <div style="font-size: 1.2rem; color: #ececec; margin-bottom: 1rem; line-height: 1.5;">
+        Your client "${onboardingData.clientName}" has been successfully created and configured.
+      </div>
+      <div style="font-size: 1rem; color: #aaa; margin-bottom: 2.5rem;">
+        Subdomain: <strong style="color: #fdd835;">${subdomain}.nexusresq.com</strong>
+      </div>
+      
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <button onclick="window.location.href='login.html'" 
+                style="background: #fdd835; color: #18203a; border: none; padding: 1rem 2rem; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+          Login to Nexus Res-Q
+        </button>
+        <button onclick="window.location.href='https://www.nexusresq.com'" 
+                style="background: transparent; color: #fdd835; border: 2px solid #fdd835; padding: 1rem 2rem; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+          Return to Homepage
+        </button>
+      </div>
+      
+      <div style="margin-top: 2rem; padding: 1rem; background: rgba(253, 216, 53, 0.1); border-radius: 8px; border-left: 4px solid #fdd835;">
+        <div style="font-size: 1rem; color: #fdd835; font-weight: 600; margin-bottom: 0.5rem;">Next Steps:</div>
+        <div style="font-size: 0.9rem; color: #ccc; line-height: 1.4;">
+          • Use the admin credentials you created to log in<br>
+          • Complete your asset inventory setup<br>
+          • Configure inspection schedules<br>
+          • Add additional users as needed
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Hide the finish button since we're done
+  document.getElementById('finishBtn').style.display = 'none';
+}
+
 </script>
 </body>
 </html>

@@ -2,95 +2,726 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Manage Assets | Nexus Res-Q</title>
+  <title>Site Configuration | Nexus Res-Q</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="CSS/dashboard.css">
   <style>
-    body { background: #0d1b2a; color: #f2f2f2; font-family: 'Oswald', sans-serif; margin: 0; padding: 0; }
-    .assets-header { display: flex; align-items: center; justify-content: space-between; padding: 24px 36px 0 36px; background: #142b47; border-bottom: 2px solid #223052; }
-    .assets-header h1 { color: #fdd835; font-size: 2.2em; font-weight: 600; margin: 0; letter-spacing: 1px; }
-    .assets-header .header-right { display: flex; align-items: center; gap: 24px; }
-    .assets-action-btn { background: #fdd835; color: #142b47; border: none; border-radius: 6px; padding: 8px 20px; font-size: 1.07em; font-family: inherit; font-weight: 600; cursor: pointer; margin-right: 6px; transition: background 0.16s, color 0.16s; }
-    .assets-action-btn:hover { background: #ffe066; }
-    .assets-container { max-width: 1180px; margin: 32px auto 0 auto; padding: 0 16px 48px 16px; }
-    .assets-toolbar { display: flex; align-items: center; gap: 24px; margin-bottom: 18px; }
-    .assets-toolbar input[type="search"] { font-size: 1em; padding: 6px 12px; border-radius: 7px; border: 1px solid #344267; background: #192841; color: #fff; width: 220px; outline: none; }
-    .assets-table { width: 100%; border-collapse: collapse; background: #16243c; border-radius: 14px; overflow: hidden; box-shadow: 0 6px 32px 0 #0a1322c5; margin-top: 6px; }
-    .assets-table th, .assets-table td { padding: 14px 8px; text-align: left; }
-    .assets-table th { background: #223052; color: #fdd835; font-weight: 600; font-size: 1.08em; }
-    .assets-table tr { border-bottom: 1px solid #223052; transition: background 0.18s; }
-    .assets-table tr:hover { background: #1e2f4b; }
-    .status-badge { display: inline-block; border-radius: 5px; padding: 2px 9px; font-size: 0.95em; font-weight: 600; }
-    .status-inservice { background: #28e64033; color: #28e640; }
-    .status-outofservice { background: #ff505022; color: #ff5050; }
-    .status-failed { background: #ffd83533; color: #fdd835; }
-    .status-moved { background: #bbb; color: #444; }
-    .action-btn { background: #142b47; color: #fdd835; border: none; border-radius: 6px; padding: 5px 15px; font-size: 1em; font-family: inherit; font-weight: 500; cursor: pointer; margin-right: 8px; transition: background 0.15s, color 0.15s; }
-    .action-btn:hover { background: #fdd835; color: #142b47; }
-    #modal-root { position: fixed; left:0;top:0;width:100vw;height:100vh;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(14,16,32,.78);}
-    .modal-content {
-      background: #1e2f3c;
+    :root {
+      --nexus-yellow: #fdd835;
+      --nexus-bg: #0d1b2a;
+      --nexus-card: #142b47;
+      --nexus-dark: #0a1322;
+      --nexus-input: #192841;
+      --nexus-border: #223052;
+      --nexus-light: #f2f2f2;
+      --nexus-muted: #93a7c6;
+      --nexus-success: #28e640;
+      --nexus-error: #ff5050;
+      --nexus-warning: #ffd835;
+      --radius: 12px;
+      --shadow-light: 0 4px 20px rgba(0,0,0,0.15);
+      --shadow-heavy: 0 8px 40px rgba(10,19,34,0.4);
+      --gradient: linear-gradient(135deg, #142b47 0%, #1c3050 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body { 
+      background: var(--nexus-bg); 
+      color: var(--nexus-light); 
+      font-family: 'Oswald', -apple-system, BlinkMacSystemFont, sans-serif; 
+      margin: 0; 
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    /* === HEADER === */
+    .site-header { 
+      background: var(--gradient);
+      border-bottom: 1px solid var(--nexus-border);
+      box-shadow: var(--shadow-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .site-title { 
+      color: var(--nexus-yellow); 
+      font-size: 2.5rem; 
+      font-weight: 700; 
+      margin: 0; 
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .header-subtitle {
+      color: var(--nexus-muted);
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin-top: 0.25rem;
+    }
+
+    .back-nav {
+      color: var(--nexus-light);
+      text-decoration: none;
+      font-family: inherit;
+      font-weight: 400;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .back-nav:hover {
+      color: var(--nexus-yellow);
+      text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);
+    }
+
+    /* === MAIN CONTENT === */
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    /* === CONFIGURATION CARDS === */
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .config-card {
+      background: var(--gradient);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-light);
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .config-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--nexus-yellow);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .config-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-heavy);
+      border-color: var(--nexus-yellow);
+    }
+
+    .config-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .card-title {
+      color: var(--nexus-yellow);
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .card-description {
+      color: var(--nexus-muted);
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      background: var(--nexus-yellow);
+      color: var(--nexus-bg);
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.75rem 1.25rem;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(253, 216, 53, 0.3);
+    }
+
+    .action-btn:hover {
+      background: #ffe066;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(253, 216, 53, 0.4);
+    }
+
+    .action-btn.secondary {
+      background: transparent;
+      color: var(--nexus-yellow);
+      border: 2px solid var(--nexus-yellow);
+      box-shadow: none;
+    }
+
+    .action-btn.secondary:hover {
+      background: var(--nexus-yellow);
+      color: var(--nexus-bg);
+    }
+
+    .action-btn.danger {
+      background: var(--nexus-error);
+      color: white;
+      box-shadow: 0 2px 8px rgba(255, 80, 80, 0.3);
+    }
+
+    .action-btn.danger:hover {
+      background: #ff3333;
+      box-shadow: 0 4px 16px rgba(255, 80, 80, 0.4);
+    }
+
+    /* === DATA TABLE === */
+    .data-section {
+      background: var(--gradient);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-light);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--nexus-border);
+    }
+
+    .section-title {
+      color: var(--nexus-yellow);
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .search-container {
+      position: relative;
+      max-width: 300px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      border: 2px solid var(--nexus-border);
+      border-radius: var(--radius);
+      background: var(--nexus-input);
+      color: var(--nexus-light);
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--nexus-muted);
+      font-size: 1.1rem;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-light);
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--nexus-border);
+    }
+
+    .data-table th {
+      background: var(--nexus-dark);
+      color: var(--nexus-yellow);
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .data-table th:hover {
+      background: var(--nexus-border);
+      color: #ffe066;
+    }
+
+    .data-table th.sortable::after {
+      content: '↕';
+      position: absolute;
+      right: 0.5rem;
+      opacity: 0.5;
+      font-size: 0.8rem;
+    }
+
+    .data-table th.sort-asc::after {
+      content: '↑';
+      opacity: 1;
+      color: var(--nexus-yellow);
+    }
+
+    .data-table th.sort-desc::after {
+      content: '↓';
+      opacity: 1;
+      color: var(--nexus-yellow);
+    }
+
+    .data-table td {
+      font-size: 0.95rem;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    .data-table tr:hover {
+      background: rgba(253, 216, 53, 0.05);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
       border-radius: 20px;
-      padding: 36px 40px;
-      box-shadow: 0 8px 40px 0 #0a1322c5;
-      min-width: 330px; max-width: 480px;
-      display: flex; flex-direction: column; gap: 16px; color: #f2f2f2;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .modal-content h3 { color: #fdd835; margin: 0 0 10px 0; font-size: 1.45em; }
-    .modal-content label { margin-top: 12px; margin-bottom: 3px; font-weight: 600; letter-spacing: .04em; color: #ffe066;}
-    .modal-content input, .modal-content select {
-      padding: 8px 12px; border-radius: 7px; border: 1px solid #344267;
-      background: #232c3c; color: #fff; font-size: 1em; margin-bottom: 6px;
+
+    .status-inservice { background: rgba(40, 230, 64, 0.2); color: var(--nexus-success); }
+    .status-outofservice { background: rgba(255, 80, 80, 0.2); color: var(--nexus-error); }
+    .status-failed { background: rgba(253, 216, 53, 0.2); color: var(--nexus-warning); }
+    .status-moved { background: rgba(147, 167, 198, 0.2); color: var(--nexus-muted); }
+
+    /* === MODALS === */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(13, 27, 42, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 2rem;
     }
-    .modal-content button { margin-top: 14px; }
-    .manage-cats-header { display:flex;justify-content:space-between;align-items:center; }
-    .cat-list {margin-top:14px;}
-    .cat-list-item { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;}
-    .cat-list-item span { flex:1; }
-    .cat-list-item button { font-size:0.95em;padding:2px 12px;margin-left:8px;}
-    .cat-edit-input { width:70%;padding:3px 8px;margin-right:8px;}
-    @media (max-width: 900px) {
-      .assets-header, .assets-container { padding-left: 6px; padding-right: 6px; }
-      .assets-header h1 { font-size: 1.6em; }
-      .assets-table th, .assets-table td { padding: 7px 3px; }
-      .modal-content { padding: 24px 4vw;}
+
+    .modal-content {
+      background: var(--gradient);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-heavy);
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
     }
-    @media (max-width: 600px) {
-      .assets-header { flex-direction: column; align-items: flex-start;}
-      .header-right { flex-direction: column; align-items: flex-start; gap: 10px;}
-      .assets-container { padding: 0 2px; }
-      .assets-table { font-size: 0.97em; }
-      .modal-content { padding:14px 2vw;}
+
+    .modal-header {
+      padding: 2rem 2rem 1rem;
+      border-bottom: 1px solid var(--nexus-border);
+    }
+
+    .modal-title {
+      color: var(--nexus-yellow);
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .modal-body {
+      padding: 2rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 2rem 2rem;
+      border-top: 1px solid var(--nexus-border);
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      color: var(--nexus-yellow);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .form-input,
+    .form-select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid var(--nexus-border);
+      border-radius: var(--radius);
+      background: var(--nexus-input);
+      color: var(--nexus-light);
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+
+    /* === LOADING SYSTEM === */
+    .loading-popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(13, 27, 42, 0.8);
+      backdrop-filter: blur(5px);
+      display: none;
+      z-index: 1999;
+    }
+
+    .loading-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-heavy);
+      z-index: 2000;
+      min-width: 320px;
+      max-width: 90vw;
+      display: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .loading-title {
+      color: var(--nexus-yellow);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .loading-container-bg {
+      width: 100%;
+      height: 32px;
+      background: linear-gradient(135deg, #1a3a5c 0%, #2a4a6c 100%);
+      border: 2px solid #0d2a42;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .loading-liquid {
+      height: 100%;
+      background: linear-gradient(45deg, 
+        var(--nexus-yellow) 0%, 
+        #ffe066 25%, 
+        var(--nexus-yellow) 50%, 
+        #fdd835 75%, 
+        var(--nexus-yellow) 100%);
+      width: 0%;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      border-radius: 14px;
+      animation: liquidSlosh 2s ease-in-out infinite;
+    }
+
+    .loading-liquid::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255,255,255,0.3) 50%, 
+        transparent 100%);
+      animation: liquidFlow 1.5s linear infinite;
+      border-radius: 14px;
+    }
+
+    .loading-liquid::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 14px 14px 0 0;
+      animation: liquidBubble 1.8s ease-in-out infinite;
+    }
+
+    @keyframes liquidSlosh {
+      0%, 100% { 
+        transform: translateY(0px) scaleY(1); 
+      }
+      25% { 
+        transform: translateY(-1px) scaleY(1.05); 
+      }
+      50% { 
+        transform: translateY(1px) scaleY(0.95); 
+      }
+      75% { 
+        transform: translateY(-0.5px) scaleY(1.02); 
+      }
+    }
+
+    @keyframes liquidFlow {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    @keyframes liquidBubble {
+      0%, 100% { 
+        opacity: 0.6; 
+        transform: scaleX(1); 
+      }
+      50% { 
+        opacity: 0.8; 
+        transform: scaleX(0.95); 
+      }
+    }
+
+    .loading-text {
+      color: var(--nexus-muted);
+      font-size: 0.95rem;
+      text-align: center;
+      min-height: 1.2rem;
+      font-weight: 400;
+    }
+
+    /* === ROLE-BASED VISIBILITY === */
+    .nexus-only {
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    body:not(.role-nexus) .nexus-only {
+      display: none;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1024px) {
+      .config-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .site-title {
+        font-size: 2rem;
+      }
+
+      .main-container {
+        padding: 2rem 1rem;
+      }
+
+      .config-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .config-card {
+        padding: 1.5rem;
+      }
+
+      .card-actions {
+        flex-direction: column;
+      }
+
+      .action-btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      .section-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+      }
+
+      .search-container {
+        max-width: none;
+      }
+
+      .modal-content {
+        margin: 1rem;
+        max-width: none;
+      }
+
+      .modal-header,
+      .modal-body,
+      .modal-footer {
+        padding: 1.5rem;
+      }
+
+      .modal-footer {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
-<body>
-  <header class="assets-header">
-    <h1>Manage Assets</h1>
-    <div class="header-right">
-      <button class="assets-action-btn" id="addAssetBtn">+ Add Asset</button>
-      <button class="assets-action-btn" id="bulkAddAssetBtn">+ Bulk Add Assets</button>
-      <button class="assets-action-btn" id="bulkDeleteAssetBtn">+ Bulk Delete Assets</button>
-      <button class="assets-action-btn" id="addLocationBtn">+ Add Location</button>
-      <button class="assets-action-btn" id="manageCategoriesBtn">Manage Categories</button>
+<body id="siteConfigBody">
+  <!-- Loading Popup Overlay -->
+  <div class="loading-popup-overlay" id="loadingOverlay"></div>
+  
+  <!-- Loading Popup -->
+  <div id="loadingPopup" class="loading-popup">
+    <div class="loading-title">Processing Configuration</div>
+    <div class="loading-container-bg">
+      <div class="loading-liquid" id="loadingBar"></div>
+    </div>
+    <div class="loading-text" id="loadingText">Initializing...</div>
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <h1 class="site-title">Site Configuration</h1>
+      <a href="dashboard.html" class="back-nav">← Back to Dashboard</a>
     </div>
   </header>
-  <main>
-    <div class="assets-container">
-      <div class="assets-toolbar">
-        <input type="search" id="assetSearch" placeholder="Search by ID, location, or type...">
+
+  <!-- Main Content -->
+  <main class="main-container">
+    <!-- Configuration Cards -->
+    <div class="config-grid">
+      <!-- Asset Management Card -->
+      <div class="config-card">
+        <span class="card-icon">📦</span>
+        <h2 class="card-title">Asset Management</h2>
+        <p class="card-description">Add, edit, and organize your assets. Import from CSV or create individually with full tracking capabilities.</p>
+        <div class="card-actions">
+          <button class="action-btn" id="addAssetBtn">Add Asset</button>
+          <button class="action-btn secondary" id="bulkAddAssetBtn">Bulk Import</button>
+        </div>
       </div>
-      <table class="assets-table" id="assetsTable">
+
+      <!-- Location Management Card -->
+      <div class="config-card">
+        <span class="card-icon">📍</span>
+        <h2 class="card-title">Location Management</h2>
+        <p class="card-description">Manage your site locations with hierarchical precision. Create zones, buildings, and sub-locations.</p>
+        <div class="card-actions">
+          <button class="action-btn" id="locationsBtn">Explore Locations</button>
+          <button class="action-btn secondary" id="addLocationBtn">Add Location</button>
+        </div>
+      </div>
+
+      <!-- System Configuration Card -->
+      <div class="config-card">
+        <span class="card-icon">⚙️</span>
+        <h2 class="card-title">Site Configuration</h2>
+        <p class="card-description">Configure asset categories, inspection parameters, and system-wide settings.</p>
+        <div class="card-actions">
+          <button class="action-btn" id="manageCategoriesBtn">Manage Categories</button>
+        </div>
+      </div>
+
+      <!-- Advanced Tools Card (Nexus Only) -->
+      <div class="config-card nexus-only">
+        <span class="card-icon">🔧</span>
+        <h2 class="card-title">Advanced Tools</h2>
+        <p class="card-description">Advanced system administration tools for bulk operations and system maintenance.</p>
+        <div class="card-actions">
+          <button class="action-btn danger" id="bulkDeleteAssetBtn">Bulk Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset Data Table -->
+    <div class="data-section">
+      <div class="section-header">
+        <h2 class="section-title">Recent Inspections</h2>
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input type="search" id="assetSearch" class="search-input" placeholder="Search assets...">
+        </div>
+      </div>
+      <table class="data-table" id="assetsTable">
         <thead>
           <tr>
-            <th>Status</th>
-            <th>Asset ID</th>
-            <th>Type</th>
-            <th>Location</th>
-            <th>Assigned User</th>
-            <th>Last Inspected By</th>
-            <th>Last Inspection</th>
+            <th class="sortable" data-column="status">Status</th>
+            <th class="sortable" data-column="asset_id">Asset ID</th>
+            <th class="sortable" data-column="type">Type</th>
+            <th class="sortable" data-column="location">Location</th>
+            <th class="sortable" data-column="assigned_user">Assigned User</th>
+            <th class="sortable" data-column="last_inspected_by">Last Inspected By</th>
+            <th class="sortable" data-column="last_inspection_date">Last Inspection</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -101,12 +732,14 @@
       <div id="noAssetsMsg" style="margin-top:20px; color:#fdd835; text-align:center; display:none;">No assets found in this area.</div>
     </div>
   </main>
-  <div id="modal-root"></div>
+
+  <!-- Modal Container -->
+  <div id="modal-root" class="modal-overlay"></div>
   <script type="module">
     // ----------- FIREBASE IMPORTS -----------
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import {
-      getFirestore, collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, getDoc
+      getFirestore, collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, getDoc, setDoc
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     // ----------- YOUR FIREBASE CONFIG HERE -----------
@@ -170,6 +803,7 @@
     let assetCategoriesLastSync = 0; // timestamp
     let locationsCache = {};
     let assetTypesCache = {}; // legacy
+    let currentSort = { column: null, direction: 'asc' };
 
     // ========== DOM ==========
     const assetsTableBody = document.getElementById('assetsTableBody');
@@ -179,7 +813,67 @@
     const addAssetBtn = document.getElementById('addAssetBtn');
     const bulkAddAssetBtn = document.getElementById('bulkAddAssetBtn');
     const addLocationBtn = document.getElementById('addLocationBtn');
+    const locationsBtn = document.getElementById('locationsBtn');
     const manageCategoriesBtn = document.getElementById('manageCategoriesBtn');
+
+    // ========== ROLE DETECTION & LOADING SYSTEM ==========
+    
+    // Role-based UI setup
+    const userRole = sessionStorage.getItem('role');
+    if (userRole === 'nexus') {
+      document.body.classList.add('role-nexus');
+    }
+
+    // Premium loading system
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingPopup = document.getElementById('loadingPopup');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+    
+    let loadingSteps = [];
+    let currentStep = 0;
+
+    function showLoading(steps) {
+      loadingSteps = steps;
+      currentStep = 0;
+      loadingOverlay.style.display = 'block';
+      loadingPopup.style.display = 'block';
+      loadingBar.style.width = '0%';
+      updateLoadingProgress();
+    }
+
+    function updateLoadingProgress() {
+      if (currentStep < loadingSteps.length) {
+        const progress = ((currentStep + 1) / loadingSteps.length) * 100;
+        loadingBar.style.width = progress + '%';
+        loadingText.textContent = loadingSteps[currentStep];
+        currentStep++;
+        
+        if (currentStep < loadingSteps.length) {
+          setTimeout(updateLoadingProgress, 300 + Math.random() * 200);
+        } else {
+          setTimeout(hideLoading, 500);
+        }
+      }
+    }
+
+    function hideLoading() {
+      loadingOverlay.style.display = 'none';
+      loadingPopup.style.display = 'none';
+      loadingSteps = [];
+      currentStep = 0;
+    }
+
+    // Enhanced modal system with premium styling
+    function showModal(content) {
+      modalRoot.innerHTML = content;
+      modalRoot.style.display = 'flex';
+    }
+
+    function hideModal() {
+      modalRoot.style.display = 'none';
+      modalRoot.innerHTML = '';
+    }
 
     // ========== CATEGORY LOADING (HYBRID: FIREBASE, LOCALSTORAGE, DEFAULT) ==========
     async function loadAssetCategories(force=false) {
@@ -220,9 +914,28 @@
       await loadAssetCategories();
       await loadAllAssets();
       assetSearch.addEventListener('input', renderAssets);
+      
+      // Add sorting functionality
+      document.querySelectorAll('.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+          const column = th.getAttribute('data-column');
+          sortTable(column);
+        });
+      });
+      
       addAssetBtn.onclick = showAddAssetModal;
       bulkAddAssetBtn.onclick = showBulkAddAssetModal;
+      
+      // Only add bulk delete handler for nexus users
+      if (isNexusUser()) {
+        const bulkDeleteBtn = document.getElementById('bulkDeleteAssetBtn');
+        if (bulkDeleteBtn) {
+          bulkDeleteBtn.onclick = showBulkDeleteAssetModal;
+        }
+      }
+      
       addLocationBtn.onclick = showAddLocationModal;
+      locationsBtn.onclick = showLocationExplorerModal;
       manageCategoriesBtn.onclick = showManageCategoriesModal;
     });
 
@@ -253,6 +966,50 @@
       return snap.docs.map(d => d.data().name);
     }
 
+    // ========== TABLE SORTING ==========
+    function sortTable(column) {
+      // Toggle sort direction if same column clicked
+      if (currentSort.column === column) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.column = column;
+        currentSort.direction = 'asc';
+      }
+      
+      // Update header indicators
+      document.querySelectorAll('.sortable').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+        if (th.getAttribute('data-column') === column) {
+          th.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+        }
+      });
+      
+      renderAssets();
+    }
+
+    function sortAssets(assets, column, direction) {
+      return assets.sort((a, b) => {
+        let valueA = a[column] || '';
+        let valueB = b[column] || '';
+        
+        // Handle date sorting
+        if (column === 'last_inspection_date') {
+          valueA = valueA ? new Date(valueA) : new Date(0);
+          valueB = valueB ? new Date(valueB) : new Date(0);
+        } else {
+          // Convert to strings for text comparison
+          valueA = String(valueA).toLowerCase();
+          valueB = String(valueB).toLowerCase();
+        }
+        
+        if (direction === 'asc') {
+          return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+        } else {
+          return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
+        }
+      });
+    }
+
     // ========== RENDER TABLE ==========
     function renderAssets() {
       const searchVal = assetSearch.value.trim().toLowerCase();
@@ -266,6 +1023,12 @@
           (row.clientName || '').toLowerCase().includes(searchVal)
         );
       }
+      
+      // Apply sorting if column is selected
+      if (currentSort.column) {
+        filtered = sortAssets(filtered, currentSort.column, currentSort.direction);
+      }
+      
       assetsTableBody.innerHTML = "";
       if (!filtered.length) {
         noAssetsMsg.style.display = "";
@@ -311,67 +1074,104 @@
     // ========== ADD/EDIT ASSET ==========
     function categoryDropdownHtml(selected = "") {
       return `
-        <label>Type</label>
-        <select id="assetCategory" required>
+        <label class="form-label">Asset Type</label>
+        <select id="assetCategory" class="form-select" required>
           ${assetCategories.map(cat => `
             <option value="${cat}" ${cat === selected ? "selected" : ""}>${cat}</option>
           `).join('')}
-          <option value="Other">Other</option>
+          <option value="Other">Other (Custom)</option>
         </select>
-        <input type="text" id="customCategory" placeholder="Enter custom type" style="display:none;margin-top:8px;">
+        <input type="text" id="customCategory" class="form-input" placeholder="Enter custom asset type" style="display:none;margin-top:0.5rem;">
       `;
     }
 
     async function showAddAssetModal() {
       let clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
-      modalRoot.innerHTML = `
+      
+      showModal(`
         <div class="modal-content">
-          <h3>Add Asset</h3>
-          <form id="addAssetForm">
-            <label>Client</label>
-            <select id="assetClient" required>
-              <option value="">Select Client</option>
-              ${clientOptions}
-            </select>
-            <label>Location</label>
-            <select id="assetLocation" required>
-              <option value="">Select Client First</option>
-            </select>
-            ${categoryDropdownHtml()}
-            <label>Asset ID</label>
-            <input type="text" id="assetId" required placeholder="e.g. Hazmat Truck">
-            <label>Assigned User</label>
-            <input type="text" id="assignedUser" placeholder="username">
-            <label>Status</label>
-            <select id="assetStatus">
-              <option value="in_service">In Service</option>
-              <option value="out_of_service">Out of Service</option>
-              <option value="moved">Moved</option>
-            </select>
-            <label>Last Inspected By</label>
-            <input type="text" id="lastInspectedBy" placeholder="username">
-            <label>Last Inspection</label>
-            <input type="date" id="lastInspectionDate">
-            <button class="assets-action-btn" type="submit">Add</button>
-            <button class="action-btn" type="button" id="closeAssetModal">Cancel</button>
-            <span id="assetFormMsg" style="margin-left:10px;color:#fdd835;"></span>
-          </form>
+          <div class="modal-header">
+            <h2 class="modal-title">📦 Add New Asset</h2>
+          </div>
+          <div class="modal-body">
+            <form id="addAssetForm">
+              <div class="form-group">
+                <label class="form-label">Client</label>
+                <select id="assetClient" class="form-select" required>
+                  <option value="">Select Client</option>
+                  ${clientOptions}
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Location</label>
+                <select id="assetLocation" class="form-select" required>
+                  <option value="">Select Client First</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                ${categoryDropdownHtml()}
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Asset ID</label>
+                <input type="text" id="assetId" class="form-input" required placeholder="e.g. Hazmat Truck 01">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Assigned User</label>
+                <input type="text" id="assignedUser" class="form-input" placeholder="Username (optional)">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select id="assetStatus" class="form-select">
+                  <option value="in_service">In Service</option>
+                  <option value="out_of_service">Out of Service</option>
+                  <option value="moved">Moved</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Last Inspected By</label>
+                <input type="text" id="lastInspectedBy" class="form-input" placeholder="Username (optional)">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Last Inspection Date</label>
+                <input type="date" id="lastInspectionDate" class="form-input">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn secondary" type="button" id="closeAssetModal">Cancel</button>
+            <button class="action-btn" type="submit" form="addAssetForm" id="submitAssetBtn">Add Asset</button>
+          </div>
+          <div id="assetFormMsg" style="padding: 0 2rem; color: var(--nexus-yellow); text-align: center; margin-bottom: 1rem;"></div>
         </div>
-      `;
-      modalRoot.style.display = "flex";
-      document.getElementById('closeAssetModal').onclick = () => modalRoot.style.display = "none";
+      `);
+      
+      document.getElementById('closeAssetModal').onclick = hideModal;
       document.getElementById('assetClient').onchange = function() {
         const clientId = this.value;
         const locList = locationsCache[clientId] || [];
         document.getElementById('assetLocation').innerHTML = `<option value="">Select Location</option>` + locList.map(l => `<option value="${l}">${l}</option>`).join('');
       };
-      document.getElementById('assetCategory').onchange = function() {
-        document.getElementById('customCategory').style.display = this.value === "Other" ? "" : "none";
-      };
+      
+      const categorySelect = document.getElementById('assetCategory');
+      if (categorySelect) {
+        categorySelect.onchange = function() {
+          const customInput = document.getElementById('customCategory');
+          if (customInput) {
+            customInput.style.display = this.value === "Other" ? "block" : "none";
+          }
+        };
+      }
+      
       document.getElementById('addAssetForm').onsubmit = async function(e) {
         e.preventDefault();
-        const msg = document.getElementById('assetFormMsg');
-        msg.textContent = "Adding...";
+        
         const clientId = document.getElementById('assetClient').value;
         const location = document.getElementById('assetLocation').value.trim();
         let category = document.getElementById('assetCategory').value;
@@ -441,7 +1241,6 @@
       document.getElementById('bulkAddForm').onsubmit = async function(e) {
         e.preventDefault();
         const msg = document.getElementById('bulkFormMsg');
-        msg.textContent = "Adding...";
         const clientId = document.getElementById('bulkClient').value;
         const location = document.getElementById('bulkLocation').value;
         let category = document.getElementById('assetCategory').value;
@@ -454,6 +1253,17 @@
           msg.style.color = "#ff5050";
           return;
         }
+        
+        // Close modal and show loading for bulk operation
+        modalRoot.style.display = "none";
+        showLoading([
+          'Preparing bulk asset import...',
+          'Validating asset data...',
+          'Creating asset records...',
+          'Updating inventory...',
+          'Finalizing import...'
+        ]);
+        
         try {
           for (let i = 0; i < qty; i++) {
             await addDoc(collection(db, `clients/${clientId}/assets`), {
@@ -464,13 +1274,172 @@
               created_at: serverTimestamp()
             });
           }
-          msg.textContent = "Bulk Added!";
-          msg.style.color = "#28e640";
-          modalRoot.style.display = "none";
           await loadAllAssets();
         } catch (error) {
-          msg.textContent = "Error: " + (error.message || "Unknown error");
-          msg.style.color = "#ff5050";
+          hideLoading();
+          alert("Error: " + (error.message || "Unknown error"));
+        }
+      };
+    }
+
+    // ========== BULK DELETE ==========
+    function showBulkDeleteAssetModal() {
+      let clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
+      modalRoot.innerHTML = `
+        <div class="modal-content">
+          <h3 style="color: #ff5050;">Bulk Delete Assets</h3>
+          <p style="color: #ffa500; margin-bottom: 1rem;">⚠️ This action cannot be undone. Use with extreme caution.</p>
+          <form id="bulkDeleteForm">
+            <label>Client</label>
+            <select id="deleteClient" required>
+              <option value="">Select Client</option>
+              ${clientOptions}
+            </select>
+            <label>Location (Optional - leave blank to delete all)</label>
+            <select id="deleteLocation">
+              <option value="">All Locations</option>
+            </select>
+            <label>Asset Type/Category (Optional)</label>
+            <select id="deleteCategory">
+              <option value="">All Categories</option>
+              ${assetCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+            </select>
+            <label>Status Filter (Optional)</label>
+            <select id="deleteStatus">
+              <option value="">All Statuses</option>
+              <option value="in_service">In Service</option>
+              <option value="out_of_service">Out of Service</option>
+              <option value="decommissioned">Decommissioned</option>
+            </select>
+            <button class="action-btn danger" type="submit">Delete Assets</button>
+            <button class="action-btn" type="button" id="closeBulkDeleteModal">Cancel</button>
+            <span id="bulkDeleteFormMsg" style="margin-left:10px;color:#fdd835;"></span>
+          </form>
+        </div>
+      `;
+      modalRoot.style.display = "flex";
+      
+      document.getElementById('closeBulkDeleteModal').onclick = () => modalRoot.style.display = "none";
+      
+      document.getElementById('deleteClient').onchange = function() {
+        const clientId = this.value;
+        const locList = locationsCache[clientId] || [];
+        document.getElementById('deleteLocation').innerHTML = 
+          `<option value="">All Locations</option>` + 
+          locList.map(l => `<option value="${l}">${l}</option>`).join('');
+      };
+      
+      document.getElementById('bulkDeleteForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const clientId = document.getElementById('deleteClient').value;
+        const location = document.getElementById('deleteLocation').value;
+        const category = document.getElementById('deleteCategory').value;
+        const status = document.getElementById('deleteStatus').value;
+        
+        if (!clientId) {
+          document.getElementById('bulkDeleteFormMsg').textContent = "Please select a client.";
+          document.getElementById('bulkDeleteFormMsg').style.color = "#ff5050";
+          return;
+        }
+        
+        // Confirm the dangerous operation
+        const confirmMsg = `Are you sure you want to delete assets for ${allClients.find(c => c.id === clientId)?.name || clientId}?
+Location: ${location || 'All'}
+Category: ${category || 'All'}
+Status: ${status || 'All'}
+
+This action cannot be undone!`;
+        
+        if (!confirm(confirmMsg)) {
+          return;
+        }
+        
+        // Close modal and show loading for bulk delete
+        modalRoot.style.display = "none";
+        showLoading([
+          'Scanning for matching assets...',
+          'Applying deletion filters...',
+          'Removing asset records...',
+          'Updating inventory counts...',
+          'Cleaning up references...'
+        ]);
+        
+        try {
+          const assetsRef = collection(db, `clients/${clientId}/assets`);
+          let query = assetsRef;
+          
+          // Apply filters
+          if (location) {
+            query = where('location', '==', location);
+          }
+          
+          const snapshot = await getDocs(query);
+          let deletedCount = 0;
+          
+          for (const docSnap of snapshot.docs) {
+            const asset = docSnap.data();
+            let shouldDelete = true;
+            
+            // Apply additional filters
+            if (category && asset.type !== category) shouldDelete = false;
+            if (status && asset.status !== status) shouldDelete = false;
+            
+            if (shouldDelete) {
+              await deleteDoc(doc(db, `clients/${clientId}/assets`, docSnap.id));
+              deletedCount++;
+            }
+          }
+          
+          await loadAllAssets();
+          alert(`Successfully deleted ${deletedCount} assets.`);
+        } catch (error) {
+          hideLoading();
+          alert("Error: " + (error.message || "Unknown error"));
+        }
+      };
+    }
+
+    // ========== BULK DELETE ==========
+    function showBulkDeleteAssetModal() {
+      let clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
+      modalRoot.innerHTML = `
+        <div class="modal-content">
+          <h3 style="color: #ff5050;">Bulk Delete Assets</h3>
+          <p style="color: #ffa500; margin-bottom: 1rem;">⚠️ This action cannot be undone. Use with extreme caution.</p>
+          <form id="bulkDeleteForm">
+            <label>Client</label>
+            <select id="deleteClient" required>
+              <option value="">Select Client</option>
+              ${clientOptions}
+            </select>
+            <button class="action-btn danger" type="submit">Delete Assets</button>
+            <button class="action-btn" type="button" id="closeBulkDeleteModal">Cancel</button>
+          </form>
+        </div>
+      `;
+      modalRoot.style.display = "flex";
+      document.getElementById('closeBulkDeleteModal').onclick = () => modalRoot.style.display = "none";
+      document.getElementById('bulkDeleteForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const clientId = document.getElementById('deleteClient').value;
+        if (!clientId || !confirm('Delete ALL assets for this client? This cannot be undone!')) return;
+        
+        modalRoot.style.display = "none";
+        showLoading([
+          'Scanning assets...',
+          'Removing records...',
+          'Updating inventory...'
+        ]);
+        
+        try {
+          const snapshot = await getDocs(collection(db, `clients/${clientId}/assets`));
+          for (const docSnap of snapshot.docs) {
+            await deleteDoc(doc(db, `clients/${clientId}/assets`, docSnap.id));
+          }
+          await loadAllAssets();
+        } catch (error) {
+          hideLoading();
+          alert("Error: " + error.message);
         }
       };
     }
@@ -674,6 +1643,353 @@
         await loadAssetCategories(true);
         showManageCategoriesModal();
       };
+    }
+
+    // ========== LOCATION EXPLORER MODAL ==========
+    
+    async function showLocationExplorerModal() {
+      // Load all clients with their locations
+      const clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
+      
+      showModal(`
+        <div class="modal-content" style="max-width: 900px; max-height: 80vh;">
+          <div class="modal-header">
+            <h2 class="modal-title">🗂️ Location Explorer</h2>
+          </div>
+          <div class="modal-body" style="max-height: 60vh; overflow: hidden;">
+            <div class="form-group">
+              <label class="form-label">Select Client</label>
+              <select id="explorerClient" class="form-select">
+                <option value="">Choose Client</option>
+                ${clientOptions}
+              </select>
+            </div>
+            <div id="locationExplorer" style="
+              height: 400px; 
+              overflow-y: auto; 
+              border: 2px solid var(--nexus-border); 
+              border-radius: var(--radius); 
+              padding: 1.5rem; 
+              background: var(--nexus-input);
+              margin-top: 1rem;
+            ">
+              <div style="color: var(--nexus-muted); text-align: center; padding: 3rem;">
+                <span style="font-size: 2rem; display: block; margin-bottom: 1rem;">📂</span>
+                Select a client to explore their location hierarchy
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn secondary" type="button" id="closeLocationExplorer">Close Explorer</button>
+          </div>
+        </div>
+      `);
+      
+      document.getElementById('closeLocationExplorer').onclick = hideModal;
+      
+      document.getElementById('explorerClient').onchange = async function() {
+        const clientId = this.value;
+        const container = document.getElementById('locationExplorer');
+        
+        if (!clientId) {
+          container.innerHTML = `
+            <div style="color: var(--nexus-muted); text-align: center; padding: 3rem;">
+              <span style="font-size: 2rem; display: block; margin-bottom: 1rem;">📂</span>
+              Select a client to explore their location hierarchy
+            </div>
+          `;
+          return;
+        }
+        
+        showLoading([
+          'Connecting to client database...',
+          'Loading location structure...',
+          'Building hierarchy tree...',
+          'Organizing location data...'
+        ]);
+        
+        await loadLocationExplorer(clientId);
+      };
+    }
+
+    async function loadLocationExplorer(clientId) {
+      const container = document.getElementById('locationExplorer');
+      
+      try {
+        // Get all locations for this client from Firestore
+        const locationsSnapshot = await getDocs(collection(db, 'clients', clientId, 'locations'));
+        const locations = [];
+        locationsSnapshot.forEach(doc => {
+          if (doc.id !== 'starter') {
+            locations.push({ id: doc.id, ...doc.data() });
+          }
+        });
+
+        if (locations.length === 0) {
+          container.innerHTML = `
+            <div style="color: var(--nexus-muted); text-align: center; padding: 3rem;">
+              <span style="font-size: 2rem; display: block; margin-bottom: 1rem;">📭</span>
+              <strong>No locations found</strong><br>
+              <small>This client hasn't set up any locations yet.</small>
+            </div>
+          `;
+          return;
+        }
+
+        // Organize locations by hierarchy
+        const topLevel = locations.filter(loc => !loc.isSubLocation && !loc.parentLocation);
+        const subLocations = locations.filter(loc => loc.isSubLocation || loc.parentLocation);
+        
+        // Group sub-locations by parent
+        const subLocationsByParent = {};
+        subLocations.forEach(sub => {
+          const parentId = sub.parentLocation;
+          if (!subLocationsByParent[parentId]) {
+            subLocationsByParent[parentId] = [];
+          }
+          subLocationsByParent[parentId].push(sub);
+        });
+
+        container.innerHTML = renderLocationHierarchy(topLevel, subLocationsByParent, clientId);
+        
+      } catch (error) {
+        console.error('Error loading locations:', error);
+        container.innerHTML = '<div style="color: #ff5656; text-align: center; padding: 40px;">Error loading locations: ' + error.message + '</div>';
+      }
+    }
+
+    function renderLocationHierarchy(topLevel, subLocationsByParent, clientId) {
+      return `
+        <div class="location-hierarchy">
+          ${topLevel.map(location => {
+            const hasSubLocations = subLocationsByParent[location.id] && subLocationsByParent[location.id].length > 0;
+            return `
+              <div class="location-folder" style="margin-bottom: 15px;">
+                <div class="location-item-explorer" onclick="handleLocationClick('${clientId}', '${location.id}', '${location.name}', ${hasSubLocations})" 
+                     style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #1e2f4b; border-radius: 8px; cursor: pointer; border-left: 4px solid #fdd835; transition: background 0.2s;">
+                  <div style="font-size: 1.5em;">${hasSubLocations ? '📁' : '📍'}</div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600; color: #fdd835; font-size: 1.1em;">${location.name || location.id}</div>
+                    <div style="color: #93a7c6; font-family: 'Courier New', monospace; font-size: 0.9em;">UUID: ${location.uuid || 'N/A'}</div>
+                    ${hasSubLocations ? '<div style="color: #43ff7a; font-size: 0.8em;">✓ Contains sub-locations</div>' : ''}
+                  </div>
+                  <div style="color: #666;">›</div>
+                </div>
+                ${hasSubLocations ? `
+                  <div class="sub-locations" id="sub-${location.id}" style="margin-left: 30px; margin-top: 8px; display: none;">
+                    ${subLocationsByParent[location.id].map(sub => `
+                      <div class="sub-location-item" onclick="handleSubLocationClick('${clientId}', '${sub.id}', '${sub.name}', '${location.name}')"
+                           style="display: flex; align-items: center; gap: 10px; padding: 8px; background: #16243c; border-radius: 6px; cursor: pointer; margin-bottom: 4px; border-left: 3px solid #93a7c6; transition: background 0.2s;">
+                        <div style="font-size: 1.2em;">📄</div>
+                        <div style="flex: 1;">
+                          <div style="font-weight: 500; color: #e6e6f1;">${sub.name || sub.id}</div>
+                          <div style="color: #93a7c6; font-family: 'Courier New', monospace; font-size: 0.85em;">Code: ${sub.fullLocationCode || sub.uuid || 'N/A'}</div>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <style>
+          .location-item-explorer:hover {
+            background: #223052 !important;
+          }
+          .sub-location-item:hover {
+            background: #1c3050 !important;
+          }
+        </style>
+      `;
+    }
+
+    // Global functions for location click handlers
+    window.handleLocationClick = function(clientId, locationId, locationName, hasSubLocations) {
+      if (hasSubLocations) {
+        // Toggle sub-locations visibility
+        const subContainer = document.getElementById('sub-' + locationId);
+        if (subContainer) {
+          subContainer.style.display = subContainer.style.display === 'none' ? 'block' : 'none';
+        }
+      } else {
+        // Show increase precision modal
+        showIncreasePrecisionModal(clientId, locationId, locationName);
+      }
+    };
+
+    window.handleSubLocationClick = function(clientId, subLocationId, subLocationName, parentName) {
+      // For now, just show an info modal - could be expanded later
+      alert(`Sub-location: ${subLocationName}\nParent: ${parentName}\n\nFuture: This could show asset assignment or further sub-division options.`);
+    };
+
+    function showIncreasePrecisionModal(clientId, locationId, locationName) {
+      modalRoot.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+          <h3>🎯 Increase Precision</h3>
+          <div style="background: #18203a; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #fdd835;">
+            <p style="margin: 0; color: #e6e6f1;"><strong>Location:</strong> ${locationName}</p>
+            <p style="margin: 8px 0 0 0; color: #93a7c6; font-size: 0.9em;">Create sub-locations within this area for more precise asset tracking.</p>
+          </div>
+          
+          <form id="increasePrecisionForm">
+            <label>Sub-location Type:</label>
+            <select id="subLocationType" required style="margin-bottom: 15px;">
+              <option value="">Choose type...</option>
+              <option value="building">Buildings</option>
+              <option value="floor">Floors</option>
+              <option value="room">Rooms</option>
+              <option value="unit">Units</option>
+              <option value="section">Sections</option>
+              <option value="area">Areas</option>
+              <option value="custom">Custom Names</option>
+            </select>
+            
+            <div id="numSubLocationsGroup" style="display: none;">
+              <label>Number of <span id="subLocationLabel"></span>:</label>
+              <input type="number" id="numSubLocations" min="1" max="50" placeholder="Enter number..." style="margin-bottom: 15px;">
+            </div>
+
+            <div id="customSubLocationNames" style="display: none;">
+              <label>Enter custom names:</label>
+              <div id="customNameInputs" style="margin-bottom: 15px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+                  <input type="text" class="customNameInput" placeholder="Sub-location name..." style="flex: 1;">
+                  <button type="button" onclick="addCustomNameInput()" style="background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">+</button>
+                </div>
+              </div>
+            </div>
+            
+            <div id="precisionPreview" style="display: none; background: #16243c; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 2px dashed #344267;">
+              <h4 style="color: #fdd835; margin-top: 0;">Preview:</h4>
+              <div id="previewContent"></div>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+              <button class="assets-action-btn" type="submit" id="createSubLocationsBtn" disabled>Create Sub-Locations</button>
+              <button class="action-btn" type="button" onclick="modalRoot.style.display='none'">Cancel</button>
+            </div>
+            <div id="precisionFormMsg" style="margin-top: 10px; color: #fdd835;"></div>
+          </form>
+        </div>
+      `;
+      
+      // Event handlers for the precision form
+      document.getElementById('subLocationType').onchange = function() {
+        const value = this.value;
+        const numGroup = document.getElementById('numSubLocationsGroup');
+        const customGroup = document.getElementById('customSubLocationNames');
+        const label = document.getElementById('subLocationLabel');
+        
+        if (value === 'custom') {
+          numGroup.style.display = 'none';
+          customGroup.style.display = 'block';
+        } else if (value) {
+          numGroup.style.display = 'block';
+          customGroup.style.display = 'none';
+          label.textContent = value + 's';
+        } else {
+          numGroup.style.display = 'none';
+          customGroup.style.display = 'none';
+        }
+        updatePrecisionPreview();
+      };
+      
+      document.getElementById('numSubLocations').oninput = updatePrecisionPreview;
+      
+      // Add event listeners to existing custom inputs
+      document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('customNameInput')) {
+          updatePrecisionPreview();
+        }
+      });
+      
+      document.getElementById('increasePrecisionForm').onsubmit = async function(e) {
+        e.preventDefault();
+        await createSubLocations(clientId, locationId, locationName);
+      };
+      
+      // Helper functions for precision modal
+      window.addCustomNameInput = function() {
+        const container = document.getElementById('customNameInputs');
+        const newDiv = document.createElement('div');
+        newDiv.style = 'display: flex; gap: 10px; margin-bottom: 8px;';
+        newDiv.innerHTML = `
+          <input type="text" class="customNameInput" placeholder="Sub-location name..." style="flex: 1;">
+          <button type="button" onclick="this.parentElement.remove(); updatePrecisionPreview();" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">−</button>
+        `;
+        container.appendChild(newDiv);
+      };
+      
+      function updatePrecisionPreview() {
+        const subType = document.getElementById('subLocationType').value;
+        const numSubs = parseInt(document.getElementById('numSubLocations').value);
+        const preview = document.getElementById('precisionPreview');
+        const previewContent = document.getElementById('previewContent');
+        const createBtn = document.getElementById('createSubLocationsBtn');
+        
+        if (!subType) {
+          preview.style.display = 'none';
+          createBtn.disabled = true;
+          return;
+        }
+
+        let subLocationNames = [];
+        
+        if (subType === 'custom') {
+          const customInputs = document.querySelectorAll('.customNameInput');
+          customInputs.forEach(input => {
+            const value = input.value.trim();
+            if (value) subLocationNames.push(value);
+          });
+        } else if (numSubs && numSubs > 0) {
+          for (let i = 1; i <= numSubs; i++) {
+            subLocationNames.push(`${subType.charAt(0).toUpperCase() + subType.slice(1)} ${i}`);
+          }
+        }
+
+        if (subLocationNames.length === 0) {
+          preview.style.display = 'none';
+          createBtn.disabled = true;
+          return;
+        }
+
+        // Generate preview with unique 4-digit codes
+        previewContent.innerHTML = `
+          <div style="color: #e6e6f1;">
+            <strong>${locationName}</strong>
+            ${subLocationNames.map(name => {
+              const randomCode = Math.floor(Math.random() * 9000) + 1000; // 4-digit unique code
+              return `<div style="margin-left: 20px; margin-top: 4px;">├── ${name} (${randomCode})</div>`;
+            }).join('')}
+          </div>
+        `;
+        
+        preview.style.display = 'block';
+        createBtn.disabled = false;
+      }
+    }
+
+    async function createSubLocations(clientId, parentLocationId, parentLocationName) {
+      const subType = document.getElementById('subLocationType').value;
+      const numSubs = parseInt(document.getElementById('numSubLocations').value);
+      const msgEl = document.getElementById('precisionFormMsg');
+      const createBtn = document.getElementById('createSubLocationsBtn');
+      
+      let subLocationNames = [];
+      
+      if (subType === 'custom') {
+        const customInputs = document.querySelectorAll('.customNameInput');
+        customInputs.forEach(input => {
+          const value = input.value.trim();
+          if (value) subLocationNames.push(value);
+        });
+      }
+    }
+
+    // ========== HELPER FUNCTIONS ==========
+    function isNexusUser() {
+      return sessionStorage.getItem('role') === 'nexus';
     }
   </script>
 </body>

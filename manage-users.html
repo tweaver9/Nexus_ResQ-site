@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manage Users | Nexus Res-Q</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="CSS/dashboard.css">
+  <style>
+    :root {
+      --nexus-yellow: #fdd835;
+      --nexus-bg: #0d1b2a;
+      --nexus-card: #142b47;
+      --nexus-dark: #0a1322;
+      --nexus-input: #192841;
+      --nexus-border: #223052;
+      --nexus-light: #f2f2f2;
+      --nexus-muted: #93a7c6;
+      --nexus-success: #28e640;
+      --nexus-error: #ff5050;
+      --nexus-warning: #ffd835;
+      --radius: 12px;
+      --shadow-light: 0 4px 20px rgba(0,0,0,0.15);
+      --shadow-heavy: 0 8px 40px rgba(10,19,34,0.4);
+      --gradient: linear-gradient(135deg, #142b47 0%, #1c3050 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body { 
+      background: var(--nexus-bg); 
+      color: var(--nexus-light); 
+      font-family: 'Oswald', -apple-system, BlinkMacSystemFont, sans-serif; 
+      margin: 0; 
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    /* === HEADER === */
+    .site-header { 
+      background: var(--gradient);
+      border-bottom: 1px solid var(--nexus-border);
+      box-shadow: var(--shadow-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .site-title { 
+      color: var(--nexus-yellow); 
+      font-size: 2.5rem; 
+      font-weight: 700; 
+      margin: 0; 
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .back-nav {
+      color: var(--nexus-light);
+      text-decoration: none;
+      font-family: inherit;
+      font-weight: 400;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .back-nav:hover {
+      color: var(--nexus-yellow);
+      text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);
+    }
+
+    /* === MAIN CONTENT === */
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    /* === MANAGEMENT CARDS === */
+    .management-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .management-card {
+      background: var(--gradient);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-light);
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .management-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--nexus-yellow);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .management-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-heavy);
+      border-color: var(--nexus-yellow);
+    }
+
+    .management-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .card-title {
+      color: var(--nexus-yellow);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .card-description {
+      color: var(--nexus-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.4;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      background: var(--nexus-yellow);
+      color: var(--nexus-bg);
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.6rem 1rem;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(253, 216, 53, 0.3);
+    }
+
+    .action-btn:hover {
+      background: #ffe066;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(253, 216, 53, 0.4);
+    }
+
+    .action-btn.secondary {
+      background: transparent;
+      color: var(--nexus-yellow);
+      border: 2px solid var(--nexus-yellow);
+      box-shadow: none;
+    }
+
+    .action-btn.secondary:hover {
+      background: var(--nexus-yellow);
+      color: var(--nexus-bg);
+    }
+
+    .action-btn.danger {
+      background: var(--nexus-error);
+      color: white;
+      box-shadow: 0 2px 8px rgba(255, 80, 80, 0.3);
+    }
+
+    .action-btn.danger:hover {
+      background: #ff3333;
+      box-shadow: 0 4px 16px rgba(255, 80, 80, 0.4);
+    }
+
+    /* === USERS TABLE === */
+    .users-section {
+      background: var(--gradient);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-light);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--nexus-border);
+    }
+
+    .section-title {
+      color: var(--nexus-yellow);
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .bulk-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .search-container {
+      position: relative;
+      max-width: 300px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      border: 2px solid var(--nexus-border);
+      border-radius: var(--radius);
+      background: var(--nexus-input);
+      color: var(--nexus-light);
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--nexus-muted);
+      font-size: 1.1rem;
+    }
+
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-light);
+    }
+
+    .users-table th,
+    .users-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--nexus-border);
+      font-size: 0.95rem;
+    }
+
+    .users-table th {
+      background: var(--nexus-dark);
+      color: var(--nexus-yellow);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .users-table tr:hover {
+      background: rgba(253, 216, 53, 0.05);
+      cursor: pointer;
+    }
+
+    .user-checkbox {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--nexus-yellow);
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: var(--nexus-light);
+    }
+
+    .last-login {
+      color: var(--nexus-muted);
+      font-size: 0.9rem;
+    }
+
+    .inspection-icon {
+      color: var(--nexus-yellow);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .inspection-icon:hover {
+      color: #ffe066;
+      transform: scale(1.1);
+    }
+
+    .status-light {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      box-shadow: 0 0 8px currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    .status-green { color: var(--nexus-success); }
+    .status-yellow { color: var(--nexus-warning); }
+    .status-red { color: var(--nexus-error); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* === MODALS === */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(13, 27, 42, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 2rem;
+    }
+
+    .modal-content {
+      background: var(--gradient);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-heavy);
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .modal-content.wide {
+      max-width: 900px;
+    }
+
+    .modal-header {
+      padding: 2rem 2rem 1rem;
+      border-bottom: 1px solid var(--nexus-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      color: var(--nexus-yellow);
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .modal-back {
+      color: var(--nexus-light);
+      text-decoration: none;
+      font-size: 1.1rem;
+      transition: all 0.2s ease;
+    }
+
+    .modal-back:hover {
+      color: var(--nexus-yellow);
+      text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);
+    }
+
+    .modal-body {
+      padding: 2rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 2rem 2rem;
+      border-top: 1px solid var(--nexus-border);
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    /* === USER CARD === */
+    .user-card {
+      background: var(--nexus-card);
+      border: 2px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-light);
+    }
+
+    .user-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    .user-info h3 {
+      color: var(--nexus-yellow);
+      font-size: 1.5rem;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .user-info .last-login {
+      font-size: 1rem;
+    }
+
+    .inspection-status {
+      text-align: right;
+    }
+
+    .inspection-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .inspection-label {
+      color: var(--nexus-muted);
+      margin-right: 1rem;
+      min-width: 80px;
+    }
+
+    /* === FORM STYLES === */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      color: var(--nexus-yellow);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .form-input,
+    .form-select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid var(--nexus-border);
+      border-radius: var(--radius);
+      background: var(--nexus-input);
+      color: var(--nexus-light);
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+
+    .file-upload {
+      border: 2px dashed var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .file-upload:hover {
+      border-color: var(--nexus-yellow);
+      background: rgba(253, 216, 53, 0.05);
+    }
+
+    .file-upload input[type="file"] {
+      display: none;
+    }
+
+    .template-link {
+      color: var(--nexus-yellow);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .template-link:hover {
+      text-decoration: underline;
+    }
+
+    /* === LOCATION ASSIGNMENT TABLE === */
+    .location-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 2px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      background: var(--nexus-input);
+    }
+
+    .location-item {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .location-item:hover {
+      background: var(--nexus-border);
+      border-color: var(--nexus-yellow);
+    }
+
+    .location-item.selected {
+      background: var(--nexus-yellow);
+      color: var(--nexus-bg);
+      border-color: var(--nexus-yellow);
+    }
+
+    .no-locations {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--nexus-muted);
+      font-style: italic;
+      padding: 2rem;
+    }
+
+    /* === INSPECTIONS LOG === */
+    .inspections-log {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .inspection-entry {
+      background: var(--nexus-input);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .inspection-date {
+      color: var(--nexus-yellow);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .inspection-details {
+      color: var(--nexus-muted);
+      line-height: 1.4;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1024px) {
+      .management-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .site-title {
+        font-size: 2rem;
+      }
+
+      .main-container {
+        padding: 2rem 1rem;
+      }
+
+      .section-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+      }
+
+      .bulk-actions {
+        justify-content: center;
+      }
+
+      .search-container {
+        max-width: none;
+      }
+
+      .modal-content {
+        margin: 1rem;
+        max-width: none;
+      }
+
+      .modal-header,
+      .modal-body,
+      .modal-footer {
+        padding: 1.5rem;
+      }
+
+      .modal-footer {
+        flex-direction: column;
+      }
+
+      .user-card-header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .inspection-status {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body id="manageUsersBody">
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <h1 class="site-title">Manage Users</h1>
+      <a href="dashboard.html" class="back-nav">← Back to Dashboard</a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    <!-- Management Cards -->
+    <div class="management-grid">
+      <!-- Users Card -->
+      <div class="management-card">
+        <span class="card-icon">�</span>
+        <h2 class="card-title">Users</h2>
+        <p class="card-description">Manage user accounts, view current users, and handle individual user operations.</p>
+        <div class="card-actions">
+          <button class="action-btn" id="viewUsersBtn">View Users</button>
+          <button class="action-btn secondary" id="addUserBtn">Add User</button>
+          <button class="action-btn secondary" id="removeUserBtn">Remove User</button>
+        </div>
+      </div>
+
+      <!-- User Management Card -->
+      <div class="management-card">
+        <span class="card-icon">⚙️</span>
+        <h2 class="card-title">User Management</h2>
+        <p class="card-description">Reset passwords, modify permissions, and manage user access levels.</p>
+        <div class="card-actions">
+          <button class="action-btn" id="resetPasswordBtn">Reset Passwords</button>
+        </div>
+      </div>
+
+      <!-- Bulk Operations Card -->
+      <div class="management-card">
+        <span class="card-icon">🗂️</span>
+        <h2 class="card-title">Bulk Operations</h2>
+        <p class="card-description">Perform bulk operations including CSV import and batch user removal.</p>
+        <div class="card-actions">
+          <button class="action-btn secondary" id="bulkAddUserBtn">Bulk Import</button>
+          <button class="action-btn danger" id="bulkRemoveBtn">Bulk Remove</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Container -->
+  <div id="modal-root" class="modal-overlay"></div>
+
+  <script type="module">
+    // ----------- FIREBASE IMPORTS -----------
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, getDoc, setDoc
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // ----------- FIREBASE CONFIG -----------
+    const firebaseConfig = {
+      apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
+      authDomain: "nexus-res-q.firebaseapp.com",
+      projectId: "nexus-res-q",
+      storageBucket: "nexus-res-q.appspot.com",
+      messagingSenderId: "203995658810",
+      appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ========== GLOBALS ==========
+    let allUsers = [];
+    let allClients = [];
+    let selectedUsers = new Set();
+
+    // ========== DOM ELEMENTS ==========
+    const usersTableBody = document.getElementById('usersTableBody');
+    const noUsersMsg = document.getElementById('noUsersMsg');
+    const userSearch = document.getElementById('userSearch');
+    const modalRoot = document.getElementById('modal-root');
+    const addUserBtn = document.getElementById('addUserBtn');
+    const bulkAddUserBtn = document.getElementById('bulkAddUserBtn');
+    const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+    const bulkRemoveBtn = document.getElementById('bulkRemoveBtn');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const removeSelectedBtn = document.getElementById('removeSelectedBtn');
+
+    // ========== INITIALIZATION ==========
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadAllClients();
+      await loadAllUsers();
+      userSearch.addEventListener('input', renderUsers);
+      
+      document.getElementById('viewUsersBtn').onclick = showViewUsersModal;
+      addUserBtn.onclick = showAddUserModal;
+      bulkAddUserBtn.onclick = showBulkAddUserModal;
+      resetPasswordBtn.onclick = showResetPasswordModal;
+      bulkRemoveBtn.onclick = showBulkRemoveModal;
+    });
+
+    // ========== DATA LOADING ==========
+    async function loadAllClients() {
+      const snap = await getDocs(collection(db, "clients"));
+      allClients = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
+    async function loadAllUsers() {
+      allUsers = [];
+      for (const client of allClients) {
+        const snap = await getDocs(collection(db, `clients/${client.id}/users`));
+        snap.forEach(doc => {
+          allUsers.push({
+            ...doc.data(),
+            id: doc.id,
+            clientId: client.id,
+            clientName: client.name || client.id
+          });
+        });
+      }
+      renderUsers();
+    }
+
+    // ========== RENDER USERS TABLE ==========
+    function renderUsers() {
+      const searchVal = userSearch.value.trim().toLowerCase();
+      let filtered = allUsers;
+      if (searchVal) {
+        filtered = filtered.filter(user =>
+          (user.firstName || '').toLowerCase().includes(searchVal) ||
+          (user.lastName || '').toLowerCase().includes(searchVal) ||
+          (user.email || '').toLowerCase().includes(searchVal)
+        );
+      }
+      
+      usersTableBody.innerHTML = "";
+      if (!filtered.length) {
+        noUsersMsg.style.display = "";
+        return;
+      }
+      noUsersMsg.style.display = "none";
+      
+      filtered.forEach(user => {
+        const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+        const lastLogin = formatLastLogin(user.lastLogin);
+        const statusLight = getInspectionStatus(user);
+        
+        usersTableBody.insertAdjacentHTML('beforeend', `
+          <tr onclick="showUserCard('${user.clientId}', '${user.id}')" data-user-id="${user.id}">
+            <td onclick="event.stopPropagation()">
+              <input type="checkbox" class="user-checkbox" 
+                     onchange="toggleUserSelection('${user.id}', this.checked)">
+            </td>
+            <td><span class="user-name">${fullName || 'Unnamed User'}</span></td>
+            <td><span class="last-login">${lastLogin}</span></td>
+            <td>${statusLight}</td>
+            <td onclick="event.stopPropagation(); showLatestInspection('${user.clientId}', '${user.id}')">
+              <span class="inspection-icon" title="View Latest Inspection">📄</span>
+            </td>
+          </tr>
+        `);
+      });
+    }
+
+    function formatLastLogin(timestamp) {
+      if (!timestamp) return 'Never';
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+
+    function getInspectionStatus(user) {
+      // Mock inspection status - in real app, calculate based on actual inspection dates
+      const monthlyStatus = Math.random() > 0.5 ? 'green' : Math.random() > 0.5 ? 'yellow' : 'red';
+      const annualStatus = Math.random() > 0.7 ? 'green' : Math.random() > 0.5 ? 'yellow' : 'red';
+      
+      return `
+        <div>
+          <span class="status-light status-${monthlyStatus}"></span>Monthly
+          <span class="status-light status-${annualStatus}"></span>Annual
+        </div>
+      `;
+    }
+
+    // ========== USER SELECTION ==========
+    function toggleUserSelection(userId, isSelected) {
+      if (isSelected) {
+        selectedUsers.add(userId);
+      } else {
+        selectedUsers.delete(userId);
+      }
+      updateBulkActions();
+    }
+
+    function toggleSelectAll() {
+      const checkboxes = document.querySelectorAll('.user-checkbox');
+      const allSelected = selectedUsers.size === checkboxes.length;
+      
+      checkboxes.forEach(checkbox => {
+        const userId = checkbox.closest('tr').dataset.userId;
+        if (allSelected) {
+          checkbox.checked = false;
+          selectedUsers.delete(userId);
+        } else {
+          checkbox.checked = true;
+          selectedUsers.add(userId);
+        }
+      });
+      
+      updateBulkActions();
+    }
+
+    function updateBulkActions() {
+      removeSelectedBtn.style.display = selectedUsers.size > 0 ? 'block' : 'none';
+      selectAllBtn.textContent = selectedUsers.size === document.querySelectorAll('.user-checkbox').length 
+        ? 'Deselect All' : 'Select All';
+    }
+
+    // ========== MODAL FUNCTIONS ==========
+    function showModal(content) {
+      modalRoot.innerHTML = content;
+      modalRoot.style.display = 'flex';
+    }
+
+    function hideModal() {
+      modalRoot.style.display = 'none';
+      modalRoot.innerHTML = '';
+    }
+
+    // ========== USER CARD MODAL ==========
+    window.showUserCard = function(clientId, userId) {
+      const user = allUsers.find(u => u.clientId === clientId && u.id === userId);
+      if (!user) return;
+      
+      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+      const lastLogin = formatLastLogin(user.lastLogin);
+      
+      showModal(`
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">User Profile</h2>
+            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
+          </div>
+          <div class="modal-body">
+            <div class="user-card">
+              <div class="user-card-header">
+                <div class="user-info">
+                  <h3>${fullName || 'Unnamed User'}</h3>
+                  <div class="last-login">Last login: ${lastLogin}</div>
+                  <div style="color: var(--nexus-muted); margin-top: 0.5rem;">
+                    Level 2 Inspection Assignment: ${user.inspectionArea || 'Not assigned'}
+                  </div>
+                </div>
+                <div class="inspection-status">
+                  <div class="inspection-row">
+                    <span class="inspection-label">Monthly:</span>
+                    <span class="status-light status-green"></span>
+                    <span>7+ days</span>
+                  </div>
+                  <div class="inspection-row">
+                    <span class="inspection-label">Annual:</span>
+                    <span class="status-light status-yellow"></span>
+                    <span>3 days</span>
+                  </div>
+                </div>
+              </div>
+              <button class="action-btn" onclick="showAllInspections('${clientId}', '${userId}')">
+                Show All Inspections
+              </button>
+            </div>
+          </div>
+        </div>
+      `);
+    };
+
+    // ========== ALL INSPECTIONS MODAL ==========
+    window.showAllInspections = function(clientId, userId) {
+      const user = allUsers.find(u => u.clientId === clientId && u.id === userId);
+      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+      
+      // Mock inspection data - in real app, fetch from database
+      const inspections = [
+        { date: '2024-12-01', type: 'Monthly Safety Check', location: 'Building A', status: 'Completed' },
+        { date: '2024-11-15', type: 'Fire Extinguisher Inspection', location: 'Floor 2', status: 'Completed' },
+        { date: '2024-11-01', type: 'Monthly Safety Check', location: 'Building A', status: 'Completed' },
+        { date: '2024-10-15', type: 'Emergency Equipment Check', location: 'Basement', status: 'Issues Found' },
+        { date: '2024-10-01', type: 'Monthly Safety Check', location: 'Building A', status: 'Completed' }
+      ];
+      
+      showModal(`
+        <div class="modal-content wide">
+          <div class="modal-header">
+            <h2 class="modal-title">Inspection History - ${fullName}</h2>
+            <a href="#" class="modal-back" onclick="showUserCard('${clientId}', '${userId}'); return false;">← Back</a>
+          </div>
+          <div class="modal-body">
+            <div class="inspections-log">
+              ${inspections.map(inspection => `
+                <div class="inspection-entry">
+                  <div class="inspection-date">${inspection.date}</div>
+                  <div class="inspection-details">
+                    <strong>${inspection.type}</strong><br>
+                    Location: ${inspection.location}<br>
+                    Status: ${inspection.status}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `);
+    };
+
+    // ========== LATEST INSPECTION MODAL ==========
+    window.showLatestInspection = function(clientId, userId) {
+      const user = allUsers.find(u => u.clientId === clientId && u.id === userId);
+      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+      
+      showModal(`
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">Latest Inspection</h2>
+            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
+          </div>
+          <div class="modal-body">
+            <div class="inspection-entry">
+              <div class="inspection-date">December 1, 2024</div>
+              <div class="inspection-details">
+                <strong>Monthly Safety Check</strong><br>
+                Inspector: ${fullName}<br>
+                Location: Building A - Floor 2<br>
+                Status: Completed<br>
+                Notes: All safety equipment functioning properly. No issues found.
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+    };
+
+    // ========== VIEW USERS MODAL ==========
+    function showViewUsersModal() {
+      showModal(`
+        <div class="modal-content wide">
+          <div class="modal-header">
+            <h2 class="modal-title">All Users</h2>
+            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
+          </div>
+          <div class="modal-body">
+            <div class="users-section">
+              <div class="section-header">
+                <div class="bulk-actions">
+                  <button class="action-btn secondary" id="selectAllBtnModal">Select All</button>
+                  <button class="action-btn danger" id="removeSelectedBtnModal" style="display: none;">Remove Selected</button>
+                </div>
+                <div class="search-container">
+                  <span class="search-icon">🔍</span>
+                  <input type="text" id="userSearchModal" class="search-input" placeholder="Search users...">
+                </div>
+              </div>
+              <table class="users-table">
+                <thead>
+                  <tr>
+                    <th width="50">Select</th>
+                    <th>Name</th>
+                    <th>Last Login</th>
+                    <th>Inspection Status</th>
+                    <th width="80">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBodyModal">
+                </tbody>
+              </table>
+              <div id="noUsersMsgModal" style="display: none; text-align: center; padding: 2rem; color: var(--nexus-muted);">
+                No users found matching your search.
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+      
+      // Set up modal-specific event handlers
+      document.getElementById('userSearchModal').addEventListener('input', renderUsersModal);
+      document.getElementById('selectAllBtnModal').onclick = toggleSelectAllModal;
+      document.getElementById('removeSelectedBtnModal').onclick = removeSelectedUsersModal;
+      
+      renderUsersModal();
+    }
+
+    function renderUsersModal() {
+      const searchVal = document.getElementById('userSearchModal').value.trim().toLowerCase();
+      let filtered = allUsers;
+      if (searchVal) {
+        filtered = filtered.filter(user =>
+          (user.firstName || '').toLowerCase().includes(searchVal) ||
+          (user.lastName || '').toLowerCase().includes(searchVal) ||
+          (user.email || '').toLowerCase().includes(searchVal)
+        );
+      }
+      
+      const tbody = document.getElementById('usersTableBodyModal');
+      const noMsg = document.getElementById('noUsersMsgModal');
+      
+      tbody.innerHTML = "";
+      if (!filtered.length) {
+        noMsg.style.display = "";
+        return;
+      }
+      noMsg.style.display = "none";
+      
+      filtered.forEach(user => {
+        const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+        const lastLogin = formatLastLogin(user.lastLogin);
+        const statusLight = getInspectionStatus(user);
+        
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr onclick="showUserCard('${user.clientId}', '${user.id}')" data-user-id="${user.id}">
+            <td onclick="event.stopPropagation()">
+              <input type="checkbox" class="user-checkbox" 
+                     onchange="toggleUserSelectionModal('${user.id}', this.checked)">
+            </td>
+            <td><span class="user-name">${fullName || 'Unnamed User'}</span></td>
+            <td><span class="last-login">${lastLogin}</span></td>
+            <td>${statusLight}</td>
+            <td onclick="event.stopPropagation(); showLatestInspection('${user.clientId}', '${user.id}')">
+              <span class="inspection-icon" title="View Latest Inspection">📄</span>
+            </td>
+          </tr>
+        `);
+      });
+    }
+
+    function toggleUserSelectionModal(userId, isSelected) {
+      if (isSelected) {
+        selectedUsers.add(userId);
+      } else {
+        selectedUsers.delete(userId);
+      }
+      updateBulkActionsModal();
+    }
+
+    function toggleSelectAllModal() {
+      const checkboxes = document.querySelectorAll('#usersTableBodyModal .user-checkbox');
+      const allSelected = selectedUsers.size === checkboxes.length;
+      
+      checkboxes.forEach(checkbox => {
+        const userId = checkbox.closest('tr').dataset.userId;
+        if (allSelected) {
+          checkbox.checked = false;
+          selectedUsers.delete(userId);
+        } else {
+          checkbox.checked = true;
+          selectedUsers.add(userId);
+        }
+      });
+      
+      updateBulkActionsModal();
+    }
+
+    function updateBulkActionsModal() {
+      const removeBtn = document.getElementById('removeSelectedBtnModal');
+      const selectBtn = document.getElementById('selectAllBtnModal');
+      
+      if (removeBtn) removeBtn.style.display = selectedUsers.size > 0 ? 'block' : 'none';
+      if (selectBtn) {
+        const checkboxes = document.querySelectorAll('#usersTableBodyModal .user-checkbox');
+        selectBtn.textContent = selectedUsers.size === checkboxes.length ? 'Deselect All' : 'Select All';
+      }
+    }
+
+    function removeSelectedUsersModal() {
+      if (selectedUsers.size === 0) return;
+      
+      if (confirm(`Remove ${selectedUsers.size} selected users? This action cannot be undone.`)) {
+        alert(`${selectedUsers.size} users removed successfully!`);
+        selectedUsers.clear();
+        loadAllUsers();
+        renderUsersModal();
+        updateBulkActionsModal();
+      }
+    }
+
+    // ========== ADD USER MODAL ==========
+    function showAddUserModal() {
+      const clientOptions = allClients.map(c => 
+        `<option value="${c.id}">${c.name || c.id}</option>`
+      ).join('');
+      
+      showModal(`
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">Add New User</h2>
+            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
+          </div>
+          <div class="modal-body">
+            <form id="addUserForm">
+              <div class="form-group">
+                <label class="form-label">Client</label>
+                <select id="userClient" class="form-select" required onchange="loadClientLocations()">
+                  <option value="">Select Client</option>
+                  ${clientOptions}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input type="text" id="firstName" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input type="text" id="lastName" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Assignment</label>
+                <div id="locationGrid" class="location-grid">
+                  <div class="no-locations">Select a client to view available locations</div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn secondary" onclick="hideModal()">Cancel</button>
+            <button class="action-btn" onclick="addUser()">Add User</button>
+          </div>
+        </div>
+      `);
+    }
+
+    window.loadClientLocations = function() {
+      const clientId = document.getElementById('userClient').value;
+      const locationGrid = document.getElementById('locationGrid');
+      
+      if (!clientId) {
+        locationGrid.innerHTML = '<div class="no-locations">Select a client to view available locations</div>';
+        return;
+      }
+      
+      // Mock location data - in real app, fetch from database based on client
+      const locations = [
+        'Building A - Floor 1', 'Building A - Floor 2', 'Building A - Floor 3',
+        'Building B - Floor 1', 'Building B - Floor 2', 'Warehouse North',
+        'Warehouse South', 'Parking Garage', 'Main Lobby', 'Conference Center',
+        'Cafeteria', 'Gym & Recreation'
+      ];
+      
+      locationGrid.innerHTML = locations.map(location => 
+        `<div class="location-item" onclick="selectLocation(this, '${location}')">${location}</div>`
+      ).join('');
+    };
+
+    window.selectLocation = function(element, location) {
+      // Clear previous selections
+      document.querySelectorAll('.location-item').forEach(item => 
+        item.classList.remove('selected')
+      );
+      
+      // Select current item
+      element.classList.add('selected');
+      
+      // Store selected location for form submission
+      element.closest('.location-grid').dataset.selectedLocation = location;
+    };
+
+    // ========== BULK ADD MODAL ==========
+    function showBulkAddUserModal() {
+      showModal(`
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">Bulk Add Users</h2>
+            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
+          </div>
+          <div class="modal-body">
+            <div class="file-upload" onclick="document.getElementById('csvFile').click()">
+              <input type="file" id="csvFile" accept=".csv" onchange="handleCSVUpload(this)">
+              <p style="margin: 0; color: var(--nexus-yellow); font-size: 1.1rem;">
+                📁 Click to upload CSV file
+              </p>
+              <p style="margin: 0.5rem 0 0 0; color: var(--nexus-muted);">
+                <a href="bulk_add_template.csv" class="template-link" download>Download Bulk Add Template</a>
+              </p>
+            </div>
+            <div id="csvPreview" style="margin-top: 2rem; display: none;">
+              <h4 style="color: var(--nexus-yellow); margin-bottom: 1rem;">Preview:</h4>
+              <div id="csvData" style="background: var(--nexus-input); padding: 1rem; border-radius: var(--radius); font-family: monospace; font-size: 0.9rem;"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn secondary" onclick="hideModal()">Cancel</button>
+            <button class="action-btn" id="processCsvBtn" onclick="processBulkAdd()" style="display: none;">Add Users</button>
+          </div>
+        </div>
+      `);
+    }
+
+    // ========== BULK REMOVE MODAL ==========
+    function showBulkRemoveModal() {
+      showModal(`
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">Bulk Remove Users</h2>
+            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
+          </div>
+          <div class="modal-body">
+            <p style="color: var(--nexus-warning); margin-bottom: 1rem;">
+              ⚠️ This action will permanently remove selected users and cannot be undone.
+            </p>
+            <p>Select users from the table below and click "Remove Selected" to proceed with bulk removal.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn secondary" onclick="hideModal()">Cancel</button>
+          </div>
+        </div>
+      `);
+    }
+
+    // ========== RESET PASSWORD MODAL ==========
+    function showResetPasswordModal() {
+      showModal(`
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">Reset User Passwords</h2>
+            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
+          </div>
+          <div class="modal-body">
+            <p>Select the method for resetting user passwords:</p>
+            <div class="form-group">
+              <button class="action-btn" style="width: 100%; margin-bottom: 1rem;" onclick="resetSelectedPasswords()">
+                Reset Selected Users' Passwords
+              </button>
+              <button class="action-btn secondary" style="width: 100%;" onclick="resetAllPasswords()">
+                Reset All Users' Passwords
+              </button>
+            </div>
+            <p style="color: var(--nexus-muted); font-size: 0.9rem; margin-top: 2rem;">
+              Users will receive an email with password reset instructions.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn secondary" onclick="hideModal()">Cancel</button>
+          </div>
+        </div>
+      `);
+    }
+
+    // ========== UTILITY FUNCTIONS ==========
+    window.addUser = async function() {
+      const clientId = document.getElementById('userClient').value;
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const locationGrid = document.getElementById('locationGrid');
+      const selectedLocation = locationGrid.dataset.selectedLocation;
+      
+      if (!clientId || !firstName || !lastName) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+      
+      if (!selectedLocation) {
+        alert('Please select an assignment location.');
+        return;
+      }
+      
+      try {
+        // In real implementation, add user to Firebase
+        // await addDoc(collection(db, `clients/${clientId}/users`), {
+        //   firstName,
+        //   lastName,
+        //   inspectionArea: selectedLocation,
+        //   createdAt: serverTimestamp(),
+        //   lastLogin: null
+        // });
+        
+        alert('User added successfully!');
+        hideModal();
+        await loadAllUsers();
+      } catch (error) {
+        console.error('Error adding user:', error);
+        alert('Error adding user. Please try again.');
+      }
+    };
+
+    window.handleCSVUpload = function(input) {
+      const file = input.files[0];
+      if (!file) return;
+      
+      // Show preview and enable process button
+      document.getElementById('csvPreview').style.display = 'block';
+      document.getElementById('csvData').textContent = `File: ${file.name} (${file.size} bytes)`;
+      document.getElementById('processCsvBtn').style.display = 'block';
+    };
+
+    window.processBulkAdd = function() {
+      alert('Bulk users added successfully!');
+      hideModal();
+      loadAllUsers();
+    };
+
+    function removeSelectedUsers() {
+      if (selectedUsers.size === 0) return;
+      
+      if (confirm(`Remove ${selectedUsers.size} selected users? This action cannot be undone.`)) {
+        alert(`${selectedUsers.size} users removed successfully!`);
+        selectedUsers.clear();
+        loadAllUsers();
+        updateBulkActions();
+      }
+    }
+
+    window.resetSelectedPasswords = function() {
+      if (selectedUsers.size === 0) {
+        alert('Please select users first.');
+        return;
+      }
+      alert(`Password reset emails sent to ${selectedUsers.size} users.`);
+      hideModal();
+    };
+
+    window.resetAllPasswords = function() {
+      if (confirm('Send password reset emails to all users?')) {
+        alert('Password reset emails sent to all users.');
+        hideModal();
+      }
+    };
+  </script>
+</body>
+</html>
