@@ -51,7 +51,7 @@
     .header-container {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 2rem 2rem;
+      padding: 1.5rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -59,9 +59,9 @@
 
     .site-title { 
       color: var(--nexus-yellow); 
-      font-size: 2.5rem; 
+      font-size: 2rem; 
       font-weight: 700; 
-      margin: 0; 
+      margin: 0.5rem 0 0 0; 
       letter-spacing: 1px;
       text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
@@ -97,20 +97,22 @@
     /* === CONFIGURATION CARDS === */
     .config-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 2rem;
       margin-bottom: 3rem;
+      max-width: 1000px;
     }
 
     .config-card {
       background: var(--gradient);
       border: 1px solid var(--nexus-border);
       border-radius: var(--radius);
-      padding: 2rem;
+      padding: 2.5rem;
       box-shadow: var(--shadow-light);
       transition: all 0.2s ease;
       position: relative;
       overflow: hidden;
+      min-height: 280px;
     }
 
     .config-card::before {
@@ -136,22 +138,22 @@
     }
 
     .card-icon {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
       display: block;
     }
 
     .card-title {
       color: var(--nexus-yellow);
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       font-weight: 600;
-      margin: 0 0 0.5rem 0;
+      margin: 0 0 1rem 0;
     }
 
     .card-description {
       color: var(--nexus-muted);
-      font-size: 1rem;
-      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
       line-height: 1.5;
     }
 
@@ -572,6 +574,7 @@
       .config-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+        max-width: none;
       }
     }
 
@@ -583,7 +586,7 @@
       }
 
       .site-title {
-        font-size: 2rem;
+        font-size: 1.8rem;
       }
 
       .main-container {
@@ -596,7 +599,8 @@
       }
 
       .config-card {
-        padding: 1.5rem;
+        padding: 2rem;
+        min-height: auto;
       }
 
       .card-actions {

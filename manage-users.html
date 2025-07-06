@@ -51,7 +51,7 @@
     .header-container {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 2rem 2rem;
+      padding: 1.5rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -59,9 +59,9 @@
 
     .site-title { 
       color: var(--nexus-yellow); 
-      font-size: 2.5rem; 
+      font-size: 2rem; 
       font-weight: 700; 
-      margin: 0; 
+      margin: 0.5rem 0 0 0; 
       letter-spacing: 1px;
       text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
@@ -90,20 +90,22 @@
     /* === MANAGEMENT CARDS === */
     .management-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
       margin-bottom: 3rem;
+      max-width: 1000px;
     }
 
     .management-card {
       background: var(--gradient);
       border: 1px solid var(--nexus-border);
       border-radius: var(--radius);
-      padding: 1.5rem;
+      padding: 2.5rem;
       box-shadow: var(--shadow-light);
       transition: all 0.2s ease;
       position: relative;
       overflow: hidden;
+      min-height: 280px;
     }
 
     .management-card::before {
@@ -196,179 +198,75 @@
 
     .action-btn.danger:hover {
       background: #ff3333;
+      transform: translateY(-2px);
       box-shadow: 0 4px 16px rgba(255, 80, 80, 0.4);
     }
 
-    /* === USERS TABLE === */
-    .users-section {
-      background: var(--gradient);
-      border: 1px solid var(--nexus-border);
-      border-radius: var(--radius);
-      padding: 2rem;
-      box-shadow: var(--shadow-light);
+    /* === RESPONSIVE === */
+    @media (max-width: 768px) {
+      .header-container {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .site-title {
+        font-size: 1.5rem;
+      }
+
+      .main-container {
+        padding: 2rem 1rem;
+      }
+
+      .management-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .management-card {
+        padding: 2rem;
+        min-height: auto;
+      }
+
+      .card-actions {
+        flex-direction: column;
+      }
+
+      .action-btn {
+        width: 100%;
+        text-align: center;
+      }
     }
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--nexus-border);
-    }
-
-    .section-title {
-      color: var(--nexus-yellow);
-      font-size: 1.8rem;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .bulk-actions {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .search-container {
-      position: relative;
-      max-width: 300px;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 0.75rem 1rem 0.75rem 2.5rem;
-      border: 2px solid var(--nexus-border);
-      border-radius: var(--radius);
-      background: var(--nexus-input);
-      color: var(--nexus-light);
-      font-family: inherit;
-      font-size: 1rem;
-      outline: none;
-      transition: all 0.2s ease;
-    }
-
-    .search-input:focus {
-      border-color: var(--nexus-yellow);
-      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--nexus-muted);
-      font-size: 1.1rem;
-    }
-
-    .users-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--nexus-card);
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow-light);
-    }
-
-    .users-table th,
-    .users-table td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--nexus-border);
-      font-size: 0.95rem;
-    }
-
-    .users-table th {
-      background: var(--nexus-dark);
-      color: var(--nexus-yellow);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .users-table tr:hover {
-      background: rgba(253, 216, 53, 0.05);
-      cursor: pointer;
-    }
-
-    .user-checkbox {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--nexus-yellow);
-    }
-
-    .user-name {
-      font-weight: 600;
-      color: var(--nexus-light);
-    }
-
-    .last-login {
-      color: var(--nexus-muted);
-      font-size: 0.9rem;
-    }
-
-    .inspection-icon {
-      color: var(--nexus-yellow);
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .inspection-icon:hover {
-      color: #ffe066;
-      transform: scale(1.1);
-    }
-
-    .status-light {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      margin-right: 0.5rem;
-      box-shadow: 0 0 8px currentColor;
-      animation: pulse 2s infinite;
-    }
-
-    .status-green { color: var(--nexus-success); }
-    .status-yellow { color: var(--nexus-warning); }
-    .status-red { color: var(--nexus-error); }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-
-    /* === MODALS === */
+    /* === MODAL STYLES === */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(13, 27, 42, 0.85);
-      backdrop-filter: blur(8px);
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      padding: 2rem;
+      backdrop-filter: blur(5px);
     }
 
-    .modal-content {
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
       background: var(--gradient);
       border: 1px solid var(--nexus-border);
       border-radius: var(--radius);
-      box-shadow: var(--shadow-heavy);
-      max-width: 600px;
-      width: 100%;
+      max-width: 95vw;
       max-height: 90vh;
       overflow-y: auto;
+      box-shadow: var(--shadow-heavy);
       position: relative;
-    }
-
-    .modal-content.wide {
-      max-width: 900px;
     }
 
     .modal-header {
@@ -381,21 +279,23 @@
 
     .modal-title {
       color: var(--nexus-yellow);
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       font-weight: 600;
       margin: 0;
     }
 
-    .modal-back {
-      color: var(--nexus-light);
-      text-decoration: none;
-      font-size: 1.1rem;
-      transition: all 0.2s ease;
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--nexus-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      transition: color 0.2s ease;
     }
 
-    .modal-back:hover {
-      color: var(--nexus-yellow);
-      text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);
+    .modal-close:hover {
+      color: var(--nexus-light);
     }
 
     .modal-body {
@@ -410,41 +310,152 @@
       justify-content: flex-end;
     }
 
-    /* === USER CARD === */
-    .user-card {
+    /* === TABLE STYLES === */
+    .users-table-container {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--nexus-input);
+    }
+
+    .users-table th,
+    .users-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--nexus-border);
+    }
+
+    .users-table th {
       background: var(--nexus-card);
+      color: var(--nexus-yellow);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .users-table td {
+      color: var(--nexus-light);
+    }
+
+    .users-table tr:hover td {
+      background: var(--nexus-card);
+    }
+
+    .user-checkbox {
+      accent-color: var(--nexus-yellow);
+    }
+
+    .no-users-msg {
+      text-align: center;
+      color: var(--nexus-muted);
+      padding: 2rem;
+      font-style: italic;
+    }
+
+    .table-controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.75rem;
       border: 2px solid var(--nexus-border);
       border-radius: var(--radius);
-      padding: 2rem;
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow-light);
+      background: var(--nexus-input);
+      color: var(--nexus-light);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s ease;
     }
 
-    .user-card-header {
+    .search-input:focus {
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+
+    .search-input::placeholder {
+      color: var(--nexus-muted);
+    }
+
+    .table-actions {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1.5rem;
+      gap: 0.5rem;
     }
 
-    .user-info h3 {
+    .user-role {
+      background: var(--nexus-yellow);
+      color: var(--nexus-bg);
+      padding: 0.25rem 0.5rem;
+      border-radius: calc(var(--radius) / 2);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .user-role.nexus {
+      background: var(--nexus-error);
+      color: white;
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .user-action-btn {
+      background: none;
+      border: 1px solid var(--nexus-border);
+      color: var(--nexus-muted);
+      padding: 0.25rem 0.5rem;
+      border-radius: calc(var(--radius) / 2);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .user-action-btn:hover {
+      border-color: var(--nexus-yellow);
       color: var(--nexus-yellow);
-      font-size: 1.5rem;
-      margin: 0 0 0.5rem 0;
     }
 
-    .user-info .last-login {
-      font-size: 1rem;
-    }
-
-    .inspection-status {
-      text-align: right;
-    }
-
-    .inspection-row {
+    .inspection-info {
       display: flex;
       align-items: center;
-      margin-bottom: 0.5rem;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: var(--nexus-input);
+      border-radius: var(--radius);
+      border: 1px solid var(--nexus-border);
+    }
+
+    .inspection-icon {
+      font-size: 1.5rem;
+      color: var(--nexus-yellow);
+    }
+
+    .inspection-details {
+      flex: 1;
+    }
+
+    .inspection-name {
+      color: var(--nexus-light);
+      font-weight: 600;
+      margin: 0 0 0.25rem 0;
       font-size: 1rem;
     }
 
@@ -500,149 +511,144 @@
       background: rgba(253, 216, 53, 0.05);
     }
 
-    .file-upload input[type="file"] {
+    .file-upload-input {
       display: none;
     }
 
-    .template-link {
+    .file-upload-label {
       color: var(--nexus-yellow);
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .template-link:hover {
-      text-decoration: underline;
-    }
-
-    /* === LOCATION ASSIGNMENT TABLE === */
-    .location-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      max-height: 200px;
-      overflow-y: auto;
-      border: 2px solid var(--nexus-border);
-      border-radius: var(--radius);
-      padding: 1rem;
-      background: var(--nexus-input);
-    }
-
-    .location-item {
-      background: var(--nexus-card);
-      border: 1px solid var(--nexus-border);
-      border-radius: 6px;
-      padding: 0.75rem;
       cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 0.9rem;
-      text-align: center;
+      font-weight: 600;
     }
 
-    .location-item:hover {
-      background: var(--nexus-border);
-      border-color: var(--nexus-yellow);
-    }
-
-    .location-item.selected {
-      background: var(--nexus-yellow);
-      color: var(--nexus-bg);
-      border-color: var(--nexus-yellow);
-    }
-
-    .no-locations {
-      grid-column: 1 / -1;
-      text-align: center;
+    .file-upload-text {
       color: var(--nexus-muted);
-      font-style: italic;
-      padding: 2rem;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
     }
 
-    /* === INSPECTIONS LOG === */
-    .inspections-log {
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .inspection-entry {
+    .file-preview {
+      margin-top: 1rem;
+      padding: 1rem;
       background: var(--nexus-input);
+      border-radius: var(--radius);
+      border: 1px solid var(--nexus-border);
+    }
+
+    .file-preview-name {
+      color: var(--nexus-light);
+      font-weight: 600;
+    }
+
+    .file-preview-size {
+      color: var(--nexus-muted);
+      font-size: 0.9rem;
+    }
+
+    /* === UTILITY CLASSES === */
+    .text-center { text-align: center; }
+    .text-muted { color: var(--nexus-muted); }
+    .text-success { color: var(--nexus-success); }
+    .text-error { color: var(--nexus-error); }
+    .text-warning { color: var(--nexus-warning); }
+
+    .mb-1 { margin-bottom: 0.5rem; }
+    .mb-2 { margin-bottom: 1rem; }
+    .mb-3 { margin-bottom: 1.5rem; }
+    .mb-4 { margin-bottom: 2rem; }
+
+    .mt-1 { margin-top: 0.5rem; }
+    .mt-2 { margin-top: 1rem; }
+    .mt-3 { margin-top: 1.5rem; }
+    .mt-4 { margin-top: 2rem; }
+
+    .hidden { display: none !important; }
+
+    .loading {
+      position: relative;
+      pointer-events: none;
+    }
+
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 2px solid var(--nexus-border);
+      border-top-color: var(--nexus-yellow);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* === STATUS INDICATORS === */
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+
+    .status-indicator.online {
+      background: var(--nexus-success);
+    }
+
+    .status-indicator.offline {
+      background: var(--nexus-muted);
+    }
+
+    .status-indicator.error {
+      background: var(--nexus-error);
+    }
+
+    /* === TOAST NOTIFICATIONS === */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--gradient);
       border: 1px solid var(--nexus-border);
       border-radius: var(--radius);
-      padding: 1rem;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
+      padding: 1rem 1.5rem;
+      box-shadow: var(--shadow-heavy);
+      color: var(--nexus-light);
+      z-index: 1100;
+      max-width: 400px;
+      transform: translateX(450px);
+      transition: transform 0.3s ease;
     }
 
-    .inspection-date {
-      color: var(--nexus-yellow);
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    .toast.success {
+      border-left: 4px solid var(--nexus-success);
+    }
+
+    .toast.error {
+      border-left: 4px solid var(--nexus-error);
+    }
+
+    .toast.warning {
+      border-left: 4px solid var(--nexus-warning);
+    }
+
+    .toast-title {
       font-weight: 600;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.25rem;
     }
 
-    .inspection-details {
+    .toast-message {
       color: var(--nexus-muted);
-      line-height: 1.4;
-    }
-
-    /* === RESPONSIVE === */
-    @media (max-width: 1024px) {
-      .management-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .header-container {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-      }
-
-      .site-title {
-        font-size: 2rem;
-      }
-
-      .main-container {
-        padding: 2rem 1rem;
-      }
-
-      .section-header {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
-      }
-
-      .bulk-actions {
-        justify-content: center;
-      }
-
-      .search-container {
-        max-width: none;
-      }
-
-      .modal-content {
-        margin: 1rem;
-        max-width: none;
-      }
-
-      .modal-header,
-      .modal-body,
-      .modal-footer {
-        padding: 1.5rem;
-      }
-
-      .modal-footer {
-        flex-direction: column;
-      }
-
-      .user-card-header {
-        flex-direction: column;
-        gap: 1rem;
-      }
-
-      .inspection-status {
-        text-align: left;
-      }
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -661,7 +667,7 @@
     <div class="management-grid">
       <!-- Users Card -->
       <div class="management-card">
-        <span class="card-icon">�</span>
+        <span class="card-icon">👤</span>
         <h2 class="card-title">Users</h2>
         <p class="card-description">Manage user accounts, view current users, and handle individual user operations.</p>
         <div class="card-actions">
@@ -728,6 +734,7 @@
     const modalRoot = document.getElementById('modal-root');
     const addUserBtn = document.getElementById('addUserBtn');
     const bulkAddUserBtn = document.getElementById('bulkAddUserBtn');
+    const removeUserBtn = document.getElementById('removeUserBtn');
     const resetPasswordBtn = document.getElementById('resetPasswordBtn');
     const bulkRemoveBtn = document.getElementById('bulkRemoveBtn');
     const selectAllBtn = document.getElementById('selectAllBtn');
@@ -737,13 +744,14 @@
     window.addEventListener('DOMContentLoaded', async () => {
       await loadAllClients();
       await loadAllUsers();
-      userSearch.addEventListener('input', renderUsers);
+      userSearch && userSearch.addEventListener('input', renderUsers);
       
       document.getElementById('viewUsersBtn').onclick = showViewUsersModal;
-      addUserBtn.onclick = showAddUserModal;
-      bulkAddUserBtn.onclick = showBulkAddUserModal;
-      resetPasswordBtn.onclick = showResetPasswordModal;
-      bulkRemoveBtn.onclick = showBulkRemoveModal;
+      addUserBtn && (addUserBtn.onclick = showAddUserModal);
+      removeUserBtn && (removeUserBtn.onclick = showRemoveUserModal);
+      bulkAddUserBtn && (bulkAddUserBtn.onclick = showBulkAddUserModal);
+      resetPasswordBtn && (resetPasswordBtn.onclick = showResetPasswordModal);
+      bulkRemoveBtn && (bulkRemoveBtn.onclick = showBulkRemoveModal);
     });
 
     // ========== DATA LOADING ==========
@@ -755,617 +763,663 @@
     async function loadAllUsers() {
       allUsers = [];
       for (const client of allClients) {
-        const snap = await getDocs(collection(db, `clients/${client.id}/users`));
-        snap.forEach(doc => {
-          allUsers.push({
-            ...doc.data(),
-            id: doc.id,
-            clientId: client.id,
-            clientName: client.name || client.id
-          });
-        });
+        const usersSnap = await getDocs(collection(db, "clients", client.id, "users"));
+        const clientUsers = usersSnap.docs.map(doc => ({
+          id: doc.id,
+          clientId: client.id,
+          clientName: client.name,
+          ...doc.data()
+        }));
+        allUsers.push(...clientUsers);
       }
-      renderUsers();
     }
 
-    // ========== RENDER USERS TABLE ==========
-    function renderUsers() {
-      const searchVal = userSearch.value.trim().toLowerCase();
-      let filtered = allUsers;
-      if (searchVal) {
-        filtered = filtered.filter(user =>
-          (user.firstName || '').toLowerCase().includes(searchVal) ||
-          (user.lastName || '').toLowerCase().includes(searchVal) ||
-          (user.email || '').toLowerCase().includes(searchVal)
-        );
-      }
-      
-      usersTableBody.innerHTML = "";
-      if (!filtered.length) {
-        noUsersMsg.style.display = "";
-        return;
-      }
-      noUsersMsg.style.display = "none";
-      
-      filtered.forEach(user => {
-        const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-        const lastLogin = formatLastLogin(user.lastLogin);
-        const statusLight = getInspectionStatus(user);
-        
-        usersTableBody.insertAdjacentHTML('beforeend', `
-          <tr onclick="showUserCard('${user.clientId}', '${user.id}')" data-user-id="${user.id}">
-            <td onclick="event.stopPropagation()">
-              <input type="checkbox" class="user-checkbox" 
-                     onchange="toggleUserSelection('${user.id}', this.checked)">
-            </td>
-            <td><span class="user-name">${fullName || 'Unnamed User'}</span></td>
-            <td><span class="last-login">${lastLogin}</span></td>
-            <td>${statusLight}</td>
-            <td onclick="event.stopPropagation(); showLatestInspection('${user.clientId}', '${user.id}')">
-              <span class="inspection-icon" title="View Latest Inspection">📄</span>
-            </td>
-          </tr>
-        `);
-      });
-    }
-
-    function formatLastLogin(timestamp) {
-      if (!timestamp) return 'Never';
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    }
-
-    function getInspectionStatus(user) {
-      // Mock inspection status - in real app, calculate based on actual inspection dates
-      const monthlyStatus = Math.random() > 0.5 ? 'green' : Math.random() > 0.5 ? 'yellow' : 'red';
-      const annualStatus = Math.random() > 0.7 ? 'green' : Math.random() > 0.5 ? 'yellow' : 'red';
-      
-      return `
-        <div>
-          <span class="status-light status-${monthlyStatus}"></span>Monthly
-          <span class="status-light status-${annualStatus}"></span>Annual
-        </div>
-      `;
-    }
-
-    // ========== USER SELECTION ==========
-    function toggleUserSelection(userId, isSelected) {
-      if (isSelected) {
-        selectedUsers.add(userId);
-      } else {
-        selectedUsers.delete(userId);
-      }
-      updateBulkActions();
-    }
-
-    function toggleSelectAll() {
-      const checkboxes = document.querySelectorAll('.user-checkbox');
-      const allSelected = selectedUsers.size === checkboxes.length;
-      
-      checkboxes.forEach(checkbox => {
-        const userId = checkbox.closest('tr').dataset.userId;
-        if (allSelected) {
-          checkbox.checked = false;
-          selectedUsers.delete(userId);
-        } else {
-          checkbox.checked = true;
-          selectedUsers.add(userId);
-        }
-      });
-      
-      updateBulkActions();
-    }
-
-    function updateBulkActions() {
-      removeSelectedBtn.style.display = selectedUsers.size > 0 ? 'block' : 'none';
-      selectAllBtn.textContent = selectedUsers.size === document.querySelectorAll('.user-checkbox').length 
-        ? 'Deselect All' : 'Select All';
-    }
-
-    // ========== MODAL FUNCTIONS ==========
+    // ========== MODAL SYSTEM ==========
     function showModal(content) {
       modalRoot.innerHTML = content;
-      modalRoot.style.display = 'flex';
+      modalRoot.classList.add('active');
+      
+      const closeBtn = modalRoot.querySelector('.modal-close');
+      if (closeBtn) {
+        closeBtn.onclick = closeModal;
+      }
+      
+      modalRoot.onclick = (e) => {
+        if (e.target === modalRoot) closeModal();
+      };
     }
 
-    function hideModal() {
-      modalRoot.style.display = 'none';
-      modalRoot.innerHTML = '';
+    function closeModal() {
+      modalRoot.classList.remove('active');
+      setTimeout(() => {
+        modalRoot.innerHTML = '';
+      }, 300);
     }
 
-    // ========== USER CARD MODAL ==========
-    window.showUserCard = function(clientId, userId) {
-      const user = allUsers.find(u => u.clientId === clientId && u.id === userId);
-      if (!user) return;
-      
-      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-      const lastLogin = formatLastLogin(user.lastLogin);
-      
-      showModal(`
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2 class="modal-title">User Profile</h2>
-            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
-          </div>
-          <div class="modal-body">
-            <div class="user-card">
-              <div class="user-card-header">
-                <div class="user-info">
-                  <h3>${fullName || 'Unnamed User'}</h3>
-                  <div class="last-login">Last login: ${lastLogin}</div>
-                  <div style="color: var(--nexus-muted); margin-top: 0.5rem;">
-                    Level 2 Inspection Assignment: ${user.inspectionArea || 'Not assigned'}
-                  </div>
-                </div>
-                <div class="inspection-status">
-                  <div class="inspection-row">
-                    <span class="inspection-label">Monthly:</span>
-                    <span class="status-light status-green"></span>
-                    <span>7+ days</span>
-                  </div>
-                  <div class="inspection-row">
-                    <span class="inspection-label">Annual:</span>
-                    <span class="status-light status-yellow"></span>
-                    <span>3 days</span>
-                  </div>
-                </div>
-              </div>
-              <button class="action-btn" onclick="showAllInspections('${clientId}', '${userId}')">
-                Show All Inspections
-              </button>
-            </div>
-          </div>
-        </div>
-      `);
-    };
-
-    // ========== ALL INSPECTIONS MODAL ==========
-    window.showAllInspections = function(clientId, userId) {
-      const user = allUsers.find(u => u.clientId === clientId && u.id === userId);
-      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-      
-      // Mock inspection data - in real app, fetch from database
-      const inspections = [
-        { date: '2024-12-01', type: 'Monthly Safety Check', location: 'Building A', status: 'Completed' },
-        { date: '2024-11-15', type: 'Fire Extinguisher Inspection', location: 'Floor 2', status: 'Completed' },
-        { date: '2024-11-01', type: 'Monthly Safety Check', location: 'Building A', status: 'Completed' },
-        { date: '2024-10-15', type: 'Emergency Equipment Check', location: 'Basement', status: 'Issues Found' },
-        { date: '2024-10-01', type: 'Monthly Safety Check', location: 'Building A', status: 'Completed' }
-      ];
-      
-      showModal(`
-        <div class="modal-content wide">
-          <div class="modal-header">
-            <h2 class="modal-title">Inspection History - ${fullName}</h2>
-            <a href="#" class="modal-back" onclick="showUserCard('${clientId}', '${userId}'); return false;">← Back</a>
-          </div>
-          <div class="modal-body">
-            <div class="inspections-log">
-              ${inspections.map(inspection => `
-                <div class="inspection-entry">
-                  <div class="inspection-date">${inspection.date}</div>
-                  <div class="inspection-details">
-                    <strong>${inspection.type}</strong><br>
-                    Location: ${inspection.location}<br>
-                    Status: ${inspection.status}
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-      `);
-    };
-
-    // ========== LATEST INSPECTION MODAL ==========
-    window.showLatestInspection = function(clientId, userId) {
-      const user = allUsers.find(u => u.clientId === clientId && u.id === userId);
-      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-      
-      showModal(`
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2 class="modal-title">Latest Inspection</h2>
-            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
-          </div>
-          <div class="modal-body">
-            <div class="inspection-entry">
-              <div class="inspection-date">December 1, 2024</div>
-              <div class="inspection-details">
-                <strong>Monthly Safety Check</strong><br>
-                Inspector: ${fullName}<br>
-                Location: Building A - Floor 2<br>
-                Status: Completed<br>
-                Notes: All safety equipment functioning properly. No issues found.
-              </div>
-            </div>
-          </div>
-        </div>
-      `);
-    };
-
-    // ========== VIEW USERS MODAL ==========
+    // ========== USER VIEWING ==========
     function showViewUsersModal() {
-      showModal(`
-        <div class="modal-content wide">
+      const content = `
+        <div class="modal">
           <div class="modal-header">
-            <h2 class="modal-title">All Users</h2>
-            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
+            <h2 class="modal-title">View Users</h2>
+            <button class="modal-close">&times;</button>
           </div>
           <div class="modal-body">
-            <div class="users-section">
-              <div class="section-header">
-                <div class="bulk-actions">
-                  <button class="action-btn secondary" id="selectAllBtnModal">Select All</button>
-                  <button class="action-btn danger" id="removeSelectedBtnModal" style="display: none;">Remove Selected</button>
-                </div>
-                <div class="search-container">
-                  <span class="search-icon">🔍</span>
-                  <input type="text" id="userSearchModal" class="search-input" placeholder="Search users...">
-                </div>
+            <div class="table-controls">
+              <input type="text" id="userSearch" class="search-input" placeholder="Search users...">
+              <div class="table-actions">
+                <button class="action-btn secondary" id="selectAllBtn">Select All</button>
+                <button class="action-btn danger" id="removeSelectedBtn">Remove Selected</button>
               </div>
+            </div>
+            <div class="users-table-container">
               <table class="users-table">
                 <thead>
                   <tr>
-                    <th width="50">Select</th>
+                    <th><input type="checkbox" id="selectAllCheckbox"></th>
                     <th>Name</th>
-                    <th>Last Login</th>
-                    <th>Inspection Status</th>
-                    <th width="80">Actions</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Client</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody id="usersTableBodyModal">
+                <tbody id="usersTableBody">
                 </tbody>
               </table>
-              <div id="noUsersMsgModal" style="display: none; text-align: center; padding: 2rem; color: var(--nexus-muted);">
-                No users found matching your search.
-              </div>
+            </div>
+            <div id="noUsersMsg" class="no-users-msg hidden">
+              No users found. Use the "Add User" button to create new users.
             </div>
           </div>
         </div>
-      `);
+      `;
       
-      // Set up modal-specific event handlers
-      document.getElementById('userSearchModal').addEventListener('input', renderUsersModal);
-      document.getElementById('selectAllBtnModal').onclick = toggleSelectAllModal;
-      document.getElementById('removeSelectedBtnModal').onclick = removeSelectedUsersModal;
+      showModal(content);
       
-      renderUsersModal();
+      // Re-bind elements after modal is created
+      const newUserSearch = document.getElementById('userSearch');
+      const newSelectAllBtn = document.getElementById('selectAllBtn');
+      const newRemoveSelectedBtn = document.getElementById('removeSelectedBtn');
+      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      
+      newUserSearch.addEventListener('input', renderUsers);
+      newSelectAllBtn.onclick = selectAllUsers;
+      newRemoveSelectedBtn.onclick = removeSelectedUsers;
+      selectAllCheckbox.onchange = toggleSelectAll;
+      
+      renderUsers();
     }
 
-    function renderUsersModal() {
-      const searchVal = document.getElementById('userSearchModal').value.trim().toLowerCase();
-      let filtered = allUsers;
-      if (searchVal) {
-        filtered = filtered.filter(user =>
-          (user.firstName || '').toLowerCase().includes(searchVal) ||
-          (user.lastName || '').toLowerCase().includes(searchVal) ||
-          (user.email || '').toLowerCase().includes(searchVal)
-        );
-      }
+    function renderUsers() {
+      const search = document.getElementById('userSearch')?.value.toLowerCase() || '';
+      const tbody = document.getElementById('usersTableBody');
+      const noUsersMsg = document.getElementById('noUsersMsg');
       
-      const tbody = document.getElementById('usersTableBodyModal');
-      const noMsg = document.getElementById('noUsersMsgModal');
+      if (!tbody) return;
       
-      tbody.innerHTML = "";
-      if (!filtered.length) {
-        noMsg.style.display = "";
+      const filteredUsers = allUsers.filter(user => {
+        return user.name?.toLowerCase().includes(search) ||
+               user.email?.toLowerCase().includes(search) ||
+               user.role?.toLowerCase().includes(search) ||
+               user.clientName?.toLowerCase().includes(search);
+      });
+      
+      if (filteredUsers.length === 0) {
+        tbody.innerHTML = '';
+        noUsersMsg?.classList.remove('hidden');
         return;
       }
-      noMsg.style.display = "none";
       
-      filtered.forEach(user => {
-        const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-        const lastLogin = formatLastLogin(user.lastLogin);
-        const statusLight = getInspectionStatus(user);
-        
-        tbody.insertAdjacentHTML('beforeend', `
-          <tr onclick="showUserCard('${user.clientId}', '${user.id}')" data-user-id="${user.id}">
-            <td onclick="event.stopPropagation()">
-              <input type="checkbox" class="user-checkbox" 
-                     onchange="toggleUserSelectionModal('${user.id}', this.checked)">
-            </td>
-            <td><span class="user-name">${fullName || 'Unnamed User'}</span></td>
-            <td><span class="last-login">${lastLogin}</span></td>
-            <td>${statusLight}</td>
-            <td onclick="event.stopPropagation(); showLatestInspection('${user.clientId}', '${user.id}')">
-              <span class="inspection-icon" title="View Latest Inspection">📄</span>
-            </td>
-          </tr>
-        `);
+      noUsersMsg?.classList.add('hidden');
+      
+      tbody.innerHTML = filteredUsers.map(user => `
+        <tr>
+          <td><input type="checkbox" class="user-checkbox" data-user-id="${user.id}" data-client-id="${user.clientId}"></td>
+          <td>${user.name || 'N/A'}</td>
+          <td>${user.email || 'N/A'}</td>
+          <td><span class="user-role ${user.role}">${user.role || 'user'}</span></td>
+          <td>${user.clientName || 'N/A'}</td>
+          <td>
+            <div class="user-actions">
+              <button class="user-action-btn" onclick="editUser('${user.id}', '${user.clientId}')">Edit</button>
+              <button class="user-action-btn" onclick="deleteUser('${user.id}', '${user.clientId}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+      
+      // Add event listeners to checkboxes
+      document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+        checkbox.onchange = updateSelectedUsers;
       });
     }
 
-    function toggleUserSelectionModal(userId, isSelected) {
-      if (isSelected) {
-        selectedUsers.add(userId);
-      } else {
-        selectedUsers.delete(userId);
+    function updateSelectedUsers() {
+      selectedUsers.clear();
+      document.querySelectorAll('.user-checkbox:checked').forEach(checkbox => {
+        selectedUsers.add({
+          userId: checkbox.dataset.userId,
+          clientId: checkbox.dataset.clientId
+        });
+      });
+      
+      const removeSelectedBtn = document.getElementById('removeSelectedBtn');
+      if (removeSelectedBtn) {
+        removeSelectedBtn.disabled = selectedUsers.size === 0;
+        removeSelectedBtn.textContent = `Remove Selected (${selectedUsers.size})`;
       }
-      updateBulkActionsModal();
     }
 
-    function toggleSelectAllModal() {
-      const checkboxes = document.querySelectorAll('#usersTableBodyModal .user-checkbox');
-      const allSelected = selectedUsers.size === checkboxes.length;
+    function selectAllUsers() {
+      const checkboxes = document.querySelectorAll('.user-checkbox');
+      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
       
       checkboxes.forEach(checkbox => {
-        const userId = checkbox.closest('tr').dataset.userId;
-        if (allSelected) {
-          checkbox.checked = false;
-          selectedUsers.delete(userId);
-        } else {
-          checkbox.checked = true;
-          selectedUsers.add(userId);
-        }
+        checkbox.checked = !allChecked;
       });
       
-      updateBulkActionsModal();
+      selectAllCheckbox.checked = !allChecked;
+      updateSelectedUsers();
     }
 
-    function updateBulkActionsModal() {
-      const removeBtn = document.getElementById('removeSelectedBtnModal');
-      const selectBtn = document.getElementById('selectAllBtnModal');
+    function toggleSelectAll() {
+      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      const checkboxes = document.querySelectorAll('.user-checkbox');
       
-      if (removeBtn) removeBtn.style.display = selectedUsers.size > 0 ? 'block' : 'none';
-      if (selectBtn) {
-        const checkboxes = document.querySelectorAll('#usersTableBodyModal .user-checkbox');
-        selectBtn.textContent = selectedUsers.size === checkboxes.length ? 'Deselect All' : 'Select All';
-      }
-    }
-
-    function removeSelectedUsersModal() {
-      if (selectedUsers.size === 0) return;
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+      });
       
-      if (confirm(`Remove ${selectedUsers.size} selected users? This action cannot be undone.`)) {
-        alert(`${selectedUsers.size} users removed successfully!`);
-        selectedUsers.clear();
-        loadAllUsers();
-        renderUsersModal();
-        updateBulkActionsModal();
-      }
+      updateSelectedUsers();
     }
 
-    // ========== ADD USER MODAL ==========
+    // ========== USER MANAGEMENT ==========
     function showAddUserModal() {
-      const clientOptions = allClients.map(c => 
-        `<option value="${c.id}">${c.name || c.id}</option>`
+      const clientOptions = allClients.map(client => 
+        `<option value="${client.id}">${client.name}</option>`
       ).join('');
       
-      showModal(`
-        <div class="modal-content">
+      const content = `
+        <div class="modal">
           <div class="modal-header">
             <h2 class="modal-title">Add New User</h2>
-            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
+            <button class="modal-close">&times;</button>
           </div>
           <div class="modal-body">
             <form id="addUserForm">
               <div class="form-group">
-                <label class="form-label">Client</label>
-                <select id="userClient" class="form-select" required onchange="loadClientLocations()">
-                  <option value="">Select Client</option>
-                  ${clientOptions}
+                <label class="form-label">Name</label>
+                <input type="text" id="userName" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="userEmail" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="userPassword" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Role</label>
+                <select id="userRole" class="form-select" required>
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                  <option value="nexus">Nexus</option>
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label">First Name</label>
-                <input type="text" id="firstName" class="form-input" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Last Name</label>
-                <input type="text" id="lastName" class="form-input" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Assignment</label>
-                <div id="locationGrid" class="location-grid">
-                  <div class="no-locations">Select a client to view available locations</div>
-                </div>
+                <label class="form-label">Client</label>
+                <select id="userClient" class="form-select" required>
+                  <option value="">Select a client...</option>
+                  ${clientOptions}
+                </select>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button class="action-btn secondary" onclick="hideModal()">Cancel</button>
+            <button class="action-btn secondary" onclick="closeModal()">Cancel</button>
             <button class="action-btn" onclick="addUser()">Add User</button>
           </div>
         </div>
-      `);
+      `;
+      
+      showModal(content);
     }
 
-    window.loadClientLocations = function() {
+    async function addUser() {
+      const name = document.getElementById('userName').value;
+      const email = document.getElementById('userEmail').value;
+      const password = document.getElementById('userPassword').value;
+      const role = document.getElementById('userRole').value;
       const clientId = document.getElementById('userClient').value;
-      const locationGrid = document.getElementById('locationGrid');
       
-      if (!clientId) {
-        locationGrid.innerHTML = '<div class="no-locations">Select a client to view available locations</div>';
-        return;
-      }
-      
-      // Mock location data - in real app, fetch from database based on client
-      const locations = [
-        'Building A - Floor 1', 'Building A - Floor 2', 'Building A - Floor 3',
-        'Building B - Floor 1', 'Building B - Floor 2', 'Warehouse North',
-        'Warehouse South', 'Parking Garage', 'Main Lobby', 'Conference Center',
-        'Cafeteria', 'Gym & Recreation'
-      ];
-      
-      locationGrid.innerHTML = locations.map(location => 
-        `<div class="location-item" onclick="selectLocation(this, '${location}')">${location}</div>`
-      ).join('');
-    };
-
-    window.selectLocation = function(element, location) {
-      // Clear previous selections
-      document.querySelectorAll('.location-item').forEach(item => 
-        item.classList.remove('selected')
-      );
-      
-      // Select current item
-      element.classList.add('selected');
-      
-      // Store selected location for form submission
-      element.closest('.location-grid').dataset.selectedLocation = location;
-    };
-
-    // ========== BULK ADD MODAL ==========
-    function showBulkAddUserModal() {
-      showModal(`
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2 class="modal-title">Bulk Add Users</h2>
-            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
-          </div>
-          <div class="modal-body">
-            <div class="file-upload" onclick="document.getElementById('csvFile').click()">
-              <input type="file" id="csvFile" accept=".csv" onchange="handleCSVUpload(this)">
-              <p style="margin: 0; color: var(--nexus-yellow); font-size: 1.1rem;">
-                📁 Click to upload CSV file
-              </p>
-              <p style="margin: 0.5rem 0 0 0; color: var(--nexus-muted);">
-                <a href="bulk_add_template.csv" class="template-link" download>Download Bulk Add Template</a>
-              </p>
-            </div>
-            <div id="csvPreview" style="margin-top: 2rem; display: none;">
-              <h4 style="color: var(--nexus-yellow); margin-bottom: 1rem;">Preview:</h4>
-              <div id="csvData" style="background: var(--nexus-input); padding: 1rem; border-radius: var(--radius); font-family: monospace; font-size: 0.9rem;"></div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="action-btn secondary" onclick="hideModal()">Cancel</button>
-            <button class="action-btn" id="processCsvBtn" onclick="processBulkAdd()" style="display: none;">Add Users</button>
-          </div>
-        </div>
-      `);
-    }
-
-    // ========== BULK REMOVE MODAL ==========
-    function showBulkRemoveModal() {
-      showModal(`
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2 class="modal-title">Bulk Remove Users</h2>
-            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
-          </div>
-          <div class="modal-body">
-            <p style="color: var(--nexus-warning); margin-bottom: 1rem;">
-              ⚠️ This action will permanently remove selected users and cannot be undone.
-            </p>
-            <p>Select users from the table below and click "Remove Selected" to proceed with bulk removal.</p>
-          </div>
-          <div class="modal-footer">
-            <button class="action-btn secondary" onclick="hideModal()">Cancel</button>
-          </div>
-        </div>
-      `);
-    }
-
-    // ========== RESET PASSWORD MODAL ==========
-    function showResetPasswordModal() {
-      showModal(`
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2 class="modal-title">Reset User Passwords</h2>
-            <a href="#" class="modal-back" onclick="hideModal(); return false;">← Back</a>
-          </div>
-          <div class="modal-body">
-            <p>Select the method for resetting user passwords:</p>
-            <div class="form-group">
-              <button class="action-btn" style="width: 100%; margin-bottom: 1rem;" onclick="resetSelectedPasswords()">
-                Reset Selected Users' Passwords
-              </button>
-              <button class="action-btn secondary" style="width: 100%;" onclick="resetAllPasswords()">
-                Reset All Users' Passwords
-              </button>
-            </div>
-            <p style="color: var(--nexus-muted); font-size: 0.9rem; margin-top: 2rem;">
-              Users will receive an email with password reset instructions.
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button class="action-btn secondary" onclick="hideModal()">Cancel</button>
-          </div>
-        </div>
-      `);
-    }
-
-    // ========== UTILITY FUNCTIONS ==========
-    window.addUser = async function() {
-      const clientId = document.getElementById('userClient').value;
-      const firstName = document.getElementById('firstName').value.trim();
-      const lastName = document.getElementById('lastName').value.trim();
-      const locationGrid = document.getElementById('locationGrid');
-      const selectedLocation = locationGrid.dataset.selectedLocation;
-      
-      if (!clientId || !firstName || !lastName) {
-        alert('Please fill in all required fields.');
-        return;
-      }
-      
-      if (!selectedLocation) {
-        alert('Please select an assignment location.');
+      if (!name || !email || !password || !role || !clientId) {
+        showToast('Please fill in all fields', 'error');
         return;
       }
       
       try {
-        // In real implementation, add user to Firebase
-        // await addDoc(collection(db, `clients/${clientId}/users`), {
-        //   firstName,
-        //   lastName,
-        //   inspectionArea: selectedLocation,
-        //   createdAt: serverTimestamp(),
-        //   lastLogin: null
-        // });
+        await addDoc(collection(db, "clients", clientId, "users"), {
+          name,
+          email,
+          password,
+          role,
+          createdAt: serverTimestamp()
+        });
         
-        alert('User added successfully!');
-        hideModal();
+        showToast('User added successfully', 'success');
         await loadAllUsers();
+        renderUsers();
+        closeModal();
       } catch (error) {
         console.error('Error adding user:', error);
-        alert('Error adding user. Please try again.');
-      }
-    };
-
-    window.handleCSVUpload = function(input) {
-      const file = input.files[0];
-      if (!file) return;
-      
-      // Show preview and enable process button
-      document.getElementById('csvPreview').style.display = 'block';
-      document.getElementById('csvData').textContent = `File: ${file.name} (${file.size} bytes)`;
-      document.getElementById('processCsvBtn').style.display = 'block';
-    };
-
-    window.processBulkAdd = function() {
-      alert('Bulk users added successfully!');
-      hideModal();
-      loadAllUsers();
-    };
-
-    function removeSelectedUsers() {
-      if (selectedUsers.size === 0) return;
-      
-      if (confirm(`Remove ${selectedUsers.size} selected users? This action cannot be undone.`)) {
-        alert(`${selectedUsers.size} users removed successfully!`);
-        selectedUsers.clear();
-        loadAllUsers();
-        updateBulkActions();
+        showToast('Error adding user', 'error');
       }
     }
 
-    window.resetSelectedPasswords = function() {
-      if (selectedUsers.size === 0) {
-        alert('Please select users first.');
+    function showRemoveUserModal() {
+      const content = `
+        <div class="modal">
+          <div class="modal-header">
+            <h2 class="modal-title">Remove User</h2>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted mb-3">Select a user to remove:</p>
+            <div class="form-group">
+              <select id="removeUserSelect" class="form-select">
+                <option value="">Select a user...</option>
+                ${allUsers.map(user => 
+                  `<option value="${user.id}:${user.clientId}">${user.name} (${user.email}) - ${user.clientName}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div class="text-warning">
+              <strong>Warning:</strong> This action cannot be undone.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn secondary" onclick="closeModal()">Cancel</button>
+            <button class="action-btn danger" onclick="removeUser()">Remove User</button>
+          </div>
+        </div>
+      `;
+      
+      showModal(content);
+    }
+
+    async function removeUser() {
+      const selectValue = document.getElementById('removeUserSelect').value;
+      if (!selectValue) {
+        showToast('Please select a user to remove', 'error');
         return;
       }
-      alert(`Password reset emails sent to ${selectedUsers.size} users.`);
-      hideModal();
+      
+      const [userId, clientId] = selectValue.split(':');
+      
+      try {
+        await deleteDoc(doc(db, "clients", clientId, "users", userId));
+        showToast('User removed successfully', 'success');
+        await loadAllUsers();
+        renderUsers();
+        closeModal();
+      } catch (error) {
+        console.error('Error removing user:', error);
+        showToast('Error removing user', 'error');
+      }
+    }
+
+    async function removeSelectedUsers() {
+      if (selectedUsers.size === 0) {
+        showToast('No users selected', 'error');
+        return;
+      }
+      
+      if (!confirm(`Are you sure you want to remove ${selectedUsers.size} user(s)?`)) {
+        return;
+      }
+      
+      try {
+        const promises = Array.from(selectedUsers).map(user => 
+          deleteDoc(doc(db, "clients", user.clientId, "users", user.userId))
+        );
+        
+        await Promise.all(promises);
+        showToast(`${selectedUsers.size} user(s) removed successfully`, 'success');
+        selectedUsers.clear();
+        await loadAllUsers();
+        renderUsers();
+      } catch (error) {
+        console.error('Error removing users:', error);
+        showToast('Error removing users', 'error');
+      }
+    }
+
+    function showResetPasswordModal() {
+      const content = `
+        <div class="modal">
+          <div class="modal-header">
+            <h2 class="modal-title">Reset User Password</h2>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="form-label">Select User</label>
+              <select id="resetPasswordUserSelect" class="form-select">
+                <option value="">Select a user...</option>
+                ${allUsers.map(user => 
+                  `<option value="${user.id}:${user.clientId}">${user.name} (${user.email}) - ${user.clientName}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input type="password" id="newPassword" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <input type="password" id="confirmPassword" class="form-input" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn secondary" onclick="closeModal()">Cancel</button>
+            <button class="action-btn" onclick="resetPassword()">Reset Password</button>
+          </div>
+        </div>
+      `;
+      
+      showModal(content);
+    }
+
+    async function resetPassword() {
+      const selectValue = document.getElementById('resetPasswordUserSelect').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      if (!selectValue || !newPassword || !confirmPassword) {
+        showToast('Please fill in all fields', 'error');
+        return;
+      }
+      
+      if (newPassword !== confirmPassword) {
+        showToast('Passwords do not match', 'error');
+        return;
+      }
+      
+      const [userId, clientId] = selectValue.split(':');
+      
+      try {
+        await updateDoc(doc(db, "clients", clientId, "users", userId), {
+          password: newPassword,
+          updatedAt: serverTimestamp()
+        });
+        
+        showToast('Password reset successfully', 'success');
+        closeModal();
+      } catch (error) {
+        console.error('Error resetting password:', error);
+        showToast('Error resetting password', 'error');
+      }
+    }
+
+    function showBulkAddUserModal() {
+      const content = `
+        <div class="modal">
+          <div class="modal-header">
+            <h2 class="modal-title">Bulk Import Users</h2>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="form-label">Select Client</label>
+              <select id="bulkClientSelect" class="form-select" required>
+                <option value="">Select a client...</option>
+                ${allClients.map(client => 
+                  `<option value="${client.id}">${client.name}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">CSV File</label>
+              <div class="file-upload">
+                <input type="file" id="csvFileInput" class="file-upload-input" accept=".csv" />
+                <label for="csvFileInput" class="file-upload-label">
+                  📄 Click to select CSV file
+                </label>
+                <div class="file-upload-text">
+                  CSV should have columns: name, email, password, role
+                </div>
+              </div>
+              <div id="filePreview" class="file-preview hidden">
+                <div class="file-preview-name"></div>
+                <div class="file-preview-size"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn secondary" onclick="closeModal()">Cancel</button>
+            <button class="action-btn" onclick="bulkImportUsers()">Import Users</button>
+          </div>
+        </div>
+      `;
+      
+      showModal(content);
+      
+      document.getElementById('csvFileInput').onchange = handleFileSelect;
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      const preview = document.getElementById('filePreview');
+      
+      if (file) {
+        preview.querySelector('.file-preview-name').textContent = file.name;
+        preview.querySelector('.file-preview-size').textContent = `${(file.size / 1024).toFixed(1)} KB`;
+        preview.classList.remove('hidden');
+      } else {
+        preview.classList.add('hidden');
+      }
+    }
+
+    async function bulkImportUsers() {
+      const clientId = document.getElementById('bulkClientSelect').value;
+      const fileInput = document.getElementById('csvFileInput');
+      
+      if (!clientId || !fileInput.files[0]) {
+        showToast('Please select a client and CSV file', 'error');
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      const text = await file.text();
+      const lines = text.split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      
+      if (!headers.includes('name') || !headers.includes('email') || !headers.includes('password') || !headers.includes('role')) {
+        showToast('CSV must have columns: name, email, password, role', 'error');
+        return;
+      }
+      
+      try {
+        const users = [];
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i].trim()) {
+            const values = lines[i].split(',').map(v => v.trim());
+            const user = {};
+            headers.forEach((header, index) => {
+              user[header] = values[index];
+            });
+            users.push(user);
+          }
+        }
+        
+        const promises = users.map(user => 
+          addDoc(collection(db, "clients", clientId, "users"), {
+            ...user,
+            createdAt: serverTimestamp()
+          })
+        );
+        
+        await Promise.all(promises);
+        showToast(`${users.length} users imported successfully`, 'success');
+        await loadAllUsers();
+        renderUsers();
+        closeModal();
+      } catch (error) {
+        console.error('Error importing users:', error);
+        showToast('Error importing users', 'error');
+      }
+    }
+
+    function showBulkRemoveModal() {
+      const content = `
+        <div class="modal">
+          <div class="modal-header">
+            <h2 class="modal-title">Bulk Remove Users</h2>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="form-label">Select Client</label>
+              <select id="bulkRemoveClientSelect" class="form-select">
+                <option value="">Select a client...</option>
+                ${allClients.map(client => 
+                  `<option value="${client.id}">${client.name}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Action</label>
+              <select id="bulkRemoveAction" class="form-select">
+                <option value="">Select action...</option>
+                <option value="all">Remove all users from client</option>
+                <option value="role">Remove users by role</option>
+              </select>
+            </div>
+            <div id="roleSelection" class="form-group hidden">
+              <label class="form-label">Role to Remove</label>
+              <select id="bulkRemoveRole" class="form-select">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+                <option value="nexus">Nexus</option>
+              </select>
+            </div>
+            <div class="text-warning">
+              <strong>Warning:</strong> This action cannot be undone.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="action-btn secondary" onclick="closeModal()">Cancel</button>
+            <button class="action-btn danger" onclick="bulkRemoveUsers()">Remove Users</button>
+          </div>
+        </div>
+      `;
+      
+      showModal(content);
+      
+      document.getElementById('bulkRemoveAction').onchange = (e) => {
+        const roleSelection = document.getElementById('roleSelection');
+        if (e.target.value === 'role') {
+          roleSelection.classList.remove('hidden');
+        } else {
+          roleSelection.classList.add('hidden');
+        }
+      };
+    }
+
+    async function bulkRemoveUsers() {
+      const clientId = document.getElementById('bulkRemoveClientSelect').value;
+      const action = document.getElementById('bulkRemoveAction').value;
+      const role = document.getElementById('bulkRemoveRole').value;
+      
+      if (!clientId || !action) {
+        showToast('Please select a client and action', 'error');
+        return;
+      }
+      
+      if (action === 'role' && !role) {
+        showToast('Please select a role', 'error');
+        return;
+      }
+      
+      const clientUsers = allUsers.filter(user => user.clientId === clientId);
+      let usersToRemove = clientUsers;
+      
+      if (action === 'role') {
+        usersToRemove = clientUsers.filter(user => user.role === role);
+      }
+      
+      if (!confirm(`Are you sure you want to remove ${usersToRemove.length} user(s)?`)) {
+        return;
+      }
+      
+      try {
+        const promises = usersToRemove.map(user => 
+          deleteDoc(doc(db, "clients", user.clientId, "users", user.id))
+        );
+        
+        await Promise.all(promises);
+        showToast(`${usersToRemove.length} user(s) removed successfully`, 'success');
+        await loadAllUsers();
+        renderUsers();
+        closeModal();
+      } catch (error) {
+        console.error('Error removing users:', error);
+        showToast('Error removing users', 'error');
+      }
+    }
+
+    // ========== UTILITY FUNCTIONS ==========
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type} show`;
+      toast.innerHTML = `
+        <div class="toast-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+        <div class="toast-message">${message}</div>
+      `;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 300);
+      }, 3000);
+    }
+
+    // ========== GLOBAL FUNCTIONS (for inline event handlers) ==========
+    window.editUser = async function(userId, clientId) {
+      // Implementation for editing user
+      console.log('Edit user:', userId, clientId);
     };
 
-    window.resetAllPasswords = function() {
-      if (confirm('Send password reset emails to all users?')) {
-        alert('Password reset emails sent to all users.');
-        hideModal();
+    window.deleteUser = async function(userId, clientId) {
+      if (!confirm('Are you sure you want to delete this user?')) {
+        return;
+      }
+      
+      try {
+        await deleteDoc(doc(db, "clients", clientId, "users", userId));
+        showToast('User deleted successfully', 'success');
+        await loadAllUsers();
+        renderUsers();
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        showToast('Error deleting user', 'error');
       }
     };
+
+    window.addUser = addUser;
+    window.removeUser = removeUser;
+    window.resetPassword = resetPassword;
+    window.bulkImportUsers = bulkImportUsers;
+    window.bulkRemoveUsers = bulkRemoveUsers;
+    window.removeSelectedUsers = removeSelectedUsers;
+    window.selectAllUsers = selectAllUsers;
+    window.closeModal = closeModal;
   </script>
 </body>
 </html>
