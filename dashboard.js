@@ -650,4 +650,3 @@ window.addEventListener('DOMContentLoaded', () => {
     const clientName = sessionStorage.getItem('tenant_id');
     window.showManageUsersModal(clientName);
   });
-});
