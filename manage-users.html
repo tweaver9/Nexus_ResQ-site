@@ -654,18 +654,48 @@
       username = sessionStorage.getItem('username');
       role = sessionStorage.getItem('role');
 
+      // Debug logging to see actual values
+      console.log('Session values:', { clientId, username, role });
+
       if (!clientId || !username || !role) {
+        console.log('Missing session data, redirecting to login');
         window.location.href = "login.html";
         return;
       }
 
-      // Show client selector for Nexus users
-      if (role === 'nexus') {
+      // Show client selector for Nexus users (check both role and client ID)
+      const isNexusUser = role === 'nexus' || role === 'Nexus' || clientId === 'nexusresq' || clientId === 'nexus';
+      console.log('Is Nexus user?', isNexusUser);
+      
+      if (isNexusUser) {
         const clientSelector = document.getElementById('client-selector');
+        console.log('Client selector element:', clientSelector);
         if (clientSelector) {
           clientSelector.style.display = 'block';
           loadClients();
+        } else {
+          console.error('Client selector element not found in DOM');
         }
+      }
+
+      // Initialize modal event listeners
+      const modalClose = document.getElementById('modal-close');
+      const passwordModal = document.getElementById('password-modal');
+      
+      if (modalClose) {
+        modalClose.addEventListener('click', () => {
+          if (passwordModal) {
+            passwordModal.classList.remove('active');
+          }
+        });
+      }
+
+      if (passwordModal) {
+        passwordModal.addEventListener('click', (e) => {
+          if (e.target.id === 'password-modal') {
+            passwordModal.classList.remove('active');
+          }
+        });
       }
 
       // Initialize
@@ -724,7 +754,8 @@
 
     function createUserCard(user) {
       const monthlyStatus = getMonthlyStatus(user);
-      const canResetPassword = role === 'admin' || role === 'manager' || role === 'nexus';
+      const isNexusUser = role === 'nexus' || role === 'Nexus' || clientId === 'nexusresq' || clientId === 'nexus';
+      const canResetPassword = role === 'admin' || role === 'manager' || isNexusUser;
       const assignedAreasText = user.assignedAreas && user.assignedAreas.length > 0 
         ? user.assignedAreas.join(', ') 
         : 'No areas assigned';
@@ -955,17 +986,6 @@
       // 2. Open a modal or navigate to a detailed inspection report page
       // 3. Show inspection results, photos, failed items, etc.
     }
-
-    // Modal event listeners
-    document.getElementById('modal-close').addEventListener('click', () => {
-      document.getElementById('password-modal').classList.remove('active');
-    });
-
-    document.getElementById('password-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'password-modal') {
-        document.getElementById('password-modal').classList.remove('active');
-      }
-    });
 
   </script>
 </body>
