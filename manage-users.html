@@ -664,7 +664,9 @@
       }
 
       // Show client selector for Nexus users (check both role and client ID)
-      const isNexusUser = role === 'nexus' || role === 'Nexus' || clientId === 'nexusresq' || clientId === 'nexus';
+      const isNexusUser = (role && role.toLowerCase() === 'nexus') ||
+                          clientId === 'nexusresq' ||
+                          clientId === 'nexus';
       console.log('Is Nexus user?', isNexusUser);
       
       if (isNexusUser) {
@@ -754,7 +756,9 @@
 
     function createUserCard(user) {
       const monthlyStatus = getMonthlyStatus(user);
-      const isNexusUser = role === 'nexus' || role === 'Nexus' || clientId === 'nexusresq' || clientId === 'nexus';
+      const isNexusUser = (role && role.toLowerCase() === 'nexus') ||
+                          clientId === 'nexusresq' ||
+                          clientId === 'nexus';
       const canResetPassword = role === 'admin' || role === 'manager' || isNexusUser;
       const assignedAreasText = user.assignedAreas && user.assignedAreas.length > 0 
         ? user.assignedAreas.join(', ') 
