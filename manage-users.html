@@ -29,6 +29,12 @@
       box-sizing: border-box;
     }
 
+    /* Override dashboard.css layout to prevent blue sidebar */
+    html, body {
+      display: block !important;
+      flex-direction: initial !important;
+    }
+
     body { 
       background: var(--nexus-bg); 
       color: var(--nexus-light); 
@@ -36,6 +42,7 @@
       margin: 0; 
       padding: 0;
       line-height: 1.6;
+      display: block !important; /* Override dashboard.css flex layout */
     }
 
     /* === HEADER === */
