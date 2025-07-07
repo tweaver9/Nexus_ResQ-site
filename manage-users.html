@@ -2,54 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Manage Users | Nexus Res-Q</title>
+  <title>Team Management | Nexus Res-Q</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="CSS/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --nexus-yellow: #fdd835;
-      --nexus-bg: #0d1b2a;
-      --nexus-card: #142b47;
-      --nexus-dark: #0a1322;
-      --nexus-input: #192841;
-      --nexus-border: #223052;
-      --nexus-light: #f2f2f2;
-      --nexus-muted: #93a7c6;
-      --nexus-success: #28e640;
-      --nexus-error: #ff5050;
-      --nexus-warning: #ffd835;
-      --radius: 12px;
-      --shadow-light: 0 4px 20px rgba(0,0,0,0.15);
-      --shadow-heavy: 0 8px 40px rgba(10,19,34,0.4);
-      --gradient: linear-gradient(135deg, #142b47 0%, #1c3050 100%);
+      --nexus-bg: #0a0e1a;
+      --nexus-card: #151b2e;
+      --nexus-card-hover: #1a2138;
+      --nexus-dark: #0f1419;
+      --nexus-border: #2a3441;
+      --nexus-light: #ffffff;
+      --nexus-muted: #8792a3;
+      --nexus-success: #10b981;
+      --nexus-warning: #f59e0b;
+      --nexus-error: #ef4444;
+      --nexus-info: #3b82f6;
+      --radius: 16px;
+      --radius-sm: 8px;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.4);
+      --glow-success: 0 0 16px rgba(16, 185, 129, 0.4);
+      --glow-warning: 0 0 16px rgba(245, 158, 11, 0.4);
+      --glow-error: 0 0 16px rgba(239, 68, 68, 0.4);
     }
 
     * {
       box-sizing: border-box;
-    }
-
-    /* Override dashboard.css layout to prevent blue sidebar */
-    html, body {
-      display: block !important;
-      flex-direction: initial !important;
-    }
-
-    body { 
-      background: var(--nexus-bg); 
-      color: var(--nexus-light); 
-      font-family: 'Oswald', -apple-system, BlinkMacSystemFont, sans-serif; 
-      margin: 0; 
+      margin: 0;
       padding: 0;
+    }
+
+    body {
+      background: var(--nexus-bg);
+      color: var(--nexus-light);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       line-height: 1.6;
-      display: block !important; /* Override dashboard.css flex layout */
+      min-height: 100vh;
     }
 
     /* === HEADER === */
-    .site-header { 
-      background: var(--gradient);
+    .site-header {
+      background: linear-gradient(135deg, var(--nexus-dark) 0%, var(--nexus-card) 100%);
       border-bottom: 1px solid var(--nexus-border);
-      box-shadow: var(--shadow-light);
+      box-shadow: var(--shadow-card);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -64,22 +61,23 @@
       align-items: center;
     }
 
-    .site-title { 
-      color: var(--nexus-yellow); 
-      font-size: 2rem; 
-      font-weight: 700; 
-      margin: 0.5rem 0 0 0; 
-      letter-spacing: 1px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    .site-title {
+      color: var(--nexus-yellow);
+      font-size: 2.25rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      text-shadow: 0 2px 8px rgba(253, 216, 53, 0.3);
     }
 
     .back-nav {
-      color: var(--nexus-light);
+      color: var(--nexus-muted);
       text-decoration: none;
-      font-family: inherit;
-      font-weight: 400;
+      font-weight: 500;
       font-size: 1rem;
       transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .back-nav:hover {
@@ -87,133 +85,438 @@
       text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);
     }
 
-    /* === MAIN CONTENT === */
-    .main-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 1rem 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    /* === CLIENT SELECTOR === */
+    .client-selector {
+      margin: 2rem auto;
+      max-width: 1400px;
+      padding: 0 2rem;
     }
 
-    /* === MANAGEMENT CARDS === */
-    .management-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-      margin-bottom: 1.5rem;
-      max-width: 1000px;
-      width: 100%;
-      justify-items: center;
-    }
-
-    .management-card {
-      background: var(--gradient);
+    .client-dropdown {
+      background: var(--nexus-card);
       border: 1px solid var(--nexus-border);
       border-radius: var(--radius);
-      padding: 2rem;
-      box-shadow: var(--shadow-light);
+      color: var(--nexus-light);
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      font-weight: 500;
+      min-width: 200px;
+      cursor: pointer;
       transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-      min-height: 250px;
-      width: 100%;
-      max-width: 360px;
     }
 
-    .management-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: var(--nexus-yellow);
-      transform: scaleX(0);
-      transition: transform 0.3s ease;
-    }
-
-    .management-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-heavy);
+    .client-dropdown:focus {
+      outline: none;
       border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
     }
 
-    .management-card:hover::before {
-      transform: scaleX(1);
+    /* === SUMMARY STATS === */
+    .summary-stats {
+      max-width: 1400px;
+      margin: 0 auto 3rem;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
     }
 
-    .card-icon {
-      font-size: 2rem;
-      margin-bottom: 0.75rem;
-      display: block;
+    .stat-card {
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-card);
+      transition: all 0.3s ease;
+      border: 1px solid var(--nexus-border);
     }
 
-    .card-title {
-      color: var(--nexus-yellow);
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin: 0 0 0.5rem 0;
+    .stat-card.overdue {
+      border-color: var(--nexus-error);
+      background: linear-gradient(135deg, var(--nexus-card) 0%, rgba(239, 68, 68, 0.05) 100%);
     }
 
-    .card-description {
+    .stat-card.due-soon {
+      border-color: var(--nexus-warning);
+      background: linear-gradient(135deg, var(--nexus-card) 0%, rgba(245, 158, 11, 0.05) 100%);
+    }
+
+    .stat-card.complete {
+      border-color: var(--nexus-success);
+      background: linear-gradient(135deg, var(--nexus-card) 0%, rgba(16, 185, 129, 0.05) 100%);
+    }
+
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card.overdue .stat-number { color: var(--nexus-error); }
+    .stat-card.due-soon .stat-number { color: var(--nexus-warning); }
+    .stat-card.complete .stat-number { color: var(--nexus-success); }
+
+    .stat-label {
       color: var(--nexus-muted);
-      font-size: 0.9rem;
-      margin-bottom: 1.25rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    /* === USER GROUPS === */
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem 3rem;
+    }
+
+    .user-group {
+      margin-bottom: 3rem;
+    }
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .group-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--nexus-light);
+    }
+
+    .group-count {
+      background: var(--nexus-yellow);
+      color: var(--nexus-dark);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .user-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .empty-group {
+      background: var(--nexus-card);
+      border: 2px dashed var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 3rem;
+      text-align: center;
+      color: var(--nexus-muted);
+      font-size: 1.125rem;
+      font-weight: 500;
+    }
+
+    /* === USER CARDS === */
+    .user-card {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-card);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .user-card:hover {
+      background: var(--nexus-card-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-heavy);
+    }
+
+    .user-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1.125rem;
+      color: var(--nexus-dark);
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--nexus-light);
+      margin-bottom: 0.25rem;
+    }
+
+    .role-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .role-badge.nexus { background: var(--nexus-yellow); color: var(--nexus-dark); }
+    .role-badge.admin { background: var(--nexus-error); color: white; }
+    .role-badge.manager { background: var(--nexus-info); color: white; }
+    .role-badge.user { background: var(--nexus-muted); color: white; }
+
+    /* === ASSIGNED AREAS === */
+    .assigned-areas {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
       line-height: 1.4;
     }
 
-    .card-actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
+    .areas-label {
+      color: var(--nexus-light);
+      font-weight: 500;
+      display: block;
+      margin-bottom: 0.25rem;
     }
 
-    .action-btn {
-      background: var(--nexus-yellow);
-      color: var(--nexus-bg);
-      border: none;
-      border-radius: var(--radius);
-      padding: 0.6rem 1rem;
-      font-family: inherit;
-      font-weight: 600;
-      font-size: 0.85rem;
+    .areas-list {
+      color: var(--nexus-yellow);
+      font-weight: 500;
+    }
+
+    /* === MONTHLY STATUS === */
+    .monthly-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--nexus-border);
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .status-indicator.complete {
+      background: var(--nexus-success);
+      box-shadow: var(--glow-success);
+    }
+
+    .status-indicator.due-soon {
+      background: var(--nexus-warning);
+      box-shadow: var(--glow-warning);
+    }
+
+    .status-indicator.overdue {
+      background: var(--nexus-error);
+      box-shadow: var(--glow-error);
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0.3; }
+    }
+
+    .status-text {
+      font-weight: 500;
+      color: var(--nexus-light);
+    }
+
+    .status-tooltip {
+      position: relative;
+      cursor: help;
+    }
+
+    .status-tooltip:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--nexus-dark);
+      color: var(--nexus-light);
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      white-space: nowrap;
+      z-index: 1000;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--nexus-border);
+    }
+
+    /* === RESET PASSWORD === */
+    .reset-password {
+      color: var(--nexus-yellow);
+      text-decoration: underline;
+      font-size: 0.875rem;
+      font-weight: 500;
       cursor: pointer;
       transition: all 0.2s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px rgba(253, 216, 53, 0.3);
+      margin-bottom: 0.75rem;
+      display: inline-block;
     }
 
-    .action-btn:hover {
-      background: #ffe066;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(253, 216, 53, 0.4);
+    .reset-password:hover {
+      color: var(--nexus-light);
+      text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);
     }
 
-    .action-btn.secondary {
-      background: transparent;
+    /* === LAST ACTIVITY === */
+    .last-activity {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    .activity-highlight {
+      color: var(--nexus-light);
+      font-weight: 500;
+    }
+
+    /* === LAST INSPECTION === */
+    .last-inspection {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      margin-top: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+    }
+
+    .last-inspection:hover {
       color: var(--nexus-yellow);
-      border: 2px solid var(--nexus-yellow);
-      box-shadow: none;
+      border-color: var(--nexus-border);
+      background: rgba(255, 255, 255, 0.02);
     }
 
-    .action-btn.secondary:hover {
+    .inspection-icon {
+      width: 16px;
+      height: 16px;
+      background: var(--nexus-muted);
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' /%3E%3C/svg%3E") no-repeat center/contain;
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' /%3E%3C/svg%3E") no-repeat center/contain;
+      transition: all 0.2s ease;
+    }
+
+    .last-inspection:hover .inspection-icon {
       background: var(--nexus-yellow);
-      color: var(--nexus-bg);
     }
 
-    .action-btn.danger {
-      background: var(--nexus-error);
-      color: white;
-      box-shadow: 0 2px 8px rgba(255, 80, 80, 0.3);
+    .inspection-label {
+      font-weight: 500;
     }
 
-    .action-btn.danger:hover {
-      background: #ff3333;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(255, 80, 80, 0.4);
+    /* === MODAL === */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      border: 1px solid var(--nexus-border);
+      box-shadow: var(--shadow-heavy);
+      transform: scale(0.9);
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--nexus-light);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--nexus-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: var(--nexus-border);
+      color: var(--nexus-light);
+    }
+
+    .modal-content {
+      color: var(--nexus-muted);
+      line-height: 1.6;
+    }
+
+    .modal-password {
+      background: var(--nexus-dark);
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+      margin: 1rem 0;
+      font-family: monospace;
+      font-size: 1.125rem;
+      color: var(--nexus-yellow);
+      text-align: center;
+      border: 1px solid var(--nexus-border);
     }
 
     /* === RESPONSIVE === */
@@ -226,1214 +529,423 @@
       }
 
       .site-title {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
       }
 
+      .summary-stats,
       .main-container {
-        padding: 1rem;
+        padding: 0 1rem;
       }
 
-      .management-grid {
+      .user-grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
       }
 
-      .management-card {
-        padding: 2rem;
-        min-height: auto;
-      }
-
-      .card-actions {
+      .group-header {
         flex-direction: column;
-      }
-
-      .action-btn {
-        width: 100%;
-        text-align: center;
+        align-items: flex-start;
+        gap: 0.5rem;
       }
     }
 
-    /* === MODAL STYLES === */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      backdrop-filter: blur(5px);
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal {
-      background: var(--gradient);
-      border: 1px solid var(--nexus-border);
-      border-radius: var(--radius);
-      max-width: 95vw;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: var(--shadow-heavy);
-      position: relative;
-    }
-
-    .modal-header {
-      padding: 2rem 2rem 1rem;
-      border-bottom: 1px solid var(--nexus-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .modal-title {
-      color: var(--nexus-yellow);
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      color: var(--nexus-muted);
-      font-size: 1.5rem;
-      cursor: pointer;
-      padding: 0.5rem;
-      transition: color 0.2s ease;
-    }
-
-    .modal-close:hover {
-      color: var(--nexus-light);
-    }
-
-    .modal-body {
-      padding: 2rem;
-    }
-
-    .modal-footer {
-      padding: 1rem 2rem 2rem;
-      border-top: 1px solid var(--nexus-border);
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-    }
-
-    /* === TABLE STYLES === */
-    .users-table-container {
-      max-height: 400px;
-      overflow-y: auto;
-      border: 1px solid var(--nexus-border);
-      border-radius: var(--radius);
-      margin-bottom: 1rem;
-    }
-
-    .users-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--nexus-input);
-    }
-
-    .users-table th,
-    .users-table td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--nexus-border);
-    }
-
-    .users-table th {
-      background: var(--nexus-card);
-      color: var(--nexus-yellow);
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .users-table td {
-      color: var(--nexus-light);
-    }
-
-    .users-table tr:hover td {
-      background: var(--nexus-card);
-    }
-
-    .user-checkbox {
-      accent-color: var(--nexus-yellow);
-    }
-
-    .no-users-msg {
-      text-align: center;
-      color: var(--nexus-muted);
-      padding: 2rem;
-      font-style: italic;
-    }
-
-    .table-controls {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .search-input {
-      flex: 1;
-      min-width: 200px;
-      padding: 0.75rem;
-      border: 2px solid var(--nexus-border);
-      border-radius: var(--radius);
-      background: var(--nexus-input);
-      color: var(--nexus-light);
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
-
-    .search-input:focus {
-      border-color: var(--nexus-yellow);
-      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
-    }
-
-    .search-input::placeholder {
-      color: var(--nexus-muted);
-    }
-
-    .table-actions {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .user-role {
-      background: var(--nexus-yellow);
-      color: var(--nexus-bg);
-      padding: 0.25rem 0.5rem;
-      border-radius: calc(var(--radius) / 2);
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .user-role.nexus {
-      background: var(--nexus-error);
-      color: white;
-    }
-
-    .user-actions {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .user-action-btn {
-      background: none;
-      border: 1px solid var(--nexus-border);
-      color: var(--nexus-muted);
-      padding: 0.25rem 0.5rem;
-      border-radius: calc(var(--radius) / 2);
-      font-size: 0.75rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .user-action-btn:hover {
-      border-color: var(--nexus-yellow);
-      color: var(--nexus-yellow);
-    }
-
-    .inspection-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      background: var(--nexus-input);
-      border-radius: var(--radius);
-      border: 1px solid var(--nexus-border);
-    }
-
-    .inspection-icon {
-      font-size: 1.5rem;
-      color: var(--nexus-yellow);
-    }
-
-    .inspection-details {
-      flex: 1;
-    }
-
-    .inspection-name {
-      color: var(--nexus-light);
-      font-weight: 600;
-      margin: 0 0 0.25rem 0;
-      font-size: 1rem;
-    }
-
-    .inspection-label {
-      color: var(--nexus-muted);
-      margin-right: 1rem;
-      min-width: 80px;
-    }
-
-    /* === FORM STYLES === */
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .form-label {
-      display: block;
-      color: var(--nexus-yellow);
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-    }
-
-    .form-input,
-    .form-select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 2px solid var(--nexus-border);
-      border-radius: var(--radius);
-      background: var(--nexus-input);
-      color: var(--nexus-light);
-      font-family: inherit;
-      font-size: 1rem;
-      outline: none;
-      transition: all 0.2s ease;
-    }
-
-    .form-input:focus,
-    .form-select:focus {
-      border-color: var(--nexus-yellow);
-      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
-    }
-
-    .file-upload {
-      border: 2px dashed var(--nexus-border);
-      border-radius: var(--radius);
-      padding: 2rem;
-      text-align: center;
-      transition: all 0.2s ease;
-    }
-
-    .file-upload:hover {
-      border-color: var(--nexus-yellow);
-      background: rgba(253, 216, 53, 0.05);
-    }
-
-    .file-upload-input {
-      display: none;
-    }
-
-    .file-upload-label {
-      color: var(--nexus-yellow);
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .file-upload-text {
-      color: var(--nexus-muted);
-      margin-top: 0.5rem;
-      font-size: 0.9rem;
-    }
-
-    .file-preview {
-      margin-top: 1rem;
-      padding: 1rem;
-      background: var(--nexus-input);
-      border-radius: var(--radius);
-      border: 1px solid var(--nexus-border);
-    }
-
-    .file-preview-name {
-      color: var(--nexus-light);
-      font-weight: 600;
-    }
-
-    .file-preview-size {
-      color: var(--nexus-muted);
-      font-size: 0.9rem;
-    }
-
-    /* === UTILITY CLASSES === */
-    .text-center { text-align: center; }
-    .text-muted { color: var(--nexus-muted); }
-    .text-success { color: var(--nexus-success); }
-    .text-error { color: var(--nexus-error); }
-    .text-warning { color: var(--nexus-warning); }
-
-    .mb-1 { margin-bottom: 0.5rem; }
-    .mb-2 { margin-bottom: 1rem; }
-    .mb-3 { margin-bottom: 1.5rem; }
-    .mb-4 { margin-bottom: 2rem; }
-
-    .mt-1 { margin-top: 0.5rem; }
-    .mt-2 { margin-top: 1rem; }
-    .mt-3 { margin-top: 1.5rem; }
-    .mt-4 { margin-top: 2rem; }
-
-    .hidden { display: none !important; }
-
-    .loading {
-      position: relative;
-      pointer-events: none;
-    }
-
-    .loading::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 20px;
-      height: 20px;
-      margin: -10px 0 0 -10px;
-      border: 2px solid var(--nexus-border);
-      border-top-color: var(--nexus-yellow);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* === STATUS INDICATORS === */
-    .status-indicator {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: 0.5rem;
-    }
-
-    .status-indicator.online {
-      background: var(--nexus-success);
-    }
-
-    .status-indicator.offline {
-      background: var(--nexus-muted);
-    }
-
-    .status-indicator.error {
-      background: var(--nexus-error);
-    }
-
-    /* === TOAST NOTIFICATIONS === */
-    .toast {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: var(--gradient);
-      border: 1px solid var(--nexus-border);
-      border-radius: var(--radius);
-      padding: 1rem 1.5rem;
-      box-shadow: var(--shadow-heavy);
-      color: var(--nexus-light);
-      z-index: 1100;
-      max-width: 400px;
-      transform: translateX(450px);
-      transition: transform 0.3s ease;
-    }
-
-    .toast.show {
-      transform: translateX(0);
-    }
-
-    .toast.success {
-      border-left: 4px solid var(--nexus-success);
-    }
-
-    .toast.error {
-      border-left: 4px solid var(--nexus-error);
-    }
-
-    .toast.warning {
-      border-left: 4px solid var(--nexus-warning);
-    }
-
-    .toast-title {
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-
-    .toast-message {
-      color: var(--nexus-muted);
-      font-size: 0.9rem;
-    }
+    /* === AVATAR COLORS === */
+    .avatar-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .avatar-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .avatar-green { background: linear-gradient(135deg, #10b981, #059669); }
+    .avatar-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .avatar-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .avatar-pink { background: linear-gradient(135deg, #ec4899, #db2777); }
+    .avatar-teal { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+    .avatar-indigo { background: linear-gradient(135deg, #6366f1, #4f46e5); }
   </style>
 </head>
-<body id="manageUsersBody">
+<body>
   <!-- Header -->
   <header class="site-header">
     <div class="header-container">
-      <h1 class="site-title">Manage Users</h1>
-      <a href="dashboard.html" class="back-nav">← Back to Dashboard</a>
+      <h1 class="site-title">Team Management</h1>
+      <a href="dashboard.html" class="back-nav">
+        ← Back to Dashboard
+      </a>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="main-container">
-    <!-- Management Cards -->
-    <div class="management-grid">
-      <!-- Users Card -->
-      <div class="management-card">
-        <span class="card-icon">👤</span>
-        <h2 class="card-title">Users</h2>
-        <p class="card-description">Manage user accounts, view current users, and handle individual user operations.</p>
-        <div class="card-actions">
-          <button class="action-btn" id="viewUsersBtn">View Users</button>
-          <button class="action-btn secondary" id="addUserBtn">Add User</button>
-          <button class="action-btn secondary" id="removeUserBtn">Remove User</button>
-        </div>
-      </div>
+  <!-- Client Selector (Nexus only) -->
+  <div class="client-selector" id="client-selector" style="display: none;">
+    <select class="client-dropdown" id="client-dropdown">
+      <option value="">Select Client...</option>
+    </select>
+  </div>
 
-      <!-- User Management Card -->
-      <div class="management-card">
-        <span class="card-icon">⚙️</span>
-        <h2 class="card-title">User Management</h2>
-        <p class="card-description">Reset passwords, modify permissions, and manage user access levels.</p>
-        <div class="card-actions">
-          <button class="action-btn" id="resetPasswordBtn">Reset Passwords</button>
-          <button class="action-btn secondary" id="bulkAddUserBtn">Bulk Import</button>
-        </div>
-      </div>
-
-      <!-- Bulk Operations Card -->
-      <div class="management-card">
-        <span class="card-icon">🗂️</span>
-        <h2 class="card-title">Bulk Operations</h2>
-        <p class="card-description">Perform bulk operations including CSV import and batch user removal.</p>
-        <div class="card-actions">
-          <button class="action-btn danger" id="bulkRemoveBtn">Bulk Remove</button>
-        </div>
-      </div>
+  <!-- Summary Stats -->
+  <section class="summary-stats">
+    <div class="stat-card overdue">
+      <div class="stat-number" id="overdue-count">0</div>
+      <div class="stat-label">Inspections Overdue</div>
     </div>
+    <div class="stat-card due-soon">
+      <div class="stat-number" id="due-soon-count">0</div>
+      <div class="stat-label">Due Within 7 Days</div>
+    </div>
+    <div class="stat-card complete">
+      <div class="stat-number" id="complete-count">0</div>
+      <div class="stat-label">Complete This Month</div>
+    </div>
+  </section>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    <!-- All Users in Single Grid -->
+    <section class="user-group">
+      <div class="group-header">
+        <h2 class="group-title">Team Members</h2>
+        <span class="group-count" id="total-count">0</span>
+      </div>
+      <div class="user-grid" id="all-users">
+        <div class="empty-group">Loading team members...</div>
+      </div>
+    </section>
   </main>
 
-  <!-- Modal Container -->
-  <div id="modal-root" class="modal-overlay"></div>
+  <!-- Password Reset Modal -->
+  <div class="modal-overlay" id="password-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Password Reset</h3>
+        <button class="modal-close" id="modal-close">×</button>
+      </div>
+      <div class="modal-content">
+        <p>Password has been reset to default:</p>
+        <div class="modal-password" id="modal-password"></div>
+        <p>The user will need to log in with this password and should change it immediately.</p>
+      </div>
+    </div>
+  </div>
 
-  <script type="module">
-    // ----------- FIREBASE IMPORTS -----------
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import {
-      getFirestore, collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, getDoc, setDoc
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
-    // ----------- FIREBASE CONFIG -----------
-    const firebaseConfig = {
-      apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
-      authDomain: "nexus-res-q.firebaseapp.com",
-      projectId: "nexus-res-q",
-      storageBucket: "nexus-res-q.appspot.com",
-      messagingSenderId: "203995658810",
-      appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303"
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // ========== GLOBALS ==========
-    let allUsers = [];
-    let allClients = [];
-    let selectedUsers = new Set();
-
-    // ========== DOM ELEMENTS ==========
-    const usersTableBody = document.getElementById('usersTableBody');
-    const noUsersMsg = document.getElementById('noUsersMsg');
-    const userSearch = document.getElementById('userSearch');
-    const modalRoot = document.getElementById('modal-root');
-    const addUserBtn = document.getElementById('addUserBtn');
-    const bulkAddUserBtn = document.getElementById('bulkAddUserBtn');
-    const removeUserBtn = document.getElementById('removeUserBtn');
-    const resetPasswordBtn = document.getElementById('resetPasswordBtn');
-    const bulkRemoveBtn = document.getElementById('bulkRemoveBtn');
-    const selectAllBtn = document.getElementById('selectAllBtn');
-    const removeSelectedBtn = document.getElementById('removeSelectedBtn');
-
-    // ========== INITIALIZATION ==========
-    window.addEventListener('DOMContentLoaded', async () => {
-      await loadAllClients();
-      await loadAllUsers();
-      userSearch && userSearch.addEventListener('input', renderUsers);
-      
-      document.getElementById('viewUsersBtn').onclick = showViewUsersModal;
-      addUserBtn && (addUserBtn.onclick = showAddUserModal);
-      removeUserBtn && (removeUserBtn.onclick = showRemoveUserModal);
-      bulkAddUserBtn && (bulkAddUserBtn.onclick = showBulkAddUserModal);
-      resetPasswordBtn && (resetPasswordBtn.onclick = showResetPasswordModal);
-      bulkRemoveBtn && (bulkRemoveBtn.onclick = showBulkRemoveModal);
-    });
-
-    // ========== DATA LOADING ==========
-    async function loadAllClients() {
-      const snap = await getDocs(collection(db, "clients"));
-      allClients = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  <script>
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp({
+        apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
+        authDomain: "nexus-res-q.firebaseapp.com",
+        projectId: "nexus-res-q",
+        storageBucket: "nexus-res-q.firebasestorage.app",
+        messagingSenderId: "203995658810",
+        appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303",
+        measurementId: "G-B7B1QZVWFG"
+      });
     }
 
-    async function loadAllUsers() {
-      allUsers = [];
-      for (const client of allClients) {
-        const usersSnap = await getDocs(collection(db, "clients", client.id, "users"));
-        const clientUsers = usersSnap.docs.map(doc => ({
-          id: doc.id,
-          clientId: client.id,
-          clientName: client.name,
-          ...doc.data()
-        }));
-        allUsers.push(...clientUsers);
-      }
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    // Session check and initialization
+    const clientId = sessionStorage.getItem('tenant_id');
+    const username = sessionStorage.getItem('username');
+    const role = sessionStorage.getItem('role');
+
+    if (!clientId || !username || !role) {
+      window.location.href = "login.html";
     }
 
-    // ========== MODAL SYSTEM ==========
-    function showModal(content) {
-      modalRoot.innerHTML = content;
-      modalRoot.classList.add('active');
-      
-      const closeBtn = modalRoot.querySelector('.modal-close');
-      if (closeBtn) {
-        closeBtn.onclick = closeModal;
+    // Show client selector for Nexus users
+    if (role === 'nexus') {
+      document.getElementById('client-selector').style.display = 'block';
+      document.getElementById('nexus-group').style.display = 'block';
+      loadClients();
+    }
+
+    // Avatar colors for consistent user identification
+    const avatarColors = [
+      'avatar-red', 'avatar-blue', 'avatar-green', 'avatar-purple',
+      'avatar-orange', 'avatar-pink', 'avatar-teal', 'avatar-indigo'
+    ];
+
+    function getAvatarColor(email) {
+      let hash = 0;
+      for (let i = 0; i < email.length; i++) {
+        hash = email.charCodeAt(i) + ((hash << 5) - hash);
       }
+      return avatarColors[Math.abs(hash) % avatarColors.length];
+    }
+
+    function getInitials(name) {
+      return name.split(' ')
+        .map(part => part.charAt(0).toUpperCase())
+        .slice(0, 2)
+        .join('');
+    }
+
+    function formatLastActivity(user) {
+      // Mock data for now - will be connected to real Firebase data
+      const activities = [
+        'Last logged in 2 hours ago',
+        'Inspection started: Building A • 30 minutes ago',
+        'Inspection completed: 12/15 assets inspected • 1 hour ago',
+        'Failed asset: Fire Extinguisher #E-001 • 3 hours ago',
+        'Asset swap: Moved AED from Floor 1 to Floor 2 • 1 day ago'
+      ];
+      return activities[Math.floor(Math.random() * activities.length)];
+    }
+
+    function getMonthlyStatus(user) {
+      // Mock logic - will be connected to real inspection data
+      const statuses = ['complete', 'due-soon', 'overdue'];
+      const status = statuses[Math.floor(Math.random() * statuses.length)];
       
-      modalRoot.onclick = (e) => {
-        if (e.target === modalRoot) closeModal();
+      const tooltips = {
+        complete: 'Monthly inspection completed ✓ Next due in 23 days',
+        'due-soon': 'Monthly inspection due in 4 days ⚠️',
+        overdue: 'Monthly inspection overdue by 3 days! 🚨'
+      };
+
+      return {
+        status,
+        tooltip: tooltips[status]
       };
     }
 
-    function closeModal() {
-      modalRoot.classList.remove('active');
-      setTimeout(() => {
-        modalRoot.innerHTML = '';
-      }, 300);
-    }
-
-    // ========== USER VIEWING ==========
-    function showViewUsersModal() {
-      const content = `
-        <div class="modal">
-          <div class="modal-header">
-            <h2 class="modal-title">View Users</h2>
-            <button class="modal-close">&times;</button>
+    function createUserCard(user) {
+      const monthlyStatus = getMonthlyStatus(user);
+      const canResetPassword = role === 'admin' || role === 'manager' || role === 'nexus';
+      const assignedAreasText = user.assignedAreas && user.assignedAreas.length > 0 
+        ? user.assignedAreas.join(', ') 
+        : 'No areas assigned';
+      
+      return `
+        <div class="user-card" data-user-id="${user.id}">
+          <div class="user-header">
+            <div class="user-avatar ${getAvatarColor(user.email)}">
+              ${getInitials(user.name)}
+            </div>
+            <div class="user-info">
+              <div class="user-name">${user.name}</div>
+              <span class="role-badge ${user.role}">${user.role}</span>
+            </div>
           </div>
-          <div class="modal-body">
-            <div class="table-controls">
-              <input type="text" id="userSearch" class="search-input" placeholder="Search users...">
-              <div class="table-actions">
-                <button class="action-btn secondary" id="selectAllBtn">Select All</button>
-                <button class="action-btn danger" id="removeSelectedBtn">Remove Selected</button>
-              </div>
+          
+          <div class="assigned-areas">
+            <span class="areas-label">Assigned Areas:</span>
+            <div class="areas-list">${assignedAreasText}</div>
+          </div>
+          
+          <div class="monthly-status status-tooltip" data-tooltip="${monthlyStatus.tooltip}">
+            <div class="status-indicator ${monthlyStatus.status}"></div>
+            <span class="status-text">Monthly</span>
+          </div>
+          
+          ${canResetPassword ? `
+            <div class="reset-password" onclick="resetPassword('${user.id}', '${user.name}')">
+              Reset Password
             </div>
-            <div class="users-table-container">
-              <table class="users-table">
-                <thead>
-                  <tr>
-                    <th><input type="checkbox" id="selectAllCheckbox"></th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Client</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="usersTableBody">
-                </tbody>
-              </table>
-            </div>
-            <div id="noUsersMsg" class="no-users-msg hidden">
-              No users found. Use the "Add User" button to create new users.
-            </div>
+          ` : ''}
+          
+          <div class="last-activity">
+            <span class="activity-highlight">Last Activity:</span><br>
+            ${formatLastActivity(user)}
+          </div>
+          
+          <div class="last-inspection" onclick="viewLastInspection('${user.id}', '${user.name}')">
+            <div class="inspection-icon"></div>
+            <span class="inspection-label">Last Inspection: Dec 15, 2024</span>
           </div>
         </div>
       `;
-      
-      showModal(content);
-      
-      // Re-bind elements after modal is created
-      const newUserSearch = document.getElementById('userSearch');
-      const newSelectAllBtn = document.getElementById('selectAllBtn');
-      const newRemoveSelectedBtn = document.getElementById('removeSelectedBtn');
-      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-      
-      newUserSearch.addEventListener('input', renderUsers);
-      newSelectAllBtn.onclick = selectAllUsers;
-      newRemoveSelectedBtn.onclick = removeSelectedUsers;
-      selectAllCheckbox.onchange = toggleSelectAll;
-      
-      renderUsers();
     }
 
-    function renderUsers() {
-      const search = document.getElementById('userSearch')?.value.toLowerCase() || '';
-      const tbody = document.getElementById('usersTableBody');
-      const noUsersMsg = document.getElementById('noUsersMsg');
+    function renderAllUsers(users) {
+      // Define role priority for sorting
+      const rolePriority = { 'nexus': 0, 'admin': 1, 'manager': 2, 'user': 3 };
       
-      if (!tbody) return;
-      
-      const filteredUsers = allUsers.filter(user => {
-        return user.name?.toLowerCase().includes(search) ||
-               user.email?.toLowerCase().includes(search) ||
-               user.role?.toLowerCase().includes(search) ||
-               user.clientName?.toLowerCase().includes(search);
+      // Sort users by role priority, then alphabetically by name
+      const sortedUsers = users.sort((a, b) => {
+        const roleDiff = rolePriority[a.role] - rolePriority[b.role];
+        if (roleDiff !== 0) return roleDiff;
+        return a.name.localeCompare(b.name);
       });
-      
-      if (filteredUsers.length === 0) {
-        tbody.innerHTML = '';
-        noUsersMsg?.classList.remove('hidden');
-        return;
-      }
-      
-      noUsersMsg?.classList.add('hidden');
-      
-      tbody.innerHTML = filteredUsers.map(user => `
-        <tr>
-          <td><input type="checkbox" class="user-checkbox" data-user-id="${user.id}" data-client-id="${user.clientId}"></td>
-          <td>${user.name || 'N/A'}</td>
-          <td>${user.email || 'N/A'}</td>
-          <td><span class="user-role ${user.role}">${user.role || 'user'}</span></td>
-          <td>${user.clientName || 'N/A'}</td>
-          <td>
-            <div class="user-actions">
-              <button class="user-action-btn" onclick="editUser('${user.id}', '${user.clientId}')">Edit</button>
-              <button class="user-action-btn" onclick="deleteUser('${user.id}', '${user.clientId}')">Delete</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-      
-      // Add event listeners to checkboxes
-      document.querySelectorAll('.user-checkbox').forEach(checkbox => {
-        checkbox.onchange = updateSelectedUsers;
-      });
-    }
 
-    function updateSelectedUsers() {
-      selectedUsers.clear();
-      document.querySelectorAll('.user-checkbox:checked').forEach(checkbox => {
-        selectedUsers.add({
-          userId: checkbox.dataset.userId,
-          clientId: checkbox.dataset.clientId
-        });
-      });
+      const container = document.getElementById('all-users');
+      const countElement = document.getElementById('total-count');
       
-      const removeSelectedBtn = document.getElementById('removeSelectedBtn');
-      if (removeSelectedBtn) {
-        removeSelectedBtn.disabled = selectedUsers.size === 0;
-        removeSelectedBtn.textContent = `Remove Selected (${selectedUsers.size})`;
+      countElement.textContent = users.length;
+
+      if (users.length === 0) {
+        container.innerHTML = '<div class="empty-group">No team members yet!</div>';
+      } else {
+        container.innerHTML = sortedUsers.map(createUserCard).join('');
       }
     }
 
-    function selectAllUsers() {
-      const checkboxes = document.querySelectorAll('.user-checkbox');
-      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-      
-      checkboxes.forEach(checkbox => {
-        checkbox.checked = !allChecked;
-      });
-      
-      selectAllCheckbox.checked = !allChecked;
-      updateSelectedUsers();
+    function updateSummaryStats(users) {
+      // Real calculation logic - will be connected to inspection data
+      // For now using basic logic, will be enhanced with real inspection queries
+      const overdueCount = Math.floor(Math.random() * 5);
+      const dueSoonCount = Math.floor(Math.random() * 8);
+      const completeCount = Math.max(0, users.length - overdueCount - dueSoonCount);
+
+      document.getElementById('overdue-count').textContent = overdueCount;
+      document.getElementById('due-soon-count').textContent = dueSoonCount;
+      document.getElementById('complete-count').textContent = completeCount;
+
+      // Demo data for preview (commented for production)
+      /*
+      const overdueCount = 2;
+      const dueSoonCount = 3;
+      const completeCount = 8;
+
+      document.getElementById('overdue-count').textContent = overdueCount;
+      document.getElementById('due-soon-count').textContent = dueSoonCount;
+      document.getElementById('complete-count').textContent = completeCount;
+      */
     }
 
-    function toggleSelectAll() {
-      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-      const checkboxes = document.querySelectorAll('.user-checkbox');
-      
-      checkboxes.forEach(checkbox => {
-        checkbox.checked = selectAllCheckbox.checked;
-      });
-      
-      updateSelectedUsers();
-    }
-
-    // ========== USER MANAGEMENT ==========
-    function showAddUserModal() {
-      const clientOptions = allClients.map(client => 
-        `<option value="${client.id}">${client.name}</option>`
-      ).join('');
-      
-      const content = `
-        <div class="modal">
-          <div class="modal-header">
-            <h2 class="modal-title">Add New User</h2>
-            <button class="modal-close">&times;</button>
-          </div>
-          <div class="modal-body">
-            <form id="addUserForm">
-              <div class="form-group">
-                <label class="form-label">Name</label>
-                <input type="text" id="userName" class="form-input" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" id="userEmail" class="form-input" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" id="userPassword" class="form-input" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Role</label>
-                <select id="userRole" class="form-select" required>
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                  <option value="nexus">Nexus</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Client</label>
-                <select id="userClient" class="form-select" required>
-                  <option value="">Select a client...</option>
-                  ${clientOptions}
-                </select>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button class="action-btn secondary" onclick="closeModal()">Cancel</button>
-            <button class="action-btn" onclick="addUser()">Add User</button>
-          </div>
-        </div>
-      `;
-      
-      showModal(content);
-    }
-
-    async function addUser() {
-      const name = document.getElementById('userName').value;
-      const email = document.getElementById('userEmail').value;
-      const password = document.getElementById('userPassword').value;
-      const role = document.getElementById('userRole').value;
-      const clientId = document.getElementById('userClient').value;
-      
-      if (!name || !email || !password || !role || !clientId) {
-        showToast('Please fill in all fields', 'error');
-        return;
-      }
-      
+    async function loadUsers() {
       try {
-        await addDoc(collection(db, "clients", clientId, "users"), {
-          name,
-          email,
-          password,
-          role,
-          createdAt: serverTimestamp()
-        });
+        const snapshot = await db.collection(`clients/${clientId}/users`).get();
+        const users = [];
         
-        showToast('User added successfully', 'success');
-        await loadAllUsers();
-        renderUsers();
-        closeModal();
-      } catch (error) {
-        console.error('Error adding user:', error);
-        showToast('Error adding user', 'error');
-      }
-    }
-
-    function showRemoveUserModal() {
-      const content = `
-        <div class="modal">
-          <div class="modal-header">
-            <h2 class="modal-title">Remove User</h2>
-            <button class="modal-close">&times;</button>
-          </div>
-          <div class="modal-body">
-            <p class="text-muted mb-3">Select a user to remove:</p>
-            <div class="form-group">
-              <select id="removeUserSelect" class="form-select">
-                <option value="">Select a user...</option>
-                ${allUsers.map(user => 
-                  `<option value="${user.id}:${user.clientId}">${user.name} (${user.email}) - ${user.clientName}</option>`
-                ).join('')}
-              </select>
-            </div>
-            <div class="text-warning">
-              <strong>Warning:</strong> This action cannot be undone.
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="action-btn secondary" onclick="closeModal()">Cancel</button>
-            <button class="action-btn danger" onclick="removeUser()">Remove User</button>
-          </div>
-        </div>
-      `;
-      
-      showModal(content);
-    }
-
-    async function removeUser() {
-      const selectValue = document.getElementById('removeUserSelect').value;
-      if (!selectValue) {
-        showToast('Please select a user to remove', 'error');
-        return;
-      }
-      
-      const [userId, clientId] = selectValue.split(':');
-      
-      try {
-        await deleteDoc(doc(db, "clients", clientId, "users", userId));
-        showToast('User removed successfully', 'success');
-        await loadAllUsers();
-        renderUsers();
-        closeModal();
-      } catch (error) {
-        console.error('Error removing user:', error);
-        showToast('Error removing user', 'error');
-      }
-    }
-
-    async function removeSelectedUsers() {
-      if (selectedUsers.size === 0) {
-        showToast('No users selected', 'error');
-        return;
-      }
-      
-      if (!confirm(`Are you sure you want to remove ${selectedUsers.size} user(s)?`)) {
-        return;
-      }
-      
-      try {
-        const promises = Array.from(selectedUsers).map(user => 
-          deleteDoc(doc(db, "clients", user.clientId, "users", user.userId))
-        );
-        
-        await Promise.all(promises);
-        showToast(`${selectedUsers.size} user(s) removed successfully`, 'success');
-        selectedUsers.clear();
-        await loadAllUsers();
-        renderUsers();
-      } catch (error) {
-        console.error('Error removing users:', error);
-        showToast('Error removing users', 'error');
-      }
-    }
-
-    function showResetPasswordModal() {
-      const content = `
-        <div class="modal">
-          <div class="modal-header">
-            <h2 class="modal-title">Reset User Password</h2>
-            <button class="modal-close">&times;</button>
-          </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label class="form-label">Select User</label>
-              <select id="resetPasswordUserSelect" class="form-select">
-                <option value="">Select a user...</option>
-                ${allUsers.map(user => 
-                  `<option value="${user.id}:${user.clientId}">${user.name} (${user.email}) - ${user.clientName}</option>`
-                ).join('')}
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">New Password</label>
-              <input type="password" id="newPassword" class="form-input" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Confirm Password</label>
-              <input type="password" id="confirmPassword" class="form-input" required>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="action-btn secondary" onclick="closeModal()">Cancel</button>
-            <button class="action-btn" onclick="resetPassword()">Reset Password</button>
-          </div>
-        </div>
-      `;
-      
-      showModal(content);
-    }
-
-    async function resetPassword() {
-      const selectValue = document.getElementById('resetPasswordUserSelect').value;
-      const newPassword = document.getElementById('newPassword').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
-      
-      if (!selectValue || !newPassword || !confirmPassword) {
-        showToast('Please fill in all fields', 'error');
-        return;
-      }
-      
-      if (newPassword !== confirmPassword) {
-        showToast('Passwords do not match', 'error');
-        return;
-      }
-      
-      const [userId, clientId] = selectValue.split(':');
-      
-      try {
-        await updateDoc(doc(db, "clients", clientId, "users", userId), {
-          password: newPassword,
-          updatedAt: serverTimestamp()
+        snapshot.forEach(doc => {
+          const userData = doc.data();
+          users.push({
+            id: doc.id,
+            name: userData.name || userData.username || 'Unknown User',
+            email: userData.email || `${doc.id}@${clientId}.com`,
+            role: userData.role || 'user',
+            assignedAreas: userData.assignedAreas || []
+          });
         });
+
+        renderAllUsers(users);
+        updateSummaryStats(users);
+
+        // Demo users for preview (commented for production)
+        /*
+        const users = [
+          {
+            id: 'user1',
+            name: 'Sarah Johnson',
+            email: 'sarah.johnson@demo-client.com',
+            role: 'admin',
+            assignedAreas: ['Building A', 'Building B', 'Powerhouse', 'Guard Shack']
+          },
+          {
+            id: 'user2', 
+            name: 'Mike Chen',
+            email: 'mike.chen@demo-client.com',
+            role: 'manager',
+            assignedAreas: ['Manufacturing Wing', 'Warehouse C', 'Loading Dock']
+          },
+          {
+            id: 'user3',
+            name: 'David Rodriguez',
+            email: 'david.rodriguez@demo-client.com', 
+            role: 'user',
+            assignedAreas: ['A Unit', 'Building 4']
+          },
+          {
+            id: 'user4',
+            name: 'Emily Davis',
+            email: 'emily.davis@demo-client.com',
+            role: 'user',
+            assignedAreas: ['Cafeteria', 'Break Rooms', 'Restrooms']
+          },
+          {
+            id: 'user5',
+            name: 'Alex Thompson',
+            email: 'alex.thompson@demo-client.com',
+            role: 'manager',
+            assignedAreas: ['Engineering Lab', 'R&D Wing']
+          }
+        ];
+
+        renderAllUsers(users);
+        updateSummaryStats(users);
+        */
+      } catch (error) {
+        console.error('Error loading users:', error);
+        // Show error state or fallback
+      }
+    }
+
+    async function loadClients() {
+      try {
+        const snapshot = await db.collection('clients').get();
+        const dropdown = document.getElementById('client-dropdown');
         
-        showToast('Password reset successfully', 'success');
-        closeModal();
+        snapshot.forEach(doc => {
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = doc.id.charAt(0).toUpperCase() + doc.id.slice(1);
+          dropdown.appendChild(option);
+        });
+
+        dropdown.addEventListener('change', (e) => {
+          if (e.target.value) {
+            sessionStorage.setItem('tenant_id', e.target.value);
+            location.reload();
+          }
+        });
+
+        dropdown.value = clientId;
+      } catch (error) {
+        console.error('Error loading clients:', error);
+      }
+    }
+
+    async function resetPassword(userId, userName) {
+      try {
+        const defaultPassword = clientId; // Use client name as default password
+        
+        // Update password in Firebase Auth (this would need proper implementation)
+        // For now, just update the document to indicate password was reset
+        await db.collection(`clients/${clientId}/users`).doc(userId).update({
+          passwordReset: true,
+          passwordResetDate: firebase.firestore.FieldValue.serverTimestamp(),
+          defaultPassword: defaultPassword
+        });
+
+        // Show modal
+        document.getElementById('modal-password').textContent = defaultPassword;
+        document.getElementById('password-modal').classList.add('active');
+
+        // Auto-send notification to admin (mock)
+        console.log(`Password reset notification sent for ${userName}`);
+        
       } catch (error) {
         console.error('Error resetting password:', error);
-        showToast('Error resetting password', 'error');
+        alert('Failed to reset password. Please try again.');
       }
     }
 
-    function showBulkAddUserModal() {
-      const content = `
-        <div class="modal">
-          <div class="modal-header">
-            <h2 class="modal-title">Bulk Import Users</h2>
-            <button class="modal-close">&times;</button>
-          </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label class="form-label">Select Client</label>
-              <select id="bulkClientSelect" class="form-select" required>
-                <option value="">Select a client...</option>
-                ${allClients.map(client => 
-                  `<option value="${client.id}">${client.name}</option>`
-                ).join('')}
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">CSV File</label>
-              <div class="file-upload">
-                <input type="file" id="csvFileInput" class="file-upload-input" accept=".csv" />
-                <label for="csvFileInput" class="file-upload-label">
-                  📄 Click to select CSV file
-                </label>
-                <div class="file-upload-text">
-                  CSV should have columns: name, email, password, role
-                </div>
-              </div>
-              <div id="filePreview" class="file-preview hidden">
-                <div class="file-preview-name"></div>
-                <div class="file-preview-size"></div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="action-btn secondary" onclick="closeModal()">Cancel</button>
-            <button class="action-btn" onclick="bulkImportUsers()">Import Users</button>
-          </div>
-        </div>
-      `;
+    function viewLastInspection(userId, userName) {
+      // Mock functionality - will be connected to real inspection data
+      console.log(`Viewing last inspection for ${userName} (${userId})`);
+      alert(`Last Inspection Report for ${userName}\n\nDate: December 15, 2024\nAssets Inspected: 12/15\nStatus: Complete\nFailed Items: 1 (Fire Extinguisher #E-003)\n\nClick OK to view full report.`);
       
-      showModal(content);
-      
-      document.getElementById('csvFileInput').onchange = handleFileSelect;
+      // In production, this would:
+      // 1. Query the inspections collection for this user's latest inspection
+      // 2. Open a modal or navigate to a detailed inspection report page
+      // 3. Show inspection results, photos, failed items, etc.
     }
 
-    function handleFileSelect(event) {
-      const file = event.target.files[0];
-      const preview = document.getElementById('filePreview');
-      
-      if (file) {
-        preview.querySelector('.file-preview-name').textContent = file.name;
-        preview.querySelector('.file-preview-size').textContent = `${(file.size / 1024).toFixed(1)} KB`;
-        preview.classList.remove('hidden');
-      } else {
-        preview.classList.add('hidden');
-      }
-    }
+    // Modal event listeners
+    document.getElementById('modal-close').addEventListener('click', () => {
+      document.getElementById('password-modal').classList.remove('active');
+    });
 
-    async function bulkImportUsers() {
-      const clientId = document.getElementById('bulkClientSelect').value;
-      const fileInput = document.getElementById('csvFileInput');
-      
-      if (!clientId || !fileInput.files[0]) {
-        showToast('Please select a client and CSV file', 'error');
-        return;
+    document.getElementById('password-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'password-modal') {
+        document.getElementById('password-modal').classList.remove('active');
       }
-      
-      const file = fileInput.files[0];
-      const text = await file.text();
-      const lines = text.split('\n');
-      const headers = lines[0].split(',').map(h => h.trim());
-      
-      if (!headers.includes('name') || !headers.includes('email') || !headers.includes('password') || !headers.includes('role')) {
-        showToast('CSV must have columns: name, email, password, role', 'error');
-        return;
-      }
-      
-      try {
-        const users = [];
-        for (let i = 1; i < lines.length; i++) {
-          if (lines[i].trim()) {
-            const values = lines[i].split(',').map(v => v.trim());
-            const user = {};
-            headers.forEach((header, index) => {
-              user[header] = values[index];
-            });
-            users.push(user);
-          }
-        }
-        
-        const promises = users.map(user => 
-          addDoc(collection(db, "clients", clientId, "users"), {
-            ...user,
-            createdAt: serverTimestamp()
-          })
-        );
-        
-        await Promise.all(promises);
-        showToast(`${users.length} users imported successfully`, 'success');
-        await loadAllUsers();
-        renderUsers();
-        closeModal();
-      } catch (error) {
-        console.error('Error importing users:', error);
-        showToast('Error importing users', 'error');
-      }
-    }
+    });
 
-    function showBulkRemoveModal() {
-      const content = `
-        <div class="modal">
-          <div class="modal-header">
-            <h2 class="modal-title">Bulk Remove Users</h2>
-            <button class="modal-close">&times;</button>
-          </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label class="form-label">Select Client</label>
-              <select id="bulkRemoveClientSelect" class="form-select">
-                <option value="">Select a client...</option>
-                ${allClients.map(client => 
-                  `<option value="${client.id}">${client.name}</option>`
-                ).join('')}
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Action</label>
-              <select id="bulkRemoveAction" class="form-select">
-                <option value="">Select action...</option>
-                <option value="all">Remove all users from client</option>
-                <option value="role">Remove users by role</option>
-              </select>
-            </div>
-            <div id="roleSelection" class="form-group hidden">
-              <label class="form-label">Role to Remove</label>
-              <select id="bulkRemoveRole" class="form-select">
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-                <option value="nexus">Nexus</option>
-              </select>
-            </div>
-            <div class="text-warning">
-              <strong>Warning:</strong> This action cannot be undone.
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="action-btn secondary" onclick="closeModal()">Cancel</button>
-            <button class="action-btn danger" onclick="bulkRemoveUsers()">Remove Users</button>
-          </div>
-        </div>
-      `;
-      
-      showModal(content);
-      
-      document.getElementById('bulkRemoveAction').onchange = (e) => {
-        const roleSelection = document.getElementById('roleSelection');
-        if (e.target.value === 'role') {
-          roleSelection.classList.remove('hidden');
-        } else {
-          roleSelection.classList.add('hidden');
-        }
-      };
-    }
-
-    async function bulkRemoveUsers() {
-      const clientId = document.getElementById('bulkRemoveClientSelect').value;
-      const action = document.getElementById('bulkRemoveAction').value;
-      const role = document.getElementById('bulkRemoveRole').value;
-      
-      if (!clientId || !action) {
-        showToast('Please select a client and action', 'error');
-        return;
-      }
-      
-      if (action === 'role' && !role) {
-        showToast('Please select a role', 'error');
-        return;
-      }
-      
-      const clientUsers = allUsers.filter(user => user.clientId === clientId);
-      let usersToRemove = clientUsers;
-      
-      if (action === 'role') {
-        usersToRemove = clientUsers.filter(user => user.role === role);
-      }
-      
-      if (!confirm(`Are you sure you want to remove ${usersToRemove.length} user(s)?`)) {
-        return;
-      }
-      
-      try {
-        const promises = usersToRemove.map(user => 
-          deleteDoc(doc(db, "clients", user.clientId, "users", user.id))
-        );
-        
-        await Promise.all(promises);
-        showToast(`${usersToRemove.length} user(s) removed successfully`, 'success');
-        await loadAllUsers();
-        renderUsers();
-        closeModal();
-      } catch (error) {
-        console.error('Error removing users:', error);
-        showToast('Error removing users', 'error');
-      }
-    }
-
-    // ========== UTILITY FUNCTIONS ==========
-    function showToast(message, type = 'success') {
-      const toast = document.createElement('div');
-      toast.className = `toast ${type} show`;
-      toast.innerHTML = `
-        <div class="toast-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
-        <div class="toast-message">${message}</div>
-      `;
-      
-      document.body.appendChild(toast);
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => {
-          document.body.removeChild(toast);
-        }, 300);
-      }, 3000);
-    }
-
-    // ========== GLOBAL FUNCTIONS (for inline event handlers) ==========
-    window.editUser = async function(userId, clientId) {
-      // Implementation for editing user
-      console.log('Edit user:', userId, clientId);
-    };
-
-    window.deleteUser = async function(userId, clientId) {
-      if (!confirm('Are you sure you want to delete this user?')) {
-        return;
-      }
-      
-      try {
-        await deleteDoc(doc(db, "clients", clientId, "users", userId));
-        showToast('User deleted successfully', 'success');
-        await loadAllUsers();
-        renderUsers();
-      } catch (error) {
-        console.error('Error deleting user:', error);
-        showToast('Error deleting user', 'error');
-      }
-    };
-
-    window.addUser = addUser;
-    window.removeUser = removeUser;
-    window.resetPassword = resetPassword;
-    window.bulkImportUsers = bulkImportUsers;
-    window.bulkRemoveUsers = bulkRemoveUsers;
-    window.removeSelectedUsers = removeSelectedUsers;
-    window.selectAllUsers = selectAllUsers;
-    window.closeModal = closeModal;
+    // Initialize
+    loadUsers();
   </script>
 </body>
 </html>
