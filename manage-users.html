@@ -644,21 +644,33 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // Session check and initialization
-    const clientId = sessionStorage.getItem('tenant_id');
-    const username = sessionStorage.getItem('username');
-    const role = sessionStorage.getItem('role');
+    // Global variables
+    let clientId, username, role;
 
-    if (!clientId || !username || !role) {
-      window.location.href = "login.html";
-    }
+    // Wait for DOM to load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Session check and initialization
+      clientId = sessionStorage.getItem('tenant_id');
+      username = sessionStorage.getItem('username');
+      role = sessionStorage.getItem('role');
 
-    // Show client selector for Nexus users
-    if (role === 'nexus') {
-      document.getElementById('client-selector').style.display = 'block';
-      document.getElementById('nexus-group').style.display = 'block';
-      loadClients();
-    }
+      if (!clientId || !username || !role) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Show client selector for Nexus users
+      if (role === 'nexus') {
+        const clientSelector = document.getElementById('client-selector');
+        if (clientSelector) {
+          clientSelector.style.display = 'block';
+          loadClients();
+        }
+      }
+
+      // Initialize
+      loadUsers();
+    });
 
     // Avatar colors for consistent user identification
     const avatarColors = [
@@ -806,11 +818,15 @@
 
     async function loadUsers() {
       try {
+        console.log('Loading users for client:', clientId);
         const snapshot = await db.collection(`clients/${clientId}/users`).get();
         const users = [];
         
+        console.log('Found', snapshot.size, 'users in Firebase');
+        
         snapshot.forEach(doc => {
           const userData = doc.data();
+          console.log('User data:', doc.id, userData);
           users.push({
             id: doc.id,
             name: userData.name || userData.username || 'Unknown User',
@@ -820,6 +836,7 @@
           });
         });
 
+        console.log('Processed users:', users);
         renderAllUsers(users);
         updateSummaryStats(users);
 
@@ -868,7 +885,13 @@
         */
       } catch (error) {
         console.error('Error loading users:', error);
-        // Show error state or fallback
+        // Show error state with fallback
+        document.getElementById('all-users').innerHTML = `
+          <div class="empty-group">
+            Error loading users: ${error.message}<br>
+            Please check console for details.
+          </div>
+        `;
       }
     }
 
@@ -944,8 +967,6 @@
       }
     });
 
-    // Initialize
-    loadUsers();
   </script>
 </body>
 </html>
