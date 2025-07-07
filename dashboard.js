@@ -52,6 +52,8 @@ window.addEventListener('DOMContentLoaded', () => {
       if (btn.id === 'btn-users') return;
       // Skip assets button - it has its own handler for redirect
       if (btn.id === 'btn-assets') return;
+      // Skip site-settings button - it has its own handler for redirect
+      if (btn.id === 'btn-site-settings') return;
       
       document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -663,6 +665,12 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-assets').addEventListener('click', function() {
     // Redirect to the modernized manage assets page
     window.location.href = 'manage-assets.html';
+  });
+
+  // --- SITE SETTINGS FUNCTIONALITY ---
+  document.getElementById('btn-site-settings').addEventListener('click', function() {
+    // Redirect to the site settings page
+    window.location.href = 'site-settings.html';
   });
 
   // --- ONBOARD CLIENT FUNCTIONALITY ---

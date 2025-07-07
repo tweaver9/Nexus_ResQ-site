@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Site Configuration | Nexus Res-Q</title>
+  <title>Asset Management | Nexus Res-Q</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="CSS/dashboard.css">
@@ -662,14 +662,14 @@
   <!-- Header -->
   <header class="site-header">
     <div class="header-container">
-      <h1 class="site-title">Site Configuration</h1>
+      <h1 class="site-title">Asset Management</h1>
       <a href="dashboard.html" class="back-nav">← Back to Dashboard</a>
     </div>
   </header>
 
   <!-- Main Content -->
   <main class="main-container">
-    <!-- Configuration Cards -->
+    <!-- Asset Management Actions -->
     <div class="config-grid">
       <!-- Asset Management Card -->
       <div class="config-card">
@@ -679,27 +679,6 @@
         <div class="card-actions">
           <button class="action-btn" id="addAssetBtn">Add Asset</button>
           <button class="action-btn secondary" id="bulkAddAssetBtn">Bulk Import</button>
-        </div>
-      </div>
-
-      <!-- Location Management Card -->
-      <div class="config-card">
-        <span class="card-icon">📍</span>
-        <h2 class="card-title">Location Management</h2>
-        <p class="card-description">Manage your site locations with hierarchical precision. Create zones, buildings, and sub-locations.</p>
-        <div class="card-actions">
-          <button class="action-btn" id="locationsBtn">Explore Locations</button>
-          <button class="action-btn secondary" id="addLocationBtn">Add Location</button>
-        </div>
-      </div>
-
-      <!-- System Configuration Card -->
-      <div class="config-card">
-        <span class="card-icon">⚙️</span>
-        <h2 class="card-title">Site Configuration</h2>
-        <p class="card-description">Configure asset categories, inspection parameters, and system-wide settings.</p>
-        <div class="card-actions">
-          <button class="action-btn" id="manageCategoriesBtn">Manage Categories</button>
         </div>
       </div>
 
@@ -823,9 +802,6 @@
     const modalRoot = document.getElementById('modal-root');
     const addAssetBtn = document.getElementById('addAssetBtn');
     const bulkAddAssetBtn = document.getElementById('bulkAddAssetBtn');
-    const addLocationBtn = document.getElementById('addLocationBtn');
-    const locationsBtn = document.getElementById('locationsBtn');
-    const manageCategoriesBtn = document.getElementById('manageCategoriesBtn');
 
     // ========== ROLE DETECTION & LOADING SYSTEM ==========
     
