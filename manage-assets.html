@@ -499,6 +499,58 @@
       transform: scale(1.1);
     }
     
+    /* PREMIUM ADD ASSET BUTTON */
+    .premium-add-btn {
+      background: linear-gradient(135deg, var(--nexus-yellow) 0%, #fbc02d 100%);
+      color: var(--nexus-dark);
+      border: none;
+      padding: 0.875rem 1.75rem;
+      border-radius: var(--radius-lg);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      box-shadow: 0 4px 12px rgba(253, 216, 53, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .premium-add-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .premium-add-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(253, 216, 53, 0.4);
+    }
+    
+    .premium-add-btn:hover::before {
+      left: 100%;
+    }
+    
+    .premium-add-btn:active {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 15px rgba(253, 216, 53, 0.3);
+    }
+    
+    .premium-add-btn svg {
+      transition: transform 0.2s ease;
+    }
+    
+    .premium-add-btn:hover svg {
+      transform: rotate(90deg);
+    }
+    
     /* Editable fields */
     .editable-field {
       display: inline-block;
@@ -581,7 +633,12 @@
     <select id="asset-type-filter" style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:150px;">
       <option value="">All Types</option>
     </select>
-    <button class="reset-password" id="add-asset-btn" style="margin-left:auto;">+ Add Asset</button>
+    <button class="premium-add-btn" id="add-asset-btn" style="margin-left:auto;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Add Asset
+    </button>
     <button class="reset-password" id="bulk-add-btn">Bulk Add</button>
   </div>
   <!-- === SKELETON LOADER (NEW) === -->
@@ -931,6 +988,23 @@
       document.getElementById('same-date-checkbox').onchange = handleSameDateChange;
       document.getElementById('location-select').onchange = handleLocationChange;
       document.getElementById('sublocation-select').onchange = handleSublocationChange;
+      
+      // Custom type input handler for enabling kind field
+      document.getElementById('custom-type-input').oninput = function() {
+        const kindSelect = document.getElementById('asset-kind-select');
+        const customKindGroup = document.getElementById('custom-kind-group');
+        
+        if (this.value.trim()) {
+          kindSelect.disabled = false;
+          kindSelect.innerHTML = '<option value="">Not applicable</option>';
+          // For custom types, we always show the custom kind input
+          customKindGroup.style.display = 'block';
+        } else {
+          kindSelect.disabled = true;
+          kindSelect.innerHTML = '<option value="">Enter custom type first...</option>';
+          customKindGroup.style.display = 'none';
+        }
+      };
       
       // Precision location handlers
       document.querySelectorAll('input[name="precision-option"]').forEach(radio => {
@@ -1635,12 +1709,21 @@
             isValid = false;
           }
           
-          if (!kindSelect.value) {
-            showFieldError('asset-kind-select', 'kind-error');
-            isValid = false;
-          } else if (kindSelect.value === 'custom' && !customKind.value.trim()) {
-            showFieldError('custom-kind-input', 'custom-kind-error');
-            isValid = false;
+          // For custom types, always require custom kind input
+          if (typeSelect.value === 'custom') {
+            if (!customKind.value.trim()) {
+              showFieldError('custom-kind-input', 'custom-kind-error');
+              isValid = false;
+            }
+          } else {
+            // For regular types, check kind selection
+            if (!kindSelect.value) {
+              showFieldError('asset-kind-select', 'kind-error');
+              isValid = false;
+            } else if (kindSelect.value === 'custom' && !customKind.value.trim()) {
+              showFieldError('custom-kind-input', 'custom-kind-error');
+              isValid = false;
+            }
           }
           break;
           
@@ -1708,12 +1791,29 @@
     function saveCurrentStepData() {
       switch (currentAssetStep) {
         case 1:
-          assetFormData.type = document.getElementById('asset-type-select').value === 'custom' 
-            ? document.getElementById('custom-type-input').value.trim()
-            : document.getElementById('asset-type-select').value;
-          assetFormData.kind = document.getElementById('asset-kind-select').value === 'custom'
-            ? document.getElementById('custom-kind-input').value.trim()
-            : document.getElementById('asset-kind-select').value;
+          const typeSelect = document.getElementById('asset-type-select');
+          const customTypeInput = document.getElementById('custom-type-input');
+          const kindSelect = document.getElementById('asset-kind-select');
+          const customKindInput = document.getElementById('custom-kind-input');
+          
+          // Handle type
+          if (typeSelect.value === 'custom') {
+            assetFormData.type = makeSmartSingular(customTypeInput.value.trim());
+          } else {
+            assetFormData.type = typeSelect.value;
+          }
+          
+          // Handle kind
+          if (typeSelect.value === 'custom') {
+            // For custom types, always use custom kind input
+            assetFormData.kind = customKindInput.value.trim();
+          } else if (kindSelect.value === 'custom') {
+            // For regular types with custom kind
+            assetFormData.kind = customKindInput.value.trim();
+          } else {
+            // Regular type and kind
+            assetFormData.kind = kindSelect.value;
+          }
           break;
         case 2:
           assetFormData.asset_id = document.getElementById('asset-id-input').value.trim();
@@ -1824,15 +1924,19 @@
       const typeSelect = document.getElementById('asset-type-select');
       const customTypeGroup = document.getElementById('custom-type-group');
       const kindSelect = document.getElementById('asset-kind-select');
+      const customKindGroup = document.getElementById('custom-kind-group');
       
       if (typeSelect.value === 'custom') {
         customTypeGroup.style.display = 'block';
+        // Show custom kind input immediately when type is custom
+        customKindGroup.style.display = 'block';
+        kindSelect.innerHTML = '<option value="">First enter custom type...</option>';
       } else {
         customTypeGroup.style.display = 'none';
+        customKindGroup.style.display = 'none';
+        // Load kinds for selected type
+        loadKindsForType(typeSelect.value);
       }
-      
-      // Load kinds for selected type
-      loadKindsForType(typeSelect.value);
     }
     
     function handleKindChange() {
@@ -1845,6 +1949,62 @@
         customKindGroup.style.display = 'none';
       }
     }
+    
+    // Smart singularization function
+    function makeSmartSingular(text) {
+      if (!text) return text;
+      
+      const trimmed = text.trim();
+      
+      // Common irregular plurals that should be handled specially
+      const irregularPlurals = {
+        'feet': 'foot',
+        'children': 'child',
+        'men': 'man',
+        'women': 'woman',
+        'teeth': 'tooth',
+        'geese': 'goose'
+      };
+      
+      const lowerText = trimmed.toLowerCase();
+      if (irregularPlurals[lowerText]) {
+        return irregularPlurals[lowerText];
+      }
+      
+      // Don't remove 's' from words that shouldn't be singularized
+      const keepAsIs = [
+        'glass', 'compass', 'mass', 'class', 'grass', 'brass', 'gas', 'pass',
+        'stress', 'dress', 'press', 'mess', 'less', 'kiss', 'miss', 'bliss',
+        'process', 'progress', 'address', 'express', 'success', 'access',
+        'business', 'fitness', 'darkness', 'weakness', 'thickness', 'illness'
+      ];
+      
+      if (keepAsIs.includes(lowerText)) {
+        return trimmed;
+      }
+      
+      // Simple rule: if it ends with 's' and is more than 3 characters, remove the 's'
+      if (trimmed.length > 3 && trimmed.endsWith('s') && !trimmed.endsWith('ss')) {
+        // Check if it's likely a plural (not ending in 'us' or other non-plural 's' endings)
+        if (!trimmed.toLowerCase().endsWith('us') && 
+            !trimmed.toLowerCase().endsWith('is') &&
+            !trimmed.toLowerCase().endsWith('os')) {
+          return trimmed.slice(0, -1);
+        }
+      }
+      
+      return trimmed;
+    }
+    
+    // Add event listener for smart singularization
+    document.addEventListener('DOMContentLoaded', function() {
+      const customTypeInput = document.getElementById('custom-type-input');
+      if (customTypeInput) {
+        customTypeInput.addEventListener('blur', function() {
+          this.value = makeSmartSingular(this.value);
+        });
+      }
+    });
     
     function handleSameDateChange() {
       const checkbox = document.getElementById('same-date-checkbox');
@@ -1948,9 +2108,12 @@
       kindSelect.innerHTML = '<option value="">Select asset kind...</option>';
       
       if (!assetType || assetType === 'custom') {
-        kindSelect.innerHTML = '<option value="">First enter custom type...</option>';
+        kindSelect.innerHTML = '<option value="">Enter custom type first...</option>';
+        kindSelect.disabled = true;
         return;
       }
+      
+      kindSelect.disabled = false;
       
       try {
         const kindsSnap = await db.collection(`clients/${clientId}/asset_kinds`)
