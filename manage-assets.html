@@ -270,7 +270,7 @@
     </div>
   </section>
   <!-- === STICKY FILTER BAR (NEW) === -->
-  <div id="sticky-filters">
+  <div id="sticky-filters" style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
     <input id="asset-search" type="search" placeholder="Search assets..." style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:200px;">
     <select id="asset-type-filter" style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:150px;">
       <option value="">All Types</option>
@@ -279,7 +279,7 @@
     <button class="reset-password" id="bulk-add-btn">Bulk Add</button>
   </div>
   <!-- === SKELETON LOADER (NEW) === -->
-  <div class="skeleton-grid" id="asset-skeleton" style="display:none;">
+  <div class="skeleton-grid" id="asset-skeleton" style="display:none; max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
     <div class="skeleton-card">
       <div class="skeleton-anim skel-avatar"></div>
       <div class="skeleton-anim skel-bar"></div>
@@ -466,6 +466,85 @@
         });
         
         console.log('Processed assets:', allAssets);
+        
+        // Add demo data if no assets found (for demonstration purposes)
+        if (allAssets.length === 0) {
+          console.log('No assets found, adding demo data for showcase');
+          allAssets = [
+            {
+              id: 'demo1',
+              kind: '30# ABC Extinguisher',
+              type: 'Fire Extinguisher',
+              asset_id: 'FE-001-2024',
+              location: 'Building A',
+              sublocation: 'Main Hallway',
+              precision: '1234',
+              annualDue: '03/2025',
+              serial: 'SE123456789',
+              lastInspection: 'January 15, 2025'
+            },
+            {
+              id: 'demo2',
+              kind: 'Emergency Exit Sign',
+              type: 'Exit Sign',
+              asset_id: 'ES-047-2024',
+              location: 'Building A',
+              sublocation: 'East Wing',
+              precision: '5678',
+              annualDue: '01/2025',
+              serial: 'EXIT789012',
+              lastInspection: 'December 20, 2024'
+            },
+            {
+              id: 'demo3',
+              kind: 'Fire Hose',
+              type: 'Hose',
+              asset_id: 'FH-023-2024',
+              location: 'Warehouse C',
+              sublocation: 'Loading Dock',
+              precision: '9012',
+              annualDue: '06/2025',
+              serial: 'HOSE345678',
+              lastInspection: 'November 30, 2024'
+            },
+            {
+              id: 'demo4',
+              kind: 'PIV Valve',
+              type: 'PIV',
+              asset_id: 'PIV-089-2024',
+              location: 'Powerhouse',
+              precision: '3456',
+              annualDue: '11/2024',
+              serial: 'PIV901234',
+              lastInspection: 'October 10, 2024'
+            },
+            {
+              id: 'demo5',
+              kind: '5# ABC Extinguisher',
+              type: 'Fire Extinguisher',
+              asset_id: 'FE-134-2024',
+              location: 'Building B',
+              sublocation: 'Server Room',
+              precision: '7890',
+              annualDue: '09/2025',
+              serial: 'SMALL567890',
+              lastInspection: 'January 8, 2025'
+            },
+            {
+              id: 'demo6',
+              kind: 'Emergency Light',
+              type: 'Emergency Equipment',
+              asset_id: 'EL-067-2024',
+              location: 'Manufacturing Wing',
+              sublocation: 'Assembly Line 2',
+              precision: '2345',
+              annualDue: '04/2025',
+              serial: 'LIGHT123456',
+              lastInspection: 'December 15, 2024'
+            }
+          ];
+        }
+        
         hideSkeleton();
         renderAssets();
         updateStats();
@@ -544,7 +623,17 @@
           ${asset.serial ? `
           <div class="last-activity">
             <span class="activity-highlight">Serial:</span>
-            ${asset.serial}
+            ${isNexusUser() ? 
+              `<span class="editable-field" data-field="serial" onclick="event.stopPropagation()">${asset.serial}</span>` :
+              asset.serial
+            }
+          </div>
+          ` : ''}
+          
+          ${isNexusUser() && asset.type ? `
+          <div class="last-activity">
+            <span class="activity-highlight">Type:</span>
+            <span class="editable-field" data-field="type" onclick="event.stopPropagation()">${asset.type}</span>
           </div>
           ` : ''}
           
@@ -568,8 +657,10 @@
           const assetId = assetCard.dataset.id;
           const asset = allAssets.find(a=>a.id===assetId);
           const field = el.dataset.field;
-          // Asset type/kind not inline-editable
-          if (field === 'type' || field === 'kind') return;
+          
+          // Only Nexus can edit type/kind fields, others can't edit these
+          if ((field === 'type' || field === 'kind') && !isNexusUser()) return;
+          
           el.classList.add('editing');
           const oldVal = el.textContent;
           let input = document.createElement('input');
@@ -578,9 +669,19 @@
           el.textContent = '';
           el.appendChild(input);
           input.focus();
-          // For annualDue, show MM/YYYY
-          if (field==='annualDue') input.type = 'text';
+          // Field-specific input configuration
+          if (field==='annualDue') {
+            input.type = 'text';
+            input.placeholder = 'MM/YYYY';
+          }
           if (field==='asset_id') input.maxLength = 16;
+          if (field==='serial') input.maxLength = 20;
+          if (field==='precision') input.maxLength = 4;
+          if (field==='type' && isNexusUser()) {
+            // For type field, show dropdown for Nexus users
+            input.type = 'text';
+            input.placeholder = 'Asset Type';
+          }
           input.onblur = finishEdit;
           input.onkeydown = function(ev){
             if(ev.key==='Enter'){ input.blur(); }
@@ -706,7 +807,12 @@
 
     // === Helper Functions ===
     function canModifyAssets() {
+      // Nexus has full permissions, admin/manager have standard permissions
       return ['nexus', 'admin', 'manager'].includes(currentUserRole);
+    }
+
+    function isNexusUser() {
+      return currentUserRole === 'nexus';
     }
 
     function getAssetInitial(asset) {
@@ -723,14 +829,36 @@
         const typesSnap = await db.collection(`clients/${clientId}/asset_types`).get();
         const typeFilter = document.getElementById('asset-type-filter');
         
+        let hasTypes = false;
         typesSnap.forEach(doc => {
+          hasTypes = true;
           const opt = document.createElement('option');
           opt.value = doc.id;
           opt.textContent = doc.id;
           typeFilter.appendChild(opt);
         });
+        
+        // Add demo types if none found
+        if (!hasTypes) {
+          const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
+          demoTypes.forEach(type => {
+            const opt = document.createElement('option');
+            opt.value = type;
+            opt.textContent = type;
+            typeFilter.appendChild(opt);
+          });
+        }
       } catch (error) {
         console.error('Error loading asset types:', error);
+        // Add demo types on error
+        const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
+        const typeFilter = document.getElementById('asset-type-filter');
+        demoTypes.forEach(type => {
+          const opt = document.createElement('option');
+          opt.value = type;
+          opt.textContent = type;
+          typeFilter.appendChild(opt);
+        });
       }
     }
 
@@ -752,12 +880,25 @@
         const snapshot = await db.collection('clients').get();
         const dropdown = document.getElementById('client-dropdown');
         
+        let hasClients = false;
         snapshot.forEach(doc => {
+          hasClients = true;
           const option = document.createElement('option');
           option.value = doc.id;
           option.textContent = doc.id.charAt(0).toUpperCase() + doc.id.slice(1);
           dropdown.appendChild(option);
         });
+        
+        // Add demo clients if none found
+        if (!hasClients) {
+          const demoClients = ['demo', 'spacex', 'tesla', 'boeing', 'lockheed'];
+          demoClients.forEach(client => {
+            const option = document.createElement('option');
+            option.value = client;
+            option.textContent = client.charAt(0).toUpperCase() + client.slice(1);
+            dropdown.appendChild(option);
+          });
+        }
 
         dropdown.addEventListener('change', (e) => {
           if (e.target.value) {
@@ -769,6 +910,16 @@
         dropdown.value = clientId;
       } catch (error) {
         console.error('Error loading clients:', error);
+        // Add demo clients on error
+        const dropdown = document.getElementById('client-dropdown');
+        const demoClients = ['demo', 'spacex', 'tesla', 'boeing', 'lockheed'];
+        demoClients.forEach(client => {
+          const option = document.createElement('option');
+          option.value = client;
+          option.textContent = client.charAt(0).toUpperCase() + client.slice(1);
+          dropdown.appendChild(option);
+        });
+        dropdown.value = clientId;
       }
     }
 
