@@ -136,7 +136,11 @@
       display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
     }
     .modal-overlay.active { opacity: 1; visibility: visible;}
-    .modal { background: var(--nexus-card); border-radius: var(--radius); padding: 2rem; max-width: 500px; width: 90%; border: 1px solid var(--nexus-border); box-shadow: var(--shadow-heavy); transform: scale(0.9); transition: all 0.3s ease; opacity: 0;}
+    .modal { background: var(--nexus-card); border-radius: var(--radius); padding: 2rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; border: 1px solid var(--nexus-border); box-shadow: var(--shadow-heavy); transform: scale(0.9); transition: all 0.3s ease; opacity: 0; scrollbar-width: thin; scrollbar-color: var(--nexus-yellow) transparent;}
+    .modal::-webkit-scrollbar { width: 6px;}
+    .modal::-webkit-scrollbar-track { background: transparent;}
+    .modal::-webkit-scrollbar-thumb { background: var(--nexus-yellow); border-radius: 3px; opacity: 0.7;}
+    .modal::-webkit-scrollbar-thumb:hover { background: #fbc02d; opacity: 1;}
     .modal-overlay.active .modal { transform: scale(1) translateY(0); opacity: 1;}
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;}
     .modal-title { font-size: 1.48rem; font-weight: 600; color: var(--nexus-light);}
@@ -200,34 +204,35 @@
       max-width: 700px;
       width: 95%;
       max-height: 85vh;
-      overflow-y: scroll;
+      overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: thin;
-      scrollbar-color: var(--nexus-yellow) var(--nexus-card);
+      scrollbar-color: var(--nexus-yellow) transparent;
     }
     
     .add-asset-modal::-webkit-scrollbar {
-      width: 8px;
+      width: 6px;
     }
     
     .add-asset-modal::-webkit-scrollbar-track {
-      background: var(--nexus-card);
-      border-radius: 4px;
+      background: transparent;
     }
     
     .add-asset-modal::-webkit-scrollbar-thumb {
       background: var(--nexus-yellow);
-      border-radius: 4px;
+      border-radius: 3px;
+      opacity: 0.7;
     }
     
     .add-asset-modal::-webkit-scrollbar-thumb:hover {
       background: #fbc02d;
+      opacity: 1;
     }
     
     .asset-stepper {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
       padding: 0 1rem;
     }
     
@@ -242,7 +247,7 @@
     .step:not(:last-child)::after {
       content: '';
       position: absolute;
-      top: 16px;
+      top: 14px;
       left: 60%;
       right: -40%;
       height: 2px;
@@ -256,8 +261,8 @@
     }
     
     .step-circle {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -265,10 +270,10 @@
       background: var(--nexus-border);
       color: var(--nexus-muted);
       font-weight: 600;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.3rem;
       position: relative;
       z-index: 2;
-      font-size: 0.875rem;
+      font-size: 0.8rem;
     }
     
     .step.active .step-circle {
@@ -282,7 +287,7 @@
     }
     
     .step-label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--nexus-muted);
       text-align: center;
       font-weight: 500;
@@ -298,20 +303,20 @@
     }
     
     .step-content {
-      min-height: 280px;
-      padding: 0.8rem 0;
+      min-height: 220px;
+      padding: 0.6rem 0;
     }
     
     .form-group {
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
     }
     
     .form-label {
       display: block;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.3rem;
       color: var(--nexus-light);
       font-weight: 500;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
     
     .form-input, .form-select {
@@ -1123,6 +1128,7 @@
             sublocation: 'Main Hallway',
             precision: '1234',
             annualDue: '03/2025',
+            monthlyDue: '02/2025',
             serial: 'SE123456789',
             lastInspection: 'January 15, 2025'
           },
@@ -1135,6 +1141,7 @@
             sublocation: 'East Wing',
             precision: '5678',
             annualDue: '01/2025',
+            monthlyDue: '01/2025',
             serial: 'EXIT789012',
             lastInspection: 'December 20, 2024'
           },
@@ -1147,6 +1154,7 @@
             sublocation: 'Loading Dock',
             precision: '9012',
             annualDue: '06/2025',
+            monthlyDue: '03/2025',
             serial: 'HOSE345678',
             lastInspection: 'November 30, 2024'
           },
@@ -1158,6 +1166,7 @@
             location: 'Powerhouse',
             precision: '3456',
             annualDue: '11/2024',
+            monthlyDue: '01/2025',
             serial: 'PIV901234',
             lastInspection: 'October 10, 2024'
           },
@@ -1170,6 +1179,7 @@
             sublocation: 'Server Room',
             precision: '7890',
             annualDue: '09/2025',
+            monthlyDue: '02/2025',
             serial: 'SMALL567890',
             lastInspection: 'January 8, 2025'
           },
@@ -1182,6 +1192,7 @@
             sublocation: 'Assembly Line 2',
             precision: '2345',
             annualDue: '04/2025',
+            monthlyDue: '02/2025',
             serial: 'LIGHT123456',
             lastInspection: 'December 15, 2024'
           }
@@ -1249,12 +1260,12 @@
           </div>
           ` : ''}
           
-          <div class="monthly-status status-tooltip" data-tooltip="Annual Due: ${asset.annualDue || 'Not set'}">
+          <div class="monthly-status status-tooltip" data-tooltip="Monthly Due: ${asset.monthlyDue || 'Not set'} | Annual Due: ${asset.annualDue || 'Not set'}">
             <div class="status-indicator ${getAssetStatus(asset)}"></div>
             <span class="status-text">
               Due: ${canModifyAssets() ? 
-                `<span class="editable-field" data-field="annualDue" onclick="event.stopPropagation()">${asset.annualDue || '--'}</span>` :
-                (asset.annualDue || '--')
+                `<span class="editable-field" data-field="monthlyDue" onclick="event.stopPropagation()">${asset.monthlyDue || '--'}</span>` :
+                (asset.monthlyDue || '--')
               }
             </span>
           </div>
@@ -1320,7 +1331,7 @@
           el.appendChild(input);
           input.focus();
           // Field-specific input configuration
-          if (field==='annualDue') {
+          if (field==='annualDue' || field==='monthlyDue') {
             input.type = 'text';
             input.placeholder = 'MM/YYYY';
           }
@@ -1343,7 +1354,7 @@
           }
           async function finishEdit() {
             let newVal = input.value.trim();
-            if (field === 'annualDue' && !/^\d{2}\/\d{4}$/.test(newVal) && newVal!=='') {
+            if ((field === 'annualDue' || field === 'monthlyDue') && !/^\d{2}\/\d{4}$/.test(newVal) && newVal!=='') {
               showToast('Enter MM/YYYY format!',{type:'error'});
               cancelEdit();
               return;
@@ -1436,8 +1447,10 @@
     }
     // === Asset Status (demo logic) ===
     function getAssetStatus(asset) {
-      if (!asset.annualDue) return 'due-soon';
-      let [mm,yyyy] = asset.annualDue.split('/');
+      // Use monthly due for primary status, fall back to annual
+      const dueDate = asset.monthlyDue || asset.annualDue;
+      if (!dueDate) return 'due-soon';
+      let [mm,yyyy] = dueDate.split('/');
       let due = new Date(+yyyy, +mm-1, 1);
       let now = new Date();
       let days = (due-now)/(1000*60*60*24);
@@ -1602,6 +1615,11 @@
             <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.precision}</span>
           </div>
           ` : ''}
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Monthly Due:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.monthlyDue || 'Not set'}</span>
+          </div>
           
           <div>
             <strong style="color: var(--nexus-light);">Annual Due:</strong>
