@@ -465,86 +465,83 @@
             ...assetData
           });
         });
+         console.log('Processed assets:', allAssets);
         
-        console.log('Processed assets:', allAssets);
-        
-        // Add demo data if no assets found (for demonstration purposes)
-        if (allAssets.length === 0) {
-          console.log('No assets found, adding demo data for showcase');
-          allAssets = [
-            {
-              id: 'demo1',
-              kind: '30# ABC Extinguisher',
-              type: 'Fire Extinguisher',
-              asset_id: 'FE-001-2024',
-              location: 'Building A',
-              sublocation: 'Main Hallway',
-              precision: '1234',
-              annualDue: '03/2025',
-              serial: 'SE123456789',
-              lastInspection: 'January 15, 2025'
-            },
-            {
-              id: 'demo2',
-              kind: 'Emergency Exit Sign',
-              type: 'Exit Sign',
-              asset_id: 'ES-047-2024',
-              location: 'Building A',
-              sublocation: 'East Wing',
-              precision: '5678',
-              annualDue: '01/2025',
-              serial: 'EXIT789012',
-              lastInspection: 'December 20, 2024'
-            },
-            {
-              id: 'demo3',
-              kind: 'Fire Hose',
-              type: 'Hose',
-              asset_id: 'FH-023-2024',
-              location: 'Warehouse C',
-              sublocation: 'Loading Dock',
-              precision: '9012',
-              annualDue: '06/2025',
-              serial: 'HOSE345678',
-              lastInspection: 'November 30, 2024'
-            },
-            {
-              id: 'demo4',
-              kind: 'PIV Valve',
-              type: 'PIV',
-              asset_id: 'PIV-089-2024',
-              location: 'Powerhouse',
-              precision: '3456',
-              annualDue: '11/2024',
-              serial: 'PIV901234',
-              lastInspection: 'October 10, 2024'
-            },
-            {
-              id: 'demo5',
-              kind: '5# ABC Extinguisher',
-              type: 'Fire Extinguisher',
-              asset_id: 'FE-134-2024',
-              location: 'Building B',
-              sublocation: 'Server Room',
-              precision: '7890',
-              annualDue: '09/2025',
-              serial: 'SMALL567890',
-              lastInspection: 'January 8, 2025'
-            },
-            {
-              id: 'demo6',
-              kind: 'Emergency Light',
-              type: 'Emergency Equipment',
-              asset_id: 'EL-067-2024',
-              location: 'Manufacturing Wing',
-              sublocation: 'Assembly Line 2',
-              precision: '2345',
-              annualDue: '04/2025',
-              serial: 'LIGHT123456',
-              lastInspection: 'December 15, 2024'
-            }
-          ];
-        }
+        // Always add demo data for showcase (comment out for production)
+        console.log('Adding demo data for showcase');
+        allAssets = [
+          {
+            id: 'demo1',
+            kind: '30# ABC Extinguisher',
+            type: 'Fire Extinguisher',
+            asset_id: 'FE-001-2024',
+            location: 'Building A',
+            sublocation: 'Main Hallway',
+            precision: '1234',
+            annualDue: '03/2025',
+            serial: 'SE123456789',
+            lastInspection: 'January 15, 2025'
+          },
+          {
+            id: 'demo2',
+            kind: 'Emergency Exit Sign',
+            type: 'Exit Sign',
+            asset_id: 'ES-047-2024',
+            location: 'Building A',
+            sublocation: 'East Wing',
+            precision: '5678',
+            annualDue: '01/2025',
+            serial: 'EXIT789012',
+            lastInspection: 'December 20, 2024'
+          },
+          {
+            id: 'demo3',
+            kind: 'Fire Hose',
+            type: 'Hose',
+            asset_id: 'FH-023-2024',
+            location: 'Warehouse C',
+            sublocation: 'Loading Dock',
+            precision: '9012',
+            annualDue: '06/2025',
+            serial: 'HOSE345678',
+            lastInspection: 'November 30, 2024'
+          },
+          {
+            id: 'demo4',
+            kind: 'PIV Valve',
+            type: 'PIV',
+            asset_id: 'PIV-089-2024',
+            location: 'Powerhouse',
+            precision: '3456',
+            annualDue: '11/2024',
+            serial: 'PIV901234',
+            lastInspection: 'October 10, 2024'
+          },
+          {
+            id: 'demo5',
+            kind: '5# ABC Extinguisher',
+            type: 'Fire Extinguisher',
+            asset_id: 'FE-134-2024',
+            location: 'Building B',
+            sublocation: 'Server Room',
+            precision: '7890',
+            annualDue: '09/2025',
+            serial: 'SMALL567890',
+            lastInspection: 'January 8, 2025'
+          },
+          {
+            id: 'demo6',
+            kind: 'Emergency Light',
+            type: 'Emergency Equipment',
+            asset_id: 'EL-067-2024',
+            location: 'Manufacturing Wing',
+            sublocation: 'Assembly Line 2',
+            precision: '2345',
+            annualDue: '04/2025',
+            serial: 'LIGHT123456',
+            lastInspection: 'December 15, 2024'
+          }
+        ];
         
         hideSkeleton();
         renderAssets();
