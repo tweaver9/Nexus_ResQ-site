@@ -250,6 +250,7 @@
   </header>
   <!-- Client Selector (Nexus only) -->
   <div class="client-selector" id="client-selector" style="display: none;">
+    <label style="color: var(--nexus-muted); font-size: 0.875rem; margin-bottom: 0.5rem; display: block;">Select Client to Manage:</label>
     <select class="client-dropdown" id="client-dropdown">
       <option value="">Select Client...</option>
     </select>
@@ -385,7 +386,7 @@
     //  ASSET LOGIC
     // =========================
     let clientId = sessionStorage.getItem('tenant_id') || "demo";
-    let currentUserRole = sessionStorage.getItem('user_role') || 'user';
+    let currentUserRole = sessionStorage.getItem('user_role') || 'nexus'; // Changed to nexus for demo
     let allAssets = [];
     let allLocations = [];
     
