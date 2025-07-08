@@ -4,661 +4,243 @@
   <meta charset="UTF-8" />
   <title>Asset Management | Nexus Res-Q</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="CSS/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --nexus-yellow: #fdd835;
-      --nexus-bg: #0d1b2a;
-      --nexus-card: #142b47;
-      --nexus-dark: #0a1322;
-      --nexus-input: #192841;
-      --nexus-border: #223052;
-      --nexus-light: #f2f2f2;
-      --nexus-muted: #93a7c6;
-      --nexus-success: #28e640;
-      --nexus-error: #ff5050;
-      --nexus-warning: #ffd835;
-      --radius: 12px;
-      --shadow-light: 0 4px 20px rgba(0,0,0,0.15);
-      --shadow-heavy: 0 8px 40px rgba(10,19,34,0.4);
-      --gradient: linear-gradient(135deg, #142b47 0%, #1c3050 100%);
+      --nexus-bg: #0a0e1a;
+      --nexus-card: #151b2e;
+      --nexus-card-hover: #1a2138;
+      --nexus-dark: #0f1419;
+      --nexus-border: #2a3441;
+      --nexus-light: #ffffff;
+      --nexus-muted: #8792a3;
+      --nexus-success: #10b981;
+      --nexus-warning: #f59e0b;
+      --nexus-error: #ef4444;
+      --nexus-info: #3b82f6;
+      --radius: 16px;
+      --radius-sm: 8px;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.4);
+      --glow-success: 0 0 16px rgba(16, 185, 129, 0.4);
+      --glow-warning: 0 0 16px rgba(245, 158, 11, 0.4);
+      --glow-error: 0 0 16px rgba(239, 68, 68, 0.4);
     }
-
-    * {
-      box-sizing: border-box;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--nexus-bg); color: var(--nexus-light);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6; min-height: 100vh;
     }
-
-    /* Override dashboard.css layout to prevent blue sidebar */
-    html, body {
-      display: block !important;
-      flex-direction: initial !important;
-    }
-
-    body { 
-      background: var(--nexus-bg); 
-      color: var(--nexus-light); 
-      font-family: 'Oswald', -apple-system, BlinkMacSystemFont, sans-serif; 
-      margin: 0; 
-      padding: 0;
-      line-height: 1.6;
-      display: block !important; /* Override dashboard.css flex layout */
-    }
-
-    /* === HEADER === */
-    .site-header { 
-      background: var(--gradient);
+    .site-header {
+      background: linear-gradient(135deg, var(--nexus-dark) 0%, var(--nexus-card) 100%);
       border-bottom: 1px solid var(--nexus-border);
-      box-shadow: var(--shadow-light);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      box-shadow: var(--shadow-card);
+      position: sticky; top: 0; z-index: 100;
     }
-
     .header-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 1.5rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem;
+      display: flex; justify-content: space-between; align-items: center;
     }
-
-    .site-title { 
-      color: var(--nexus-yellow); 
-      font-size: 2rem; 
-      font-weight: 700; 
-      margin: 0.5rem 0 0 0; 
-      letter-spacing: 1px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    .site-title {
+      color: var(--nexus-yellow);
+      font-size: 2.25rem; font-weight: 700; letter-spacing: -0.025em;
+      text-shadow: 0 2px 8px rgba(253, 216, 53, 0.3);
     }
-
-    .header-subtitle {
-      color: var(--nexus-muted);
-      font-size: 1.1rem;
-      font-weight: 400;
-      margin-top: 0.25rem;
-    }
-
     .back-nav {
-      color: var(--nexus-light);
-      text-decoration: none;
-      font-family: inherit;
-      font-weight: 400;
-      font-size: 1rem;
-      transition: all 0.2s ease;
+      color: var(--nexus-muted); text-decoration: none; font-weight: 500;
+      font-size: 1rem; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;
     }
-
-    .back-nav:hover {
-      color: var(--nexus-yellow);
-      text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);
+    .back-nav:hover { color: var(--nexus-yellow); text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);}
+    .client-selector { margin: 2rem auto; max-width: 1400px; padding: 0 2rem; }
+    .client-dropdown {
+      background: var(--nexus-card); border: 1px solid var(--nexus-border); border-radius: var(--radius);
+      color: var(--nexus-light); padding: 0.75rem 1rem; font-size: 1rem; font-weight: 500;
+      min-width: 200px; cursor: pointer; transition: all 0.2s ease;
     }
-
-    /* === MAIN CONTENT === */
-    .main-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 1rem 2rem;
+    .client-dropdown:focus { outline: none; border-color: var(--nexus-yellow); box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);}
+    .summary-stats {
+      max-width: 1400px; margin: 0 auto 3rem; padding: 0 2rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;
     }
-
-    /* === CONFIGURATION CARDS === */
-    .config-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
-      margin-bottom: 1.5rem;
-      max-width: 1000px;
+    .stat-card {
+      background: var(--nexus-card); border-radius: var(--radius); padding: 2rem;
+      box-shadow: var(--shadow-card); transition: all 0.3s ease; border: 1px solid var(--nexus-border);
+      cursor: pointer;
     }
-
-    .config-card {
-      background: var(--gradient);
-      border: 1px solid var(--nexus-border);
-      border-radius: var(--radius);
-      padding: 2rem;
-      box-shadow: var(--shadow-light);
-      transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-      min-height: 250px;
+    .stat-card.active { box-shadow: var(--shadow-heavy); border-width: 2px;}
+    .stat-card.overdue { border-color: var(--nexus-error); background: linear-gradient(135deg, var(--nexus-card) 0%, rgba(239, 68, 68, 0.05) 100%);}
+    .stat-card.due-soon { border-color: var(--nexus-warning); background: linear-gradient(135deg, var(--nexus-card) 0%, rgba(245, 158, 11, 0.05) 100%);}
+    .stat-card.complete { border-color: var(--nexus-success); background: linear-gradient(135deg, var(--nexus-card) 0%, rgba(16, 185, 129, 0.05) 100%);}
+    .stat-number { font-size: 3rem; font-weight: 700; line-height: 1; margin-bottom: 0.5rem;}
+    .stat-card.overdue .stat-number { color: var(--nexus-error);}
+    .stat-card.due-soon .stat-number { color: var(--nexus-warning);}
+    .stat-card.complete .stat-number { color: var(--nexus-success);}
+    .stat-label { color: var(--nexus-muted); font-size: 1.1rem; font-weight: 500;}
+    .main-container { max-width: 1400px; margin: 0 auto; padding: 0 2rem 3rem;}
+    .user-group { margin-bottom: 3rem;}
+    .group-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;}
+    .group-title { font-size: 1.75rem; font-weight: 700; color: var(--nexus-light);}
+    .group-count { background: var(--nexus-yellow); color: var(--nexus-dark); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;}
+    .user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;}
+    .empty-group {
+      background: var(--nexus-card); border: 2px dashed var(--nexus-border); border-radius: var(--radius);
+      padding: 3rem; text-align: center; color: var(--nexus-muted); font-size: 1.125rem; font-weight: 500;
     }
-
-    .config-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: var(--nexus-yellow);
-      transform: scaleX(0);
-      transition: transform 0.3s ease;
+    .user-card {
+      background: var(--nexus-card); border: 1px solid var(--nexus-border); border-radius: var(--radius);
+      padding: 1.5rem; box-shadow: var(--shadow-card); transition: all 0.2s ease; cursor: pointer;
+      will-change: transform, box-shadow;
     }
-
-    .config-card:hover {
-      transform: translateY(-4px);
+    .user-card:hover {
+      background: var(--nexus-card-hover);
+      transform: translateY(-2px) scale(1.012);
       box-shadow: var(--shadow-heavy);
-      border-color: var(--nexus-yellow);
+      transition: all 0.25s cubic-bezier(.4,1.7,.64,1);
     }
-
-    .config-card:hover::before {
-      transform: scaleX(1);
+    .user-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;}
+    .user-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.125rem; color: var(--nexus-dark); flex-shrink: 0; background: var(--nexus-yellow);}
+    .user-info { flex: 1;}
+    .user-name { font-size: 1.25rem; font-weight: 600; color: var(--nexus-light); margin-bottom: 0.25rem;}
+    .role-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+    .role-badge.user { background: var(--nexus-muted); color: white;}
+    .assigned-areas { color: var(--nexus-muted); font-size: 0.875rem; margin-bottom: 1rem; line-height: 1.4;}
+    .areas-label { color: var(--nexus-light); font-weight: 500; display: block; margin-bottom: 0.25rem;}
+    .areas-list { color: var(--nexus-yellow); font-weight: 500;}
+    .monthly-status { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border-radius: var(--radius-sm); border: 1px solid var(--nexus-border);}
+    .status-indicator { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; position: relative;}
+    .status-indicator.complete { background: var(--nexus-success); box-shadow: var(--glow-success);}
+    .status-indicator.due-soon { background: var(--nexus-warning); box-shadow: var(--glow-warning);}
+    .status-indicator.overdue { background: var(--nexus-error); box-shadow: var(--glow-error); animation: blink 1s infinite;}
+    @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.3; }}
+    .status-text { font-weight: 500; color: var(--nexus-light);}
+    .status-tooltip { position: relative; cursor: help;}
+    .status-tooltip:hover::after {
+      content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+      background: var(--nexus-dark); color: var(--nexus-light); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm);
+      font-size: 0.875rem; white-space: nowrap; z-index: 1000; box-shadow: var(--shadow-card); border: 1px solid var(--nexus-border);
     }
-
-    .card-icon {
-      font-size: 3rem;
-      margin-bottom: 1.5rem;
-      display: block;
-    }
-
-    .card-title {
-      color: var(--nexus-yellow);
-      font-size: 1.6rem;
-      font-weight: 600;
-      margin: 0 0 1rem 0;
-    }
-
-    .card-description {
-      color: var(--nexus-muted);
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
-      line-height: 1.5;
-    }
-
-    .card-actions {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .action-btn {
-      background: var(--nexus-yellow);
-      color: var(--nexus-bg);
-      border: none;
-      border-radius: var(--radius);
-      padding: 0.75rem 1.25rem;
-      font-family: inherit;
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px rgba(253, 216, 53, 0.3);
-    }
-
-    .action-btn:hover {
-      background: #ffe066;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(253, 216, 53, 0.4);
-    }
-
-    .action-btn.secondary {
-      background: transparent;
-      color: var(--nexus-yellow);
-      border: 2px solid var(--nexus-yellow);
-      box-shadow: none;
-    }
-
-    .action-btn.secondary:hover {
-      background: var(--nexus-yellow);
-      color: var(--nexus-bg);
-    }
-
-    .action-btn.danger {
-      background: var(--nexus-error);
-      color: white;
-      box-shadow: 0 2px 8px rgba(255, 80, 80, 0.3);
-    }
-
-    .action-btn.danger:hover {
-      background: #ff3333;
-      box-shadow: 0 4px 16px rgba(255, 80, 80, 0.4);
-    }
-
-    /* === DATA TABLE === */
-    .data-section {
-      background: var(--gradient);
-      border: 1px solid var(--nexus-border);
-      border-radius: var(--radius);
-      padding: 2rem;
-      box-shadow: var(--shadow-light);
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--nexus-border);
-    }
-
-    .section-title {
-      color: var(--nexus-yellow);
-      font-size: 1.8rem;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .search-container {
-      position: relative;
-      max-width: 300px;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 0.75rem 1rem 0.75rem 2.5rem;
-      border: 2px solid var(--nexus-border);
-      border-radius: var(--radius);
-      background: var(--nexus-input);
-      color: var(--nexus-light);
-      font-family: inherit;
-      font-size: 1rem;
-      outline: none;
-      transition: all 0.2s ease;
-    }
-
-    .search-input:focus {
-      border-color: var(--nexus-yellow);
-      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--nexus-muted);
-      font-size: 1.1rem;
-    }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--nexus-card);
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow-light);
-    }
-
-    .data-table th,
-    .data-table td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--nexus-border);
-    }
-
-    .data-table th {
-      background: var(--nexus-dark);
-      color: var(--nexus-yellow);
-      font-weight: 600;
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-      user-select: none;
-      position: relative;
-      transition: all 0.2s ease;
-    }
-
-    .data-table th:hover {
-      background: var(--nexus-border);
-      color: #ffe066;
-    }
-
-    .data-table th.sortable::after {
-      content: '↕';
-      position: absolute;
-      right: 0.5rem;
-      opacity: 0.5;
-      font-size: 0.8rem;
-    }
-
-    .data-table th.sort-asc::after {
-      content: '↑';
-      opacity: 1;
-      color: var(--nexus-yellow);
-    }
-
-    .data-table th.sort-desc::after {
-      content: '↓';
-      opacity: 1;
-      color: var(--nexus-yellow);
-    }
-
-    .data-table td {
-      font-size: 0.95rem;
-      font-weight: 400;
-      line-height: 1.4;
-    }
-
-    .data-table tr:hover {
-      background: rgba(253, 216, 53, 0.05);
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .status-inservice { background: rgba(40, 230, 64, 0.2); color: var(--nexus-success); }
-    .status-outofservice { background: rgba(255, 80, 80, 0.2); color: var(--nexus-error); }
-    .status-failed { background: rgba(253, 216, 53, 0.2); color: var(--nexus-warning); }
-    .status-moved { background: rgba(147, 167, 198, 0.2); color: var(--nexus-muted); }
-
-    /* === MODALS === */
+    .last-activity { color: var(--nexus-muted); font-size: 0.875rem; line-height: 1.4;}
+    .activity-highlight { color: var(--nexus-light); font-weight: 500;}
+    .last-inspection { display: flex; align-items: center; gap: 0.5rem; color: var(--nexus-muted); font-size: 0.875rem; margin-top: 0.75rem; cursor: pointer; transition: all 0.2s ease; padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid transparent;}
+    .last-inspection:hover { color: var(--nexus-yellow); border-color: var(--nexus-border); background: rgba(255, 255, 255, 0.02);}
+    .inspection-icon { width: 16px; height: 16px; background: var(--nexus-muted); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' /%3E%3C/svg%3E") no-repeat center/contain; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' /%3E%3C/svg%3E") no-repeat center/contain; transition: all 0.2s ease;}
+    .last-inspection:hover .inspection-icon { background: var(--nexus-yellow);}
+    .inspection-label { font-weight: 500;}
+    .reset-password { color: var(--nexus-yellow); text-decoration: underline; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; margin-bottom: 0.75rem; display: inline-block;}
+    .reset-password:hover { color: var(--nexus-light); text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);}
+    /* MODALS & SKELETON LOADER (NEW) */
     .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(13, 27, 42, 0.85);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 2rem;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8);
+      display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
     }
-
-    .modal-content {
-      background: var(--gradient);
-      border: 1px solid var(--nexus-border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-heavy);
-      max-width: 600px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      position: relative;
+    .modal-overlay.active { opacity: 1; visibility: visible;}
+    .modal { background: var(--nexus-card); border-radius: var(--radius); padding: 2rem; max-width: 500px; width: 90%; border: 1px solid var(--nexus-border); box-shadow: var(--shadow-heavy); transform: scale(0.9); transition: all 0.3s ease; opacity: 0;}
+    .modal-overlay.active .modal { transform: scale(1) translateY(0); opacity: 1;}
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;}
+    .modal-title { font-size: 1.48rem; font-weight: 600; color: var(--nexus-light);}
+    .modal-close { background: none; border: none; color: var(--nexus-muted); font-size: 1.5rem; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s ease;}
+    .modal-close:hover { background: var(--nexus-border); color: var(--nexus-light);}
+    .modal-content { color: var(--nexus-muted); line-height: 1.6;}
+    /* SHIMMER SKELETON */
+    .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; }
+    .skeleton-card {
+      background: var(--nexus-card); border-radius: var(--radius);
+      height: 180px; padding: 1.5rem; position: relative; overflow: hidden;
+      box-shadow: var(--shadow-card); border: 1px solid var(--nexus-border);
     }
-
-    .modal-header {
-      padding: 2rem 2rem 1rem;
+    .skeleton-anim {
+      background: linear-gradient(90deg, var(--nexus-card-hover) 25%, var(--nexus-card) 50%, var(--nexus-card-hover) 75%);
+      background-size: 400% 100%;
+      animation: shimmer 1.2s linear infinite;
+    }
+    .skel-avatar { width:48px; height:48px; border-radius:50%; margin-bottom:1.2rem; }
+    .skel-bar { height: 14px; border-radius:8px; margin-bottom:10px; width:80%; }
+    .skel-bar.short { width: 40%; }
+    @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+    /* TOASTS */
+    #toast-area {
+      position: fixed; bottom: 32px; right: 32px; z-index: 3000;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .nexus-toast {
+      background: var(--nexus-card); color: var(--nexus-light);
+      border-left: 6px solid var(--nexus-yellow);
+      border-radius: var(--radius-sm); min-width: 240px; max-width: 360px;
+      box-shadow: var(--shadow-card); padding: 1rem 1.2rem 1rem 1.6rem;
+      display: flex; align-items: center; justify-content: space-between;
+      opacity: 0; transform: translateY(20px); animation: toast-in 0.4s forwards;
+      font-size: 1rem;
+    }
+    .nexus-toast.success { border-color: var(--nexus-success);}
+    .nexus-toast.error { border-color: var(--nexus-error);}
+    .nexus-toast .undo-btn {
+      color: var(--nexus-yellow); font-weight: 700; margin-left: 1rem;
+      background: none; border: none; cursor: pointer; font-size: 1rem;
+      transition: color .2s;
+    }
+    .nexus-toast .undo-btn:hover { color: var(--nexus-light);}
+    @keyframes toast-in { to { opacity: 1; transform: translateY(0); } }
+    @keyframes toast-out { to { opacity: 0; transform: translateY(20px); } }
+    /* STICKY FILTER BAR */
+    #sticky-filters {
+      position: sticky; top:84px;
+      background: var(--nexus-bg);
+      padding-top: 0.5rem; padding-bottom: 0.5rem;
       border-bottom: 1px solid var(--nexus-border);
+      z-index: 10;
+      transition: box-shadow 0.2s;
+      display:flex; gap:1rem; margin-bottom:2rem;
     }
-
-    .modal-title {
-      color: var(--nexus-yellow);
-      font-size: 1.6rem;
-      font-weight: 600;
-      margin: 0;
+    #sticky-filters.stuck { box-shadow: var(--shadow-card);}
+    /* Editable fields */
+    .editable-field {
+      display: inline-block;
+      border-bottom: 1px dashed var(--nexus-yellow);
+      cursor: pointer;
+      padding: 1px 4px;
+      transition: background 0.2s;
     }
-
-    .modal-body {
-      padding: 2rem;
-    }
-
-    .modal-footer {
-      padding: 1rem 2rem 2rem;
-      border-top: 1px solid var(--nexus-border);
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .form-label {
-      display: block;
-      color: var(--nexus-yellow);
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-    }
-
-    .form-input,
-    .form-select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 2px solid var(--nexus-border);
-      border-radius: var(--radius);
-      background: var(--nexus-input);
-      color: var(--nexus-light);
-      font-family: inherit;
-      font-size: 1rem;
+    .editable-field:hover, .editable-field:focus {
+      background: rgba(253,216,53,0.09);
       outline: none;
-      transition: all 0.2s ease;
     }
-
-    .form-input:focus,
-    .form-select:focus {
+    .inline-edit-input {
+      border-radius: 5px;
+      border: 1px solid var(--nexus-yellow);
+      padding: 1px 5px;
+      font-size: inherit;
+      color: var(--nexus-light);
+      background: var(--nexus-card);
+      width: 90px;
+    }
+    
+    /* Asset type filter styling */
+    .asset-type-filter:focus {
+      outline: none;
       border-color: var(--nexus-yellow);
       box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
     }
-
-    /* === LOADING SYSTEM === */
-    .loading-popup-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(13, 27, 42, 0.8);
-      backdrop-filter: blur(5px);
-      display: none;
-      z-index: 1999;
+    
+    /* Asset search styling */
+    .asset-search:focus {
+      outline: none;
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
     }
-
-    .loading-popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--nexus-card);
-      border: 1px solid var(--nexus-border);
-      border-radius: var(--radius);
-      padding: 2rem;
-      box-shadow: var(--shadow-heavy);
-      z-index: 2000;
-      min-width: 320px;
-      max-width: 90vw;
-      display: none;
-      backdrop-filter: blur(10px);
-    }
-
-    .loading-title {
-      color: var(--nexus-yellow);
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-      text-align: center;
-    }
-
-    .loading-container-bg {
-      width: 100%;
-      height: 32px;
-      background: linear-gradient(135deg, #1a3a5c 0%, #2a4a6c 100%);
-      border: 2px solid #0d2a42;
-      border-radius: 16px;
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 1rem;
-      box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
-    }
-
-    .loading-liquid {
-      height: 100%;
-      background: linear-gradient(45deg, 
-        var(--nexus-yellow) 0%, 
-        #ffe066 25%, 
-        var(--nexus-yellow) 50%, 
-        #fdd835 75%, 
-        var(--nexus-yellow) 100%);
-      width: 0%;
-      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      border-radius: 14px;
-      animation: liquidSlosh 2s ease-in-out infinite;
-    }
-
-    .loading-liquid::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(255,255,255,0.3) 50%, 
-        transparent 100%);
-      animation: liquidFlow 1.5s linear infinite;
-      border-radius: 14px;
-    }
-
-    .loading-liquid::after {
-      content: '';
-      position: absolute;
-      top: 2px;
-      left: 0;
-      right: 0;
-      height: 6px;
-      background: rgba(255,255,255,0.4);
-      border-radius: 14px 14px 0 0;
-      animation: liquidBubble 1.8s ease-in-out infinite;
-    }
-
-    @keyframes liquidSlosh {
-      0%, 100% { 
-        transform: translateY(0px) scaleY(1); 
-      }
-      25% { 
-        transform: translateY(-1px) scaleY(1.05); 
-      }
-      50% { 
-        transform: translateY(1px) scaleY(0.95); 
-      }
-      75% { 
-        transform: translateY(-0.5px) scaleY(1.02); 
-      }
-    }
-
-    @keyframes liquidFlow {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-
-    @keyframes liquidBubble {
-      0%, 100% { 
-        opacity: 0.6; 
-        transform: scaleX(1); 
-      }
-      50% { 
-        opacity: 0.8; 
-        transform: scaleX(0.95); 
-      }
-    }
-
-    .loading-text {
-      color: var(--nexus-muted);
-      font-size: 0.95rem;
-      text-align: center;
-      min-height: 1.2rem;
-      font-weight: 400;
-    }
-
-    /* === ROLE-BASED VISIBILITY === */
-    .nexus-only {
-      opacity: 1;
-      transition: opacity 0.2s ease;
-    }
-
-    body:not(.role-nexus) .nexus-only {
-      display: none;
-    }
-
-    /* === RESPONSIVE === */
-    @media (max-width: 1024px) {
-      .config-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        max-width: none;
-      }
-    }
-
     @media (max-width: 768px) {
-      .header-container {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-      }
-
-      .site-title {
-        font-size: 1.8rem;
-      }
-
-      .main-container {
-        padding: 2rem 1rem;
-      }
-
-      .config-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-      }
-
-      .config-card {
-        padding: 2rem;
-        min-height: auto;
-      }
-
-      .card-actions {
-        flex-direction: column;
-      }
-
-      .action-btn {
-        width: 100%;
-        text-align: center;
-      }
-
-      .section-header {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
-      }
-
-      .search-container {
-        max-width: none;
-      }
-
-      .modal-content {
-        margin: 1rem;
-        max-width: none;
-      }
-
-      .modal-header,
-      .modal-body,
-      .modal-footer {
-        padding: 1.5rem;
-      }
-
-      .modal-footer {
-        flex-direction: column;
-      }
+      .header-container { padding: 1rem; flex-direction: column; gap: 1rem; text-align: center;}
+      .site-title { font-size: 1.75rem;}
+      .summary-stats, .main-container { padding: 0 1rem;}
+      .user-grid, .skeleton-grid { grid-template-columns: 1fr;}
+      .group-header { flex-direction: column; align-items: flex-start; gap: 0.5rem;}
+      #sticky-filters { flex-direction:column; gap:0.5rem;}
+      #toast-area { right:8px; bottom: 8px;}
     }
   </style>
 </head>
-<body id="siteConfigBody">
-  <!-- Loading Popup Overlay -->
-  <div class="loading-popup-overlay" id="loadingOverlay"></div>
-  
-  <!-- Loading Popup -->
-  <div id="loadingPopup" class="loading-popup">
-    <div class="loading-title">Processing Configuration</div>
-    <div class="loading-container-bg">
-      <div class="loading-liquid" id="loadingBar"></div>
-    </div>
-    <div class="loading-text" id="loadingText">Initializing...</div>
-  </div>
-
+<body>
   <!-- Header -->
   <header class="site-header">
     <div class="header-container">
@@ -666,1317 +248,620 @@
       <a href="dashboard.html" class="back-nav">← Back to Dashboard</a>
     </div>
   </header>
-
-  <!-- Main Content -->
+  <!-- Client Selector (Nexus only) -->
+  <div class="client-selector" id="client-selector" style="display: none;">
+    <select class="client-dropdown" id="client-dropdown">
+      <option value="">Select Client...</option>
+    </select>
+  </div>
+  <!-- Summary Stats -->
+  <section class="summary-stats">
+    <div class="stat-card overdue">
+      <div class="stat-number" id="overdue-count">0</div>
+      <div class="stat-label">Assets Overdue</div>
+    </div>
+    <div class="stat-card due-soon">
+      <div class="stat-number" id="due-soon-count">0</div>
+      <div class="stat-label">Due Soon</div>
+    </div>
+    <div class="stat-card complete">
+      <div class="stat-number" id="complete-count">0</div>
+      <div class="stat-label">Assets Complete</div>
+    </div>
+  </section>
+  <!-- === STICKY FILTER BAR (NEW) === -->
+  <div id="sticky-filters">
+    <input id="asset-search" type="search" placeholder="Search assets..." style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:200px;">
+    <select id="asset-type-filter" style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:150px;">
+      <option value="">All Types</option>
+    </select>
+    <button class="reset-password" id="add-asset-btn" style="margin-left:auto;">+ Add Asset</button>
+    <button class="reset-password" id="bulk-add-btn">Bulk Add</button>
+  </div>
+  <!-- === SKELETON LOADER (NEW) === -->
+  <div class="skeleton-grid" id="asset-skeleton" style="display:none;">
+    <div class="skeleton-card">
+      <div class="skeleton-anim skel-avatar"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skeleton-anim skel-avatar"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skeleton-anim skel-avatar"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+    </div>
+  </div>
+  <!-- === MAIN GRID === -->
   <main class="main-container">
-    <!-- Asset Management Actions -->
-    <div class="config-grid">
-      <!-- Asset Management Card -->
-      <div class="config-card">
-        <span class="card-icon">📦</span>
-        <h2 class="card-title">Asset Management</h2>
-        <p class="card-description">Add, edit, and organize your assets. Import from CSV or create individually with full tracking capabilities.</p>
-        <div class="card-actions">
-          <button class="action-btn" id="addAssetBtn">Add Asset</button>
-          <button class="action-btn secondary" id="bulkAddAssetBtn">Bulk Import</button>
-        </div>
+    <section class="user-group">
+      <div class="group-header">
+        <h2 class="group-title">Assets</h2>
+        <span class="group-count" id="total-count">0</span>
       </div>
-
-      <!-- Advanced Tools Card (Nexus Only) -->
-      <div class="config-card nexus-only">
-        <span class="card-icon">🔧</span>
-        <h2 class="card-title">Advanced Tools</h2>
-        <p class="card-description">Advanced system administration tools for bulk operations and system maintenance.</p>
-        <div class="card-actions">
-          <button class="action-btn danger" id="bulkDeleteAssetBtn">Bulk Delete</button>
-        </div>
+      <div class="user-grid" id="all-assets">
+        <div class="empty-group">Loading assets...</div>
       </div>
-    </div>
-
-    <!-- Asset Data Table -->
-    <div class="data-section">
-      <div class="section-header">
-        <h2 class="section-title">Recent Inspections</h2>
-        <div class="search-container">
-          <span class="search-icon">🔍</span>
-          <input type="search" id="assetSearch" class="search-input" placeholder="Search assets...">
-        </div>
-      </div>
-      <table class="data-table" id="assetsTable">
-        <thead>
-          <tr>
-            <th class="sortable" data-column="status">Status</th>
-            <th class="sortable" data-column="asset_id">Asset ID</th>
-            <th class="sortable" data-column="type">Type</th>
-            <th class="sortable" data-column="location">Location</th>
-            <th class="sortable" data-column="assigned_user">Assigned User</th>
-            <th class="sortable" data-column="last_inspected_by">Last Inspected By</th>
-            <th class="sortable" data-column="last_inspection_date">Last Inspection</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="assetsTableBody">
-          <!-- Populated by JS -->
-        </tbody>
-      </table>
-      <div id="noAssetsMsg" style="margin-top:20px; color:#fdd835; text-align:center; display:none;">No assets found in this area.</div>
-    </div>
+    </section>
   </main>
-
-  <!-- Modal Container -->
-  <div id="modal-root" class="modal-overlay"></div>
-  <script type="module">
-    // ----------- FIREBASE IMPORTS -----------
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import {
-      getFirestore, collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, getDoc, setDoc
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-    // ----------- YOUR FIREBASE CONFIG HERE -----------
-    const firebaseConfig = {
-      apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
-      authDomain: "nexus-res-q.firebaseapp.com",
-      projectId: "nexus-res-q",
-      storageBucket: "nexus-res-q.appspot.com",
-      messagingSenderId: "203995658810",
-      appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303"
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // ========== GLOBALS ==========
-    // List can be updated in the modal and pushed to Firebase
-    const DEFAULT_CATEGORIES = [
-      "30# ABC Extinguisher",
-      "20# ABC Extinguisher",
-      "5# ABC Extinguisher",
-      "Deluge",
-      "Hose House",
-      "Warehouse",
-      "Hose",
-      "PIV",
-      "Hydrant",
-      "Hydrant Monitor",
-      "Platform Monitor",
-      "Pencil Monitor",
-      "Stored Pressure Extinguisher",
-      "Exit Sign",
-      "SCBA Cylinder",
-      "SCBA Frame",
-      "Engine I",
-      "Engine II",
-      "Quick Attack",
-      "Lube Raft",
-      "Captain Truck",
-      "Lt. Truck",
-      "Rescue Truck",
-      "Rescue Trailer",
-      "Hazmat Truck",
-      "Hazmat Trailer",
-      "Rapid Rescue",
-      "Foam Tote",
-      "Ambulance",
-      "Med 1",
-      "Med 2",
-      "Brush Truck",
-      "Admin Vehicle",
-      "Response Vehicle",
-      "Ladder Truck",
-      "Trailer",
-      "Bay"
-    ];
-
-    // ========== STATE ==========
-    let allClients = [];
-    let allAssets = [];
-    let assetCategories = [];
-    let assetCategoriesLastSync = 0; // timestamp
-    let locationsCache = {};
-    let assetTypesCache = {}; // legacy
-    let currentSort = { column: null, direction: 'asc' };
-
-    // ========== DOM ==========
-    const assetsTableBody = document.getElementById('assetsTableBody');
-    const noAssetsMsg = document.getElementById('noAssetsMsg');
-    const assetSearch = document.getElementById('assetSearch');
-    const modalRoot = document.getElementById('modal-root');
-    const addAssetBtn = document.getElementById('addAssetBtn');
-    const bulkAddAssetBtn = document.getElementById('bulkAddAssetBtn');
-
-    // ========== ROLE DETECTION & LOADING SYSTEM ==========
-    
-    // Role-based UI setup
-    const userRole = sessionStorage.getItem('role');
-    if (userRole === 'nexus') {
-      document.body.classList.add('role-nexus');
-    }
-
-    // Premium loading system
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const loadingPopup = document.getElementById('loadingPopup');
-    const loadingBar = document.getElementById('loadingBar');
-    const loadingText = document.getElementById('loadingText');
-    
-    let loadingSteps = [];
-    let currentStep = 0;
-
-    function showLoading(steps) {
-      loadingSteps = steps;
-      currentStep = 0;
-      loadingOverlay.style.display = 'block';
-      loadingPopup.style.display = 'block';
-      loadingBar.style.width = '0%';
-      updateLoadingProgress();
-    }
-
-    function updateLoadingProgress() {
-      if (currentStep < loadingSteps.length) {
-        const progress = ((currentStep + 1) / loadingSteps.length) * 100;
-        loadingBar.style.width = progress + '%';
-        loadingText.textContent = loadingSteps[currentStep];
-        currentStep++;
-        
-        if (currentStep < loadingSteps.length) {
-          setTimeout(updateLoadingProgress, 300 + Math.random() * 200);
-        } else {
-          setTimeout(hideLoading, 500);
-        }
-      }
-    }
-
-    function hideLoading() {
-      loadingOverlay.style.display = 'none';
-      loadingPopup.style.display = 'none';
-      loadingSteps = [];
-      currentStep = 0;
-    }
-
-    // Enhanced modal system with premium styling
-    function showModal(content) {
-      modalRoot.innerHTML = content;
-      modalRoot.style.display = 'flex';
-    }
-
-    function hideModal() {
-      modalRoot.style.display = 'none';
-      modalRoot.innerHTML = '';
-    }
-
-    // ========== CATEGORY LOADING (HYBRID: FIREBASE, LOCALSTORAGE, DEFAULT) ==========
-    async function loadAssetCategories(force=false) {
-      // Check localStorage cache (1 hour cache)
-      if (!force) {
-        const cached = localStorage.getItem('nexus_asset_categories');
-        const ts = parseInt(localStorage.getItem('nexus_asset_categories_ts')||'0',10);
-        if (cached && Date.now()-ts < 60*60*1000) {
-          assetCategories = JSON.parse(cached);
-          return;
-        }
-      }
-      // Try Firebase
-      try {
-        const snap = await getDocs(collection(db, "assetCategories"));
-        let cats = [];
-        snap.forEach(doc => {
-          if(doc.data().name) cats.push(doc.data().name);
-        });
-        if (cats.length) {
-          assetCategories = cats;
-          localStorage.setItem('nexus_asset_categories', JSON.stringify(assetCategories));
-          localStorage.setItem('nexus_asset_categories_ts', Date.now()+'');
-          return;
-        }
-      } catch(e) {
-        // Firebase unavailable
-      }
-      // Fallback: use DEFAULT_CATEGORIES
-      assetCategories = DEFAULT_CATEGORIES;
-      localStorage.setItem('nexus_asset_categories', JSON.stringify(assetCategories));
-      localStorage.setItem('nexus_asset_categories_ts', Date.now()+'');
-    }
-
-    // ========== CLIENTS/LOCATIONS/ASSETS ==========
-    window.addEventListener('DOMContentLoaded', async () => {
-      await loadAllClients();
-      await loadAssetCategories();
-      await loadAllAssets();
-      assetSearch.addEventListener('input', renderAssets);
-      
-      // Add sorting functionality
-      document.querySelectorAll('.sortable').forEach(th => {
-        th.addEventListener('click', () => {
-          const column = th.getAttribute('data-column');
-          sortTable(column);
-        });
+  <!-- === TOASTS (NEW) === -->
+  <div id="toast-area"></div>
+  <!-- === ASSET DETAIL MODAL === -->
+  <div class="modal-overlay" id="asset-detail-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Asset Details</h3>
+        <button class="modal-close" id="asset-detail-close">×</button>
+      </div>
+      <div class="modal-content" id="asset-detail-content"></div>
+    </div>
+  </div>
+  <!-- === FIREBASE === -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    if (!firebase.apps.length) {
+      firebase.initializeApp({
+        apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
+        authDomain: "nexus-res-q.firebaseapp.com",
+        projectId: "nexus-res-q",
+        storageBucket: "nexus-res-q.appspot.com",
+        messagingSenderId: "203995658810",
+        appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303",
+        measurementId: "G-B7B1QZVWFG"
       });
-      
-      addAssetBtn.onclick = showAddAssetModal;
-      bulkAddAssetBtn.onclick = showBulkAddAssetModal;
-      
-      // Only add bulk delete handler for nexus users
-      if (isNexusUser()) {
-        const bulkDeleteBtn = document.getElementById('bulkDeleteAssetBtn');
-        if (bulkDeleteBtn) {
-          bulkDeleteBtn.onclick = showBulkDeleteAssetModal;
-        }
+    }
+    const db = firebase.firestore();
+    // =========================
+    //  SHIMMER LOADER / SKELETON
+    // =========================
+    function showSkeleton() {
+      document.getElementById('all-assets').style.display = 'none';
+      document.getElementById('asset-skeleton').style.display = 'grid';
+    }
+    function hideSkeleton() {
+      document.getElementById('asset-skeleton').style.display = 'none';
+      document.getElementById('all-assets').style.display = '';
+    }
+    // =========================
+    //  TOAST + UNDO
+    // =========================
+    function showToast(msg, {type='success', undoCallback=null, duration=4200}={}) {
+      const toast = document.createElement('div');
+      toast.className = 'nexus-toast '+type;
+      toast.innerHTML = `<span>${msg}</span>` + (undoCallback ? `<button class="undo-btn">Undo</button>` : '');
+      document.getElementById('toast-area').appendChild(toast);
+      let hideTimer = setTimeout(()=>removeToast(), duration);
+      function removeToast() {
+        toast.style.animation = 'toast-out 0.3s forwards';
+        setTimeout(()=>toast.remove(), 290);
       }
-      
-      addLocationBtn.onclick = showAddLocationModal;
-      locationsBtn.onclick = showLocationExplorerModal;
-      manageCategoriesBtn.onclick = showManageCategoriesModal;
+      toast.querySelector('.undo-btn')?.addEventListener('click',()=>{
+        clearTimeout(hideTimer);
+        removeToast();
+        undoCallback && undoCallback();
+      });
+    }
+    // =========================
+    //  STICKY FILTER BAR
+    // =========================
+    window.addEventListener('scroll', function() {
+      const filters = document.getElementById('sticky-filters');
+      if (!filters) return;
+      if (window.scrollY > filters.offsetTop + 16) filters.classList.add('stuck');
+      else filters.classList.remove('stuck');
     });
-
-    async function loadAllClients() {
-      const snap = await getDocs(collection(db, "clients"));
-      allClients = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      for (const c of allClients) {
-        locationsCache[c.id] = await getLocationsForClient(c.id);
+    // =========================
+    //  ASSET LOGIC
+    // =========================
+    let clientId = sessionStorage.getItem('tenant_id') || "demo";
+    let currentUserRole = sessionStorage.getItem('user_role') || 'user';
+    let allAssets = [];
+    let allLocations = [];
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('Asset Management page loading for client:', clientId);
+      
+      // Session validation with proper redirects
+      if (!clientId) {
+        console.warn('No client ID found, redirecting to login');
+        window.location.href = "login.html";
+        return;
       }
-    }
-    async function loadAllAssets() {
-      allAssets = [];
-      for (const client of allClients) {
-        const snap = await getDocs(collection(db, `clients/${client.id}/assets`));
-        snap.forEach(doc => {
+
+      // Show client selector for Nexus role
+      if (currentUserRole === 'nexus') {
+        document.getElementById('client-selector').style.display = 'block';
+        await loadClients();
+      }
+
+      // Modal event handlers
+      document.getElementById('asset-detail-close').onclick = () => document.getElementById('asset-detail-modal').classList.remove('active');
+      document.getElementById('asset-detail-modal').onclick = e => { 
+        if (e.target.id === 'asset-detail-modal') e.target.classList.remove('active'); 
+      };
+
+      // Filter event handlers
+      document.getElementById('asset-search').oninput = filterAssets;
+      document.getElementById('asset-type-filter').onchange = filterAssets;
+
+      // Action button handlers (role-based access)
+      document.getElementById('add-asset-btn').onclick = () => {
+        if (!canModifyAssets()) {
+          showToast('Insufficient permissions to add assets.', {type: 'error'});
+          return;
+        }
+        showAddAssetModal();
+      };
+      
+      document.getElementById('bulk-add-btn').onclick = () => {
+        if (!canModifyAssets()) {
+          showToast('Insufficient permissions for bulk operations.', {type: 'error'});
+          return;
+        }
+        showBulkAddModal();
+      };
+
+      // Load data
+      try {
+        await Promise.all([
+          loadAssetTypes(),
+          loadLocations(),
+          loadAssets()
+        ]);
+      } catch (error) {
+        console.error('Error during initial load:', error);
+        showToast('Error loading data. Please refresh the page.', {type: 'error'});
+      }
+    });
+    // Show shimmer loader during async load
+    async function loadAssets() {
+      showSkeleton();
+      try {
+        console.log('Loading assets for client:', clientId);
+        await new Promise(r=>setTimeout(r, 650)); // Simulate loading
+        
+        const snap = await db.collection(`clients/${clientId}/assets`).get();
+        allAssets = [];
+        
+        console.log('Found', snap.size, 'assets in Firebase');
+        
+        snap.forEach(doc=>{
+          const assetData = doc.data();
+          console.log('Asset data:', doc.id, assetData);
           allAssets.push({
-            ...doc.data(),
             id: doc.id,
-            clientId: client.id,
-            clientName: client.name || client.id
+            ...assetData
           });
         });
-      }
-      renderAssets();
-    }
-    async function getLocationsForClient(clientId) {
-      const snap = await getDocs(collection(db, `clients/${clientId}/locations`));
-      return snap.docs.map(d => d.data().name);
-    }
-
-    // ========== TABLE SORTING ==========
-    function sortTable(column) {
-      // Toggle sort direction if same column clicked
-      if (currentSort.column === column) {
-        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-      } else {
-        currentSort.column = column;
-        currentSort.direction = 'asc';
-      }
-      
-      // Update header indicators
-      document.querySelectorAll('.sortable').forEach(th => {
-        th.classList.remove('sort-asc', 'sort-desc');
-        if (th.getAttribute('data-column') === column) {
-          th.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
-        }
-      });
-      
-      renderAssets();
-    }
-
-    function sortAssets(assets, column, direction) {
-      return assets.sort((a, b) => {
-        let valueA = a[column] || '';
-        let valueB = b[column] || '';
         
-        // Handle date sorting
-        if (column === 'last_inspection_date') {
-          valueA = valueA ? new Date(valueA) : new Date(0);
-          valueB = valueB ? new Date(valueB) : new Date(0);
-        } else {
-          // Convert to strings for text comparison
-          valueA = String(valueA).toLowerCase();
-          valueB = String(valueB).toLowerCase();
-        }
-        
-        if (direction === 'asc') {
-          return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
-        } else {
-          return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
-        }
-      });
-    }
-
-    // ========== RENDER TABLE ==========
-    function renderAssets() {
-      const searchVal = assetSearch.value.trim().toLowerCase();
-      let filtered = allAssets;
-      if (searchVal) {
-        filtered = filtered.filter(row =>
-          (row.asset_id || '').toLowerCase().includes(searchVal) ||
-          (row.type || '').toLowerCase().includes(searchVal) ||
-          (row.location || '').toLowerCase().includes(searchVal) ||
-          (row.assigned_user || '').toLowerCase().includes(searchVal) ||
-          (row.clientName || '').toLowerCase().includes(searchVal)
-        );
-      }
-      
-      // Apply sorting if column is selected
-      if (currentSort.column) {
-        filtered = sortAssets(filtered, currentSort.column, currentSort.direction);
-      }
-      
-      assetsTableBody.innerHTML = "";
-      if (!filtered.length) {
-        noAssetsMsg.style.display = "";
-        return;
-      }
-      noAssetsMsg.style.display = "none";
-      filtered.forEach(row => {
-        assetsTableBody.insertAdjacentHTML('beforeend', `
-          <tr>
-            <td>${statusBadge(row.status)}</td>
-            <td>${row.asset_id || "—"}</td>
-            <td>${row.type || "—"}</td>
-            <td>${row.location || "—"}</td>
-            <td>${row.assigned_user || "—"}</td>
-            <td>${row.last_inspected_by || "—"}</td>
-            <td>${formatMMDDYY(row.last_inspection_date) || "—"}</td>
-            <td>
-              <button class="action-btn" onclick="window.editAsset('${row.clientId}','${row.id}')">Edit</button>
-              <button class="action-btn" onclick="window.deleteAsset('${row.clientId}','${row.id}')">Delete</button>
-            </td>
-          </tr>
-        `);
-      });
-    }
-    function formatMMDDYY(dt) {
-      if(!dt) return "";
-      if(typeof dt === "string" && dt.includes("/")) return dt;
-      let d = typeof dt === "string" ? new Date(dt) : dt.toDate ? dt.toDate() : new Date(dt);
-      if(isNaN(d.getTime())) return "";
-      let mm = (d.getMonth()+1).toString().padStart(2,'0');
-      let dd = d.getDate().toString().padStart(2,'0');
-      let yy = d.getFullYear().toString().slice(-2);
-      return `${mm}/${dd}/${yy}`;
-    }
-    function statusBadge(status) {
-      if (status === "in_service") return `<span class="status-badge status-inservice">In Service</span>`;
-      if (status === "out_of_service") return `<span class="status-badge status-outofservice">Out</span>`;
-      if (status === "failed") return `<span class="status-badge status-failed">Failed</span>`;
-      if (status === "moved") return `<span class="status-badge status-moved">Moved</span>`;
-      return `<span class="status-badge">${status || "—"}</span>`;
-    }
-
-    // ========== ADD/EDIT ASSET ==========
-    function categoryDropdownHtml(selected = "") {
-      return `
-        <label class="form-label">Asset Type</label>
-        <select id="assetCategory" class="form-select" required>
-          ${assetCategories.map(cat => `
-            <option value="${cat}" ${cat === selected ? "selected" : ""}>${cat}</option>
-          `).join('')}
-          <option value="Other">Other (Custom)</option>
-        </select>
-        <input type="text" id="customCategory" class="form-input" placeholder="Enter custom asset type" style="display:none;margin-top:0.5rem;">
-      `;
-    }
-
-    async function showAddAssetModal() {
-      let clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
-      
-      showModal(`
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2 class="modal-title">📦 Add New Asset</h2>
-          </div>
-          <div class="modal-body">
-            <form id="addAssetForm">
-              <div class="form-group">
-                <label class="form-label">Client</label>
-                <select id="assetClient" class="form-select" required>
-                  <option value="">Select Client</option>
-                  ${clientOptions}
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Location</label>
-                <select id="assetLocation" class="form-select" required>
-                  <option value="">Select Client First</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                ${categoryDropdownHtml()}
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Asset ID</label>
-                <input type="text" id="assetId" class="form-input" required placeholder="e.g. Hazmat Truck 01">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Assigned User</label>
-                <input type="text" id="assignedUser" class="form-input" placeholder="Username (optional)">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Status</label>
-                <select id="assetStatus" class="form-select">
-                  <option value="in_service">In Service</option>
-                  <option value="out_of_service">Out of Service</option>
-                  <option value="moved">Moved</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Last Inspected By</label>
-                <input type="text" id="lastInspectedBy" class="form-input" placeholder="Username (optional)">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">Last Inspection Date</label>
-                <input type="date" id="lastInspectionDate" class="form-input">
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button class="action-btn secondary" type="button" id="closeAssetModal">Cancel</button>
-            <button class="action-btn" type="submit" form="addAssetForm" id="submitAssetBtn">Add Asset</button>
-          </div>
-          <div id="assetFormMsg" style="padding: 0 2rem; color: var(--nexus-yellow); text-align: center; margin-bottom: 1rem;"></div>
-        </div>
-      `);
-      
-      document.getElementById('closeAssetModal').onclick = hideModal;
-      document.getElementById('assetClient').onchange = function() {
-        const clientId = this.value;
-        const locList = locationsCache[clientId] || [];
-        document.getElementById('assetLocation').innerHTML = `<option value="">Select Location</option>` + locList.map(l => `<option value="${l}">${l}</option>`).join('');
-      };
-      
-      const categorySelect = document.getElementById('assetCategory');
-      if (categorySelect) {
-        categorySelect.onchange = function() {
-          const customInput = document.getElementById('customCategory');
-          if (customInput) {
-            customInput.style.display = this.value === "Other" ? "block" : "none";
-          }
-        };
-      }
-      
-      document.getElementById('addAssetForm').onsubmit = async function(e) {
-        e.preventDefault();
-        
-        const clientId = document.getElementById('assetClient').value;
-        const location = document.getElementById('assetLocation').value.trim();
-        let category = document.getElementById('assetCategory').value;
-        if (category === "Other") {
-          category = document.getElementById('customCategory').value.trim() || "Custom";
-        }
-        const asset_id = document.getElementById('assetId').value.trim();
-        const assigned_user = document.getElementById('assignedUser').value.trim();
-        const status = document.getElementById('assetStatus').value;
-        const last_inspected_by = document.getElementById('lastInspectedBy').value.trim();
-        const last_inspection_date = document.getElementById('lastInspectionDate').value;
-        if (!clientId || !asset_id || !category || !location) {
-          msg.textContent = "Fill all required fields.";
-          msg.style.color = "#ff5050";
-          return;
-        }
-        try {
-          await addDoc(collection(db, `clients/${clientId}/assets`), {
-            asset_id, type: category, location, assigned_user, status,
-            last_inspected_by, last_inspection_date,
-            created_at: serverTimestamp()
-          });
-          msg.textContent = "Added!";
-          msg.style.color = "#28e640";
-          modalRoot.style.display = "none";
-          await loadAllAssets();
-        } catch (error) {
-          msg.textContent = "Error: " + (error.message || "Unknown error");
-          msg.style.color = "#ff5050";
-        }
-      };
-    }
-
-    // ========== BULK ADD ==========
-    function showBulkAddAssetModal() {
-      let clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
-      modalRoot.innerHTML = `
-        <div class="modal-content">
-          <h3>Bulk Add Assets</h3>
-          <form id="bulkAddForm">
-            <label>Client</label>
-            <select id="bulkClient" required>
-              <option value="">Select Client</option>
-              ${clientOptions}
-            </select>
-            <label>Location</label>
-            <select id="bulkLocation" required><option value="">Select Client First</option></select>
-            ${categoryDropdownHtml()}
-            <label>Quantity</label>
-            <input type="number" id="bulkQty" min="1" max="99" required value="1" />
-            <button class="assets-action-btn" type="submit">Bulk Add</button>
-            <button class="action-btn" type="button" id="closeBulkModal">Cancel</button>
-            <span id="bulkFormMsg" style="margin-left:10px;color:#fdd835;"></span>
-          </form>
-        </div>
-      `;
-      modalRoot.style.display = "flex";
-      document.getElementById('closeBulkModal').onclick = () => modalRoot.style.display = "none";
-      document.getElementById('bulkClient').onchange = function() {
-        const clientId = this.value;
-        const locList = locationsCache[clientId] || [];
-        document.getElementById('bulkLocation').innerHTML = `<option value="">Select Location</option>` + locList.map(l => `<option value="${l}">${l}</option>`).join('');
-      };
-      document.getElementById('assetCategory').onchange = function() {
-        document.getElementById('customCategory').style.display = this.value === "Other" ? "" : "none";
-      };
-      document.getElementById('bulkAddForm').onsubmit = async function(e) {
-        e.preventDefault();
-        const msg = document.getElementById('bulkFormMsg');
-        const clientId = document.getElementById('bulkClient').value;
-        const location = document.getElementById('bulkLocation').value;
-        let category = document.getElementById('assetCategory').value;
-        if (category === "Other") {
-          category = document.getElementById('customCategory').value.trim() || "Custom";
-        }
-        const qty = parseInt(document.getElementById('bulkQty').value);
-        if (!clientId || !location || !category || qty < 1) {
-          msg.textContent = "Fill all fields.";
-          msg.style.color = "#ff5050";
-          return;
-        }
-        
-        // Close modal and show loading for bulk operation
-        modalRoot.style.display = "none";
-        showLoading([
-          'Preparing bulk asset import...',
-          'Validating asset data...',
-          'Creating asset records...',
-          'Updating inventory...',
-          'Finalizing import...'
-        ]);
-        
-        try {
-          for (let i = 0; i < qty; i++) {
-            await addDoc(collection(db, `clients/${clientId}/assets`), {
-              asset_id: `NEW_${category.replace(/\s+/g,"_")}_${Date.now()}_${i+1}`,
-              type: category,
-              location,
-              status: "in_service",
-              created_at: serverTimestamp()
-            });
-          }
-          await loadAllAssets();
-        } catch (error) {
-          hideLoading();
-          alert("Error: " + (error.message || "Unknown error"));
-        }
-      };
-    }
-
-    // ========== BULK DELETE ==========
-    function showBulkDeleteAssetModal() {
-      let clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
-      modalRoot.innerHTML = `
-        <div class="modal-content">
-          <h3 style="color: #ff5050;">Bulk Delete Assets</h3>
-          <p style="color: #ffa500; margin-bottom: 1rem;">⚠️ This action cannot be undone. Use with extreme caution.</p>
-          <form id="bulkDeleteForm">
-            <label>Client</label>
-            <select id="deleteClient" required>
-              <option value="">Select Client</option>
-              ${clientOptions}
-            </select>
-            <label>Location (Optional - leave blank to delete all)</label>
-            <select id="deleteLocation">
-              <option value="">All Locations</option>
-            </select>
-            <label>Asset Type/Category (Optional)</label>
-            <select id="deleteCategory">
-              <option value="">All Categories</option>
-              ${assetCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
-            </select>
-            <label>Status Filter (Optional)</label>
-            <select id="deleteStatus">
-              <option value="">All Statuses</option>
-              <option value="in_service">In Service</option>
-              <option value="out_of_service">Out of Service</option>
-              <option value="decommissioned">Decommissioned</option>
-            </select>
-            <button class="action-btn danger" type="submit">Delete Assets</button>
-            <button class="action-btn" type="button" id="closeBulkDeleteModal">Cancel</button>
-            <span id="bulkDeleteFormMsg" style="margin-left:10px;color:#fdd835;"></span>
-          </form>
-        </div>
-      `;
-      modalRoot.style.display = "flex";
-      
-      document.getElementById('closeBulkDeleteModal').onclick = () => modalRoot.style.display = "none";
-      
-      document.getElementById('deleteClient').onchange = function() {
-        const clientId = this.value;
-        const locList = locationsCache[clientId] || [];
-        document.getElementById('deleteLocation').innerHTML = 
-          `<option value="">All Locations</option>` + 
-          locList.map(l => `<option value="${l}">${l}</option>`).join('');
-      };
-      
-      document.getElementById('bulkDeleteForm').onsubmit = async function(e) {
-        e.preventDefault();
-        const clientId = document.getElementById('deleteClient').value;
-        const location = document.getElementById('deleteLocation').value;
-        const category = document.getElementById('deleteCategory').value;
-        const status = document.getElementById('deleteStatus').value;
-        
-        if (!clientId) {
-          document.getElementById('bulkDeleteFormMsg').textContent = "Please select a client.";
-          document.getElementById('bulkDeleteFormMsg').style.color = "#ff5050";
-          return;
-        }
-        
-        // Confirm the dangerous operation
-        const confirmMsg = `Are you sure you want to delete assets for ${allClients.find(c => c.id === clientId)?.name || clientId}?
-Location: ${location || 'All'}
-Category: ${category || 'All'}
-Status: ${status || 'All'}
-
-This action cannot be undone!`;
-        
-        if (!confirm(confirmMsg)) {
-          return;
-        }
-        
-        // Close modal and show loading for bulk delete
-        modalRoot.style.display = "none";
-        showLoading([
-          'Scanning for matching assets...',
-          'Applying deletion filters...',
-          'Removing asset records...',
-          'Updating inventory counts...',
-          'Cleaning up references...'
-        ]);
-        
-        try {
-          const assetsRef = collection(db, `clients/${clientId}/assets`);
-          let query = assetsRef;
-          
-          // Apply filters
-          if (location) {
-            query = where('location', '==', location);
-          }
-          
-          const snapshot = await getDocs(query);
-          let deletedCount = 0;
-          
-          for (const docSnap of snapshot.docs) {
-            const asset = docSnap.data();
-            let shouldDelete = true;
-            
-            // Apply additional filters
-            if (category && asset.type !== category) shouldDelete = false;
-            if (status && asset.status !== status) shouldDelete = false;
-            
-            if (shouldDelete) {
-              await deleteDoc(doc(db, `clients/${clientId}/assets`, docSnap.id));
-              deletedCount++;
-            }
-          }
-          
-          await loadAllAssets();
-          alert(`Successfully deleted ${deletedCount} assets.`);
-        } catch (error) {
-          hideLoading();
-          alert("Error: " + (error.message || "Unknown error"));
-        }
-      };
-    }
-
-    // ========== BULK DELETE ==========
-    function showBulkDeleteAssetModal() {
-      let clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
-      modalRoot.innerHTML = `
-        <div class="modal-content">
-          <h3 style="color: #ff5050;">Bulk Delete Assets</h3>
-          <p style="color: #ffa500; margin-bottom: 1rem;">⚠️ This action cannot be undone. Use with extreme caution.</p>
-          <form id="bulkDeleteForm">
-            <label>Client</label>
-            <select id="deleteClient" required>
-              <option value="">Select Client</option>
-              ${clientOptions}
-            </select>
-            <button class="action-btn danger" type="submit">Delete Assets</button>
-            <button class="action-btn" type="button" id="closeBulkDeleteModal">Cancel</button>
-          </form>
-        </div>
-      `;
-      modalRoot.style.display = "flex";
-      document.getElementById('closeBulkDeleteModal').onclick = () => modalRoot.style.display = "none";
-      document.getElementById('bulkDeleteForm').onsubmit = async function(e) {
-        e.preventDefault();
-        const clientId = document.getElementById('deleteClient').value;
-        if (!clientId || !confirm('Delete ALL assets for this client? This cannot be undone!')) return;
-        
-        modalRoot.style.display = "none";
-        showLoading([
-          'Scanning assets...',
-          'Removing records...',
-          'Updating inventory...'
-        ]);
-        
-        try {
-          const snapshot = await getDocs(collection(db, `clients/${clientId}/assets`));
-          for (const docSnap of snapshot.docs) {
-            await deleteDoc(doc(db, `clients/${clientId}/assets`, docSnap.id));
-          }
-          await loadAllAssets();
-        } catch (error) {
-          hideLoading();
-          alert("Error: " + error.message);
-        }
-      };
-    }
-
-    // ========== ADD LOCATION ==========
-    function showAddLocationModal() {
-      let clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
-      modalRoot.innerHTML = `
-        <div class="modal-content">
-          <h3>Add Location</h3>
-          <form id="addLocationForm">
-            <label>Client</label>
-            <select id="locationClient" required>
-              <option value="">Select Client</option>
-              ${clientOptions}
-            </select>
-            <label>Name</label>
-            <input type="text" id="locationName" required placeholder="e.g. Office 1">
-            <button class="assets-action-btn" type="submit">Add</button>
-            <button class="action-btn" type="button" id="closeLocationModal">Cancel</button>
-            <span id="locationFormMsg" style="margin-left:10px;color:#fdd835;"></span>
-          </form>
-        </div>
-      `;
-      modalRoot.style.display = "flex";
-      document.getElementById('closeLocationModal').onclick = () => modalRoot.style.display = "none";
-      document.getElementById('addLocationForm').onsubmit = async function (e) {
-        e.preventDefault();
-        const msg = document.getElementById('locationFormMsg');
-        msg.textContent = "Adding...";
-        const clientId = document.getElementById('locationClient').value;
-        const name = document.getElementById('locationName').value.trim();
-        if (!clientId || !name) {
-          msg.textContent = "Fill out all fields.";
-          msg.style.color = "#ff5050";
-          return;
-        }
-        try {
-          await addDoc(collection(db, `clients/${clientId}/locations`), {
-            name,
-            created_at: serverTimestamp()
-          });
-          msg.textContent = "Added!";
-          msg.style.color = "#28e640";
-          locationsCache[clientId] = await getLocationsForClient(clientId);
-          modalRoot.style.display = "none";
-        } catch (error) {
-          msg.textContent = "Error: " + (error.message || "Unknown error");
-          msg.style.color = "#ff5050";
-        }
-      };
-    }
-
-    // ========== EDIT/DELETE ASSET ==========
-    window.editAsset = async function(clientId, assetId) {
-      const docRef = doc(db, `clients/${clientId}/assets/${assetId}`);
-      const assetSnap = await getDoc(docRef);
-      if (!assetSnap.exists()) {
-        alert("Asset not found.");
-        return;
-      }
-      const asset = assetSnap.data();
-      modalRoot.innerHTML = `
-        <div class="modal-content">
-          <h3>Edit Asset</h3>
-          <form id="editAssetForm">
-            <label>Asset ID</label>
-            <input type="text" id="editAssetId" value="${asset.asset_id || ""}" required>
-            ${categoryDropdownHtml(asset.type)}
-            <label>Location</label>
-            <input type="text" id="editAssetLocation" value="${asset.location || ""}" required>
-            <label>Assigned User</label>
-            <input type="text" id="editAssignedUser" value="${asset.assigned_user || ""}">
-            <label>Status</label>
-            <select id="editAssetStatus">
-              <option value="in_service" ${asset.status === "in_service" ? "selected":""}>In Service</option>
-              <option value="out_of_service" ${asset.status === "out_of_service" ? "selected":""}>Out of Service</option>
-              <option value="moved" ${asset.status === "moved" ? "selected":""}>Moved</option>
-            </select>
-            <label>Last Inspected By</label>
-            <input type="text" id="editLastInspectedBy" value="${asset.last_inspected_by || ""}">
-            <label>Last Inspection</label>
-            <input type="date" id="editLastInspectionDate" value="${asset.last_inspection_date || ""}">
-            <button class="assets-action-btn" type="submit">Save</button>
-            <button class="action-btn" type="button" id="closeEditModal">Cancel</button>
-            <span id="editFormMsg" style="margin-left:10px;color:#fdd835;"></span>
-          </form>
-        </div>
-      `;
-      modalRoot.style.display = "flex";
-      document.getElementById('closeEditModal').onclick = () => modalRoot.style.display = "none";
-      document.getElementById('assetCategory').onchange = function() {
-        document.getElementById('customCategory').style.display = this.value === "Other" ? "" : "none";
-      };
-      document.getElementById('editAssetForm').onsubmit = async function(e) {
-        e.preventDefault();
-        const msg = document.getElementById('editFormMsg');
-        msg.textContent = "Saving...";
-        try {
-          let category = document.getElementById('assetCategory').value;
-          if (category === "Other") {
-            category = document.getElementById('customCategory').value.trim() || "Custom";
-          }
-          await updateDoc(docRef, {
-            asset_id: document.getElementById('editAssetId').value,
-            type: category,
-            location: document.getElementById('editAssetLocation').value,
-            assigned_user: document.getElementById('editAssignedUser').value,
-            status: document.getElementById('editAssetStatus').value,
-            last_inspected_by: document.getElementById('editLastInspectedBy').value,
-            last_inspection_date: document.getElementById('editLastInspectionDate').value
-          });
-          msg.textContent = "Saved!";
-          msg.style.color = "#28e640";
-          modalRoot.style.display = "none";
-          await loadAllAssets();
-        } catch (error) {
-          msg.textContent = "Error: " + (error.message || "Unknown error");
-          msg.style.color = "#ff5050";
-        }
-      };
-    };
-    window.deleteAsset = async function(clientId, assetId) {
-      if (!confirm('Delete this asset?')) return;
-      try {
-        await deleteDoc(doc(db, `clients/${clientId}/assets/${assetId}`));
-        await loadAllAssets();
+        console.log('Processed assets:', allAssets);
+        hideSkeleton();
+        renderAssets();
+        updateStats();
       } catch (error) {
-        alert('Failed to delete asset.');
+        console.error('Error loading assets:', error);
+        hideSkeleton();
+        document.getElementById('all-assets').innerHTML = `
+          <div class="empty-group">
+            Error loading assets: ${error.message}<br>
+            Please check console for details.
+          </div>
+        `;
+        showToast('Failed to load assets. Please try again.', {type: 'error'});
       }
-    };
-
-    // ========== MANAGE CATEGORIES (ADMIN ONLY) ==========
-    function showManageCategoriesModal() {
-      modalRoot.innerHTML = `
-        <div class="modal-content" style="max-width:600px">
-          <div class="manage-cats-header">
-            <h3>Manage Asset Categories</h3>
-            <button class="action-btn" id="closeCatsModal">Close</button>
-          </div>
-          <div>
-            <button class="assets-action-btn" id="syncDefaultCatsBtn" style="margin-bottom:12px;display:none;">Sync Default Categories to Firebase</button>
-            <form id="addCatForm" style="display:flex;gap:8px;align-items:center;">
-              <input type="text" id="addCatInput" placeholder="Add new category" style="flex:1;">
-              <button class="assets-action-btn" type="submit">Add</button>
-            </form>
-            <div class="cat-list" id="catList"></div>
-          </div>
-        </div>
-      `;
-      modalRoot.style.display = "flex";
-      document.getElementById('closeCatsModal').onclick = () => modalRoot.style.display = "none";
-
-      // Show sync button if categories missing in Firestore
-      getDocs(collection(db,"assetCategories")).then(snap=>{
-        if(snap.empty) document.getElementById('syncDefaultCatsBtn').style.display="";
-      });
-
-      document.getElementById('syncDefaultCatsBtn').onclick = async function() {
-        // push DEFAULT_CATEGORIES to Firestore (no duplicates)
-        const catCol = collection(db, "assetCategories");
-        for (const name of DEFAULT_CATEGORIES) {
-          await addDoc(catCol, { name });
-        }
-        await loadAssetCategories(true);
-        alert("Default categories synced!");
-        modalRoot.style.display = "none";
-      };
-
-      document.getElementById('addCatForm').onsubmit = async function(e) {
-        e.preventDefault();
-        let val = document.getElementById('addCatInput').value.trim();
-        if (!val) return;
-        await addDoc(collection(db,"assetCategories"), { name: val });
-        document.getElementById('addCatInput').value = "";
-        await loadAssetCategories(true);
-        showManageCategoriesModal();
-      };
-      renderCatList();
     }
-    async function renderCatList() {
-      let snap;
-      try {
-        snap = await getDocs(collection(db,"assetCategories"));
-      } catch(e){
-        document.getElementById('catList').innerHTML = `<span style="color:#ff5050;">Could not load from Firebase.</span>`;
+    function renderAssets(list = allAssets) {
+      const grid = document.getElementById('all-assets');
+      const count = document.getElementById('total-count');
+      
+      if (!list.length) {
+        grid.innerHTML = '<div class="empty-group">No assets found.</div>';
+        count.textContent = '0';
         return;
       }
-      let cats = [];
-      snap.forEach(doc => cats.push({id: doc.id, name: doc.data().name}));
-      cats.sort((a,b)=>a.name.localeCompare(b.name));
-      document.getElementById('catList').innerHTML = cats.map(cat=>`
-        <div class="cat-list-item">
-          <span>${cat.name}</span>
-          <button class="action-btn" onclick="window.deleteCat('${cat.id}')">Delete</button>
+      
+      count.textContent = list.length;
+      grid.innerHTML = list.map(asset=>`
+        <div class="user-card" data-id="${asset.id}" onclick="viewAssetDetails('${asset.id}')">
+          <div class="user-header">
+            <div class="user-avatar">${getAssetInitial(asset)}</div>
+            <div class="user-info">
+              <div class="user-name">${asset.kind || asset.type || 'Asset'}</div>
+              <span class="role-badge user">${asset.type || 'Unknown Type'}</span>
+            </div>
+          </div>
+          
+          <div class="assigned-areas">
+            <span class="areas-label">Location:</span>
+            <div class="areas-list">
+              ${canModifyAssets() ? 
+                `<span class="editable-field" data-field="location" onclick="event.stopPropagation()">${asset.location || '--'}</span>` +
+                (asset.sublocation ? ` / <span class="editable-field" data-field="sublocation" onclick="event.stopPropagation()">${asset.sublocation}</span>` : '') :
+                `${asset.location || '--'}${asset.sublocation ? ' / ' + asset.sublocation : ''}`
+              }
+            </div>
+          </div>
+          
+          ${asset.precision ? `
+          <div class="assigned-areas">
+            <span class="areas-label">Precision Loc:</span>
+            ${canModifyAssets() ? 
+              `<span class="editable-field" data-field="precision" onclick="event.stopPropagation()">${asset.precision}</span>` :
+              asset.precision
+            }
+          </div>
+          ` : ''}
+          
+          <div class="monthly-status status-tooltip" data-tooltip="Annual Due: ${asset.annualDue || 'Not set'}">
+            <div class="status-indicator ${getAssetStatus(asset)}"></div>
+            <span class="status-text">
+              Due: ${canModifyAssets() ? 
+                `<span class="editable-field" data-field="annualDue" onclick="event.stopPropagation()">${asset.annualDue || '--'}</span>` :
+                (asset.annualDue || '--')
+              }
+            </span>
+          </div>
+          
+          <div class="last-activity">
+            <span class="activity-highlight">Asset ID:</span>
+            ${canModifyAssets() ? 
+              `<span class="editable-field" data-field="asset_id" onclick="event.stopPropagation()">${(asset.asset_id || '').slice(0,12) || '--'}</span>` :
+              ((asset.asset_id || '').slice(0,12) || '--')
+            }
+          </div>
+          
+          ${asset.serial ? `
+          <div class="last-activity">
+            <span class="activity-highlight">Serial:</span>
+            ${asset.serial}
+          </div>
+          ` : ''}
+          
+          <div class="last-inspection" onclick="event.stopPropagation(); viewLastInspection('${asset.id}', '${asset.kind || asset.type || 'Asset'}')">
+            <div class="inspection-icon"></div>
+            <span class="inspection-label">Last Inspection: ${getLastInspectionDate(asset)}</span>
+          </div>
         </div>
       `).join('');
-      window.deleteCat = async function(id) {
-        if (!confirm("Delete this category?")) return;
-        await deleteDoc(doc(db,"assetCategories",id));
-        await loadAssetCategories(true);
-        showManageCategoriesModal();
-      };
-    }
-
-    // ========== LOCATION EXPLORER MODAL ==========
-    
-    async function showLocationExplorerModal() {
-      // Load all clients with their locations
-      const clientOptions = allClients.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
       
-      showModal(`
-        <div class="modal-content" style="max-width: 900px; max-height: 80vh;">
-          <div class="modal-header">
-            <h2 class="modal-title">🗂️ Location Explorer</h2>
-          </div>
-          <div class="modal-body" style="max-height: 60vh; overflow: hidden;">
-            <div class="form-group">
-              <label class="form-label">Select Client</label>
-              <select id="explorerClient" class="form-select">
-                <option value="">Choose Client</option>
-                ${clientOptions}
-              </select>
-            </div>
-            <div id="locationExplorer" style="
-              height: 400px; 
-              overflow-y: auto; 
-              border: 2px solid var(--nexus-border); 
-              border-radius: var(--radius); 
-              padding: 1.5rem; 
-              background: var(--nexus-input);
-              margin-top: 1rem;
-            ">
-              <div style="color: var(--nexus-muted); text-align: center; padding: 3rem;">
-                <span style="font-size: 2rem; display: block; margin-bottom: 1rem;">📂</span>
-                Select a client to explore their location hierarchy
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="action-btn secondary" type="button" id="closeLocationExplorer">Close Explorer</button>
-          </div>
-        </div>
-      `);
-      
-      document.getElementById('closeLocationExplorer').onclick = hideModal;
-      
-      document.getElementById('explorerClient').onchange = async function() {
-        const clientId = this.value;
-        const container = document.getElementById('locationExplorer');
-        
-        if (!clientId) {
-          container.innerHTML = `
-            <div style="color: var(--nexus-muted); text-align: center; padding: 3rem;">
-              <span style="font-size: 2rem; display: block; margin-bottom: 1rem;">📂</span>
-              Select a client to explore their location hierarchy
-            </div>
-          `;
-          return;
-        }
-        
-        showLoading([
-          'Connecting to client database...',
-          'Loading location structure...',
-          'Building hierarchy tree...',
-          'Organizing location data...'
-        ]);
-        
-        await loadLocationExplorer(clientId);
-      };
-    }
-
-    async function loadLocationExplorer(clientId) {
-      const container = document.getElementById('locationExplorer');
-      
-      try {
-        // Get all locations for this client from Firestore
-        const locationsSnapshot = await getDocs(collection(db, 'clients', clientId, 'locations'));
-        const locations = [];
-        locationsSnapshot.forEach(doc => {
-          if (doc.id !== 'starter') {
-            locations.push({ id: doc.id, ...doc.data() });
-          }
-        });
-
-        if (locations.length === 0) {
-          container.innerHTML = `
-            <div style="color: var(--nexus-muted); text-align: center; padding: 3rem;">
-              <span style="font-size: 2rem; display: block; margin-bottom: 1rem;">📭</span>
-              <strong>No locations found</strong><br>
-              <small>This client hasn't set up any locations yet.</small>
-            </div>
-          `;
-          return;
-        }
-
-        // Organize locations by hierarchy
-        const topLevel = locations.filter(loc => !loc.isSubLocation && !loc.parentLocation);
-        const subLocations = locations.filter(loc => loc.isSubLocation || loc.parentLocation);
-        
-        // Group sub-locations by parent
-        const subLocationsByParent = {};
-        subLocations.forEach(sub => {
-          const parentId = sub.parentLocation;
-          if (!subLocationsByParent[parentId]) {
-            subLocationsByParent[parentId] = [];
-          }
-          subLocationsByParent[parentId].push(sub);
-        });
-
-        container.innerHTML = renderLocationHierarchy(topLevel, subLocationsByParent, clientId);
-        
-      } catch (error) {
-        console.error('Error loading locations:', error);
-        container.innerHTML = '<div style="color: #ff5656; text-align: center; padding: 40px;">Error loading locations: ' + error.message + '</div>';
+      if (canModifyAssets()) {
+        attachInlineEdit();
       }
     }
-
-    function renderLocationHierarchy(topLevel, subLocationsByParent, clientId) {
-      return `
-        <div class="location-hierarchy">
-          ${topLevel.map(location => {
-            const hasSubLocations = subLocationsByParent[location.id] && subLocationsByParent[location.id].length > 0;
-            return `
-              <div class="location-folder" style="margin-bottom: 15px;">
-                <div class="location-item-explorer" onclick="handleLocationClick('${clientId}', '${location.id}', '${location.name}', ${hasSubLocations})" 
-                     style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #1e2f4b; border-radius: 8px; cursor: pointer; border-left: 4px solid #fdd835; transition: background 0.2s;">
-                  <div style="font-size: 1.5em;">${hasSubLocations ? '📁' : '📍'}</div>
-                  <div style="flex: 1;">
-                    <div style="font-weight: 600; color: #fdd835; font-size: 1.1em;">${location.name || location.id}</div>
-                    <div style="color: #93a7c6; font-family: 'Courier New', monospace; font-size: 0.9em;">UUID: ${location.uuid || 'N/A'}</div>
-                    ${hasSubLocations ? '<div style="color: #43ff7a; font-size: 0.8em;">✓ Contains sub-locations</div>' : ''}
-                  </div>
-                  <div style="color: #666;">›</div>
-                </div>
-                ${hasSubLocations ? `
-                  <div class="sub-locations" id="sub-${location.id}" style="margin-left: 30px; margin-top: 8px; display: none;">
-                    ${subLocationsByParent[location.id].map(sub => `
-                      <div class="sub-location-item" onclick="handleSubLocationClick('${clientId}', '${sub.id}', '${sub.name}', '${location.name}')"
-                           style="display: flex; align-items: center; gap: 10px; padding: 8px; background: #16243c; border-radius: 6px; cursor: pointer; margin-bottom: 4px; border-left: 3px solid #93a7c6; transition: background 0.2s;">
-                        <div style="font-size: 1.2em;">📄</div>
-                        <div style="flex: 1;">
-                          <div style="font-weight: 500; color: #e6e6f1;">${sub.name || sub.id}</div>
-                          <div style="color: #93a7c6; font-family: 'Courier New', monospace; font-size: 0.85em;">Code: ${sub.fullLocationCode || sub.uuid || 'N/A'}</div>
-                        </div>
-                      </div>
-                    `).join('')}
-                  </div>
-                ` : ''}
-              </div>
-            `;
-          }).join('')}
-        </div>
-        <style>
-          .location-item-explorer:hover {
-            background: #223052 !important;
+    // === Inline Editing for Asset Fields ===
+    function attachInlineEdit() {
+      document.querySelectorAll('.editable-field').forEach(el=>{
+        el.onclick = async function(e) {
+          if (el.classList.contains('editing')) return; // Prevent duplicate edits
+          const assetCard = el.closest('.user-card');
+          const assetId = assetCard.dataset.id;
+          const asset = allAssets.find(a=>a.id===assetId);
+          const field = el.dataset.field;
+          // Asset type/kind not inline-editable
+          if (field === 'type' || field === 'kind') return;
+          el.classList.add('editing');
+          const oldVal = el.textContent;
+          let input = document.createElement('input');
+          input.className = 'inline-edit-input';
+          input.value = oldVal==='--' ? '' : oldVal;
+          el.textContent = '';
+          el.appendChild(input);
+          input.focus();
+          // For annualDue, show MM/YYYY
+          if (field==='annualDue') input.type = 'text';
+          if (field==='asset_id') input.maxLength = 16;
+          input.onblur = finishEdit;
+          input.onkeydown = function(ev){
+            if(ev.key==='Enter'){ input.blur(); }
+            if(ev.key==='Escape'){ cancelEdit(); }
+          };
+          function cancelEdit() {
+            el.classList.remove('editing');
+            el.textContent = oldVal;
           }
-          .sub-location-item:hover {
-            background: #1c3050 !important;
+          async function finishEdit() {
+            let newVal = input.value.trim();
+            if (field === 'annualDue' && !/^\d{2}\/\d{4}$/.test(newVal) && newVal!=='') {
+              showToast('Enter MM/YYYY format!',{type:'error'});
+              cancelEdit();
+              return;
+            }
+            if (newVal === oldVal || (!newVal && !oldVal)) { cancelEdit(); return; }
+            // Location fields—cascade logic
+            if (['location','sublocation','precision'].includes(field)) {
+              await inlineLocationEdit(asset, assetId, field, newVal, oldVal, el, cancelEdit);
+              return;
+            }
+            // Save to Firebase, update UI
+            let oldAsset = {...asset};
+            try {
+              await db.collection(`clients/${clientId}/assets`).doc(assetId).update({ [field]: newVal });
+              asset[field] = newVal;
+              el.classList.remove('editing');
+              el.textContent = newVal || '--';
+              showToast('Asset updated!', {
+                undoCallback: async()=>{
+                  await db.collection(`clients/${clientId}/assets`).doc(assetId).update({ [field]: oldVal });
+                  asset[field] = oldVal;
+                  el.textContent = oldVal;
+                  showToast('Undo complete.');
+                }
+              });
+            } catch(err) {
+              showToast('Error updating asset!',{type:'error'});
+              cancelEdit();
+            }
           }
-        </style>
-      `;
-    }
-
-    // Global functions for location click handlers
-    window.handleLocationClick = function(clientId, locationId, locationName, hasSubLocations) {
-      if (hasSubLocations) {
-        // Toggle sub-locations visibility
-        const subContainer = document.getElementById('sub-' + locationId);
-        if (subContainer) {
-          subContainer.style.display = subContainer.style.display === 'none' ? 'block' : 'none';
-        }
-      } else {
-        // Show increase precision modal
-        showIncreasePrecisionModal(clientId, locationId, locationName);
-      }
-    };
-
-    window.handleSubLocationClick = function(clientId, subLocationId, subLocationName, parentName) {
-      // For now, just show an info modal - could be expanded later
-      alert(`Sub-location: ${subLocationName}\nParent: ${parentName}\n\nFuture: This could show asset assignment or further sub-division options.`);
-    };
-
-    function showIncreasePrecisionModal(clientId, locationId, locationName) {
-      modalRoot.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
-          <h3>🎯 Increase Precision</h3>
-          <div style="background: #18203a; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #fdd835;">
-            <p style="margin: 0; color: #e6e6f1;"><strong>Location:</strong> ${locationName}</p>
-            <p style="margin: 8px 0 0 0; color: #93a7c6; font-size: 0.9em;">Create sub-locations within this area for more precise asset tracking.</p>
-          </div>
-          
-          <form id="increasePrecisionForm">
-            <label>Sub-location Type:</label>
-            <select id="subLocationType" required style="margin-bottom: 15px;">
-              <option value="">Choose type...</option>
-              <option value="building">Buildings</option>
-              <option value="floor">Floors</option>
-              <option value="room">Rooms</option>
-              <option value="unit">Units</option>
-              <option value="section">Sections</option>
-              <option value="area">Areas</option>
-              <option value="custom">Custom Names</option>
-            </select>
-            
-            <div id="numSubLocationsGroup" style="display: none;">
-              <label>Number of <span id="subLocationLabel"></span>:</label>
-              <input type="number" id="numSubLocations" min="1" max="50" placeholder="Enter number..." style="margin-bottom: 15px;">
-            </div>
-
-            <div id="customSubLocationNames" style="display: none;">
-              <label>Enter custom names:</label>
-              <div id="customNameInputs" style="margin-bottom: 15px;">
-                <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                  <input type="text" class="customNameInput" placeholder="Sub-location name..." style="flex: 1;">
-                  <button type="button" onclick="addCustomNameInput()" style="background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">+</button>
-                </div>
-              </div>
-            </div>
-            
-            <div id="precisionPreview" style="display: none; background: #16243c; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 2px dashed #344267;">
-              <h4 style="color: #fdd835; margin-top: 0;">Preview:</h4>
-              <div id="previewContent"></div>
-            </div>
-            
-            <div style="display: flex; gap: 10px;">
-              <button class="assets-action-btn" type="submit" id="createSubLocationsBtn" disabled>Create Sub-Locations</button>
-              <button class="action-btn" type="button" onclick="modalRoot.style.display='none'">Cancel</button>
-            </div>
-            <div id="precisionFormMsg" style="margin-top: 10px; color: #fdd835;"></div>
-          </form>
-        </div>
-      `;
-      
-      // Event handlers for the precision form
-      document.getElementById('subLocationType').onchange = function() {
-        const value = this.value;
-        const numGroup = document.getElementById('numSubLocationsGroup');
-        const customGroup = document.getElementById('customSubLocationNames');
-        const label = document.getElementById('subLocationLabel');
-        
-        if (value === 'custom') {
-          numGroup.style.display = 'none';
-          customGroup.style.display = 'block';
-        } else if (value) {
-          numGroup.style.display = 'block';
-          customGroup.style.display = 'none';
-          label.textContent = value + 's';
-        } else {
-          numGroup.style.display = 'none';
-          customGroup.style.display = 'none';
-        }
-        updatePrecisionPreview();
-      };
-      
-      document.getElementById('numSubLocations').oninput = updatePrecisionPreview;
-      
-      // Add event listeners to existing custom inputs
-      document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('customNameInput')) {
-          updatePrecisionPreview();
         }
       });
-      
-      document.getElementById('increasePrecisionForm').onsubmit = async function(e) {
-        e.preventDefault();
-        await createSubLocations(clientId, locationId, locationName);
-      };
-      
-      // Helper functions for precision modal
-      window.addCustomNameInput = function() {
-        const container = document.getElementById('customNameInputs');
-        const newDiv = document.createElement('div');
-        newDiv.style = 'display: flex; gap: 10px; margin-bottom: 8px;';
-        newDiv.innerHTML = `
-          <input type="text" class="customNameInput" placeholder="Sub-location name..." style="flex: 1;">
-          <button type="button" onclick="this.parentElement.remove(); updatePrecisionPreview();" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">−</button>
-        `;
-        container.appendChild(newDiv);
-      };
-      
-      function updatePrecisionPreview() {
-        const subType = document.getElementById('subLocationType').value;
-        const numSubs = parseInt(document.getElementById('numSubLocations').value);
-        const preview = document.getElementById('precisionPreview');
-        const previewContent = document.getElementById('previewContent');
-        const createBtn = document.getElementById('createSubLocationsBtn');
-        
-        if (!subType) {
-          preview.style.display = 'none';
-          createBtn.disabled = true;
-          return;
-        }
-
-        let subLocationNames = [];
-        
-        if (subType === 'custom') {
-          const customInputs = document.querySelectorAll('.customNameInput');
-          customInputs.forEach(input => {
-            const value = input.value.trim();
-            if (value) subLocationNames.push(value);
-          });
-        } else if (numSubs && numSubs > 0) {
-          for (let i = 1; i <= numSubs; i++) {
-            subLocationNames.push(`${subType.charAt(0).toUpperCase() + subType.slice(1)} ${i}`);
-          }
-        }
-
-        if (subLocationNames.length === 0) {
-          preview.style.display = 'none';
-          createBtn.disabled = true;
-          return;
-        }
-
-        // Generate preview with unique 4-digit codes
-        previewContent.innerHTML = `
-          <div style="color: #e6e6f1;">
-            <strong>${locationName}</strong>
-            ${subLocationNames.map(name => {
-              const randomCode = Math.floor(Math.random() * 9000) + 1000; // 4-digit unique code
-              return `<div style="margin-left: 20px; margin-top: 4px;">├── ${name} (${randomCode})</div>`;
-            }).join('')}
-          </div>
-        `;
-        
-        preview.style.display = 'block';
-        createBtn.disabled = false;
-      }
     }
-
-    async function createSubLocations(clientId, parentLocationId, parentLocationName) {
-      const subType = document.getElementById('subLocationType').value;
-      const numSubs = parseInt(document.getElementById('numSubLocations').value);
-      const msgEl = document.getElementById('precisionFormMsg');
-      const createBtn = document.getElementById('createSubLocationsBtn');
-      
-      let subLocationNames = [];
-      
-      if (subType === 'custom') {
-        const customInputs = document.querySelectorAll('.customNameInput');
-        customInputs.forEach(input => {
-          const value = input.value.trim();
-          if (value) subLocationNames.push(value);
+    // Guided location logic
+    async function inlineLocationEdit(asset, assetId, field, newVal, oldVal, el, cancelEdit) {
+      if (!newVal) { cancelEdit(); return; }
+      // If editing "location", must prompt for new sublocation and precision as well
+      if (field === 'location') {
+        let sub = prompt('Enter sublocation (if any) for this Location:', asset.sublocation||'');
+        let prec = prompt('Enter new precision code (####):', asset.precision||'');
+        // TODO: Add uniqueness checks here per your rules!
+        await db.collection(`clients/${clientId}/assets`).doc(assetId).update({
+          location: newVal, sublocation: sub, precision: prec
         });
+        asset.location = newVal; asset.sublocation = sub; asset.precision = prec;
+        el.classList.remove('editing');
+        el.textContent = newVal;
+        // Refresh card for all fields
+        await loadAssets();
+        showToast('Location updated!', {
+          undoCallback: async()=>{
+            await db.collection(`clients/${clientId}/assets`).doc(assetId).update({
+              location: oldVal, sublocation: asset.sublocation, precision: asset.precision
+            });
+            showToast('Undo complete.');
+            await loadAssets();
+          }
+        });
+        return;
+      }
+      // Sublocation/Precision fields just edit one field
+      await db.collection(`clients/${clientId}/assets`).doc(assetId).update({ [field]: newVal });
+      asset[field] = newVal;
+      el.classList.remove('editing');
+      el.textContent = newVal;
+      showToast(field.charAt(0).toUpperCase()+field.slice(1)+' updated!', {
+        undoCallback: async()=>{
+          await db.collection(`clients/${clientId}/assets`).doc(assetId).update({ [field]: oldVal });
+          asset[field] = oldVal;
+          el.textContent = oldVal;
+          showToast('Undo complete.');
+        }
+      });
+    }
+    // === Filtering ===
+    function filterAssets() {
+      let search = document.getElementById('asset-search').value.toLowerCase();
+      let type = document.getElementById('asset-type-filter').value;
+      let filtered = allAssets.filter(asset=>{
+        let matchesType = !type || (asset.type===type);
+        let matchesSearch = !search || (
+          (asset.kind||'').toLowerCase().includes(search) ||
+          (asset.asset_id||'').toLowerCase().includes(search) ||
+          (asset.serial||'').toLowerCase().includes(search) ||
+          (asset.location||'').toLowerCase().includes(search)
+        );
+        return matchesType && matchesSearch;
+      });
+      renderAssets(filtered);
+    }
+    // === Asset Status (demo logic) ===
+    function getAssetStatus(asset) {
+      if (!asset.annualDue) return 'due-soon';
+      let [mm,yyyy] = asset.annualDue.split('/');
+      let due = new Date(+yyyy, +mm-1, 1);
+      let now = new Date();
+      let days = (due-now)/(1000*60*60*24);
+      if (days < 0) return 'overdue';
+      if (days < 30) return 'due-soon';
+      return 'complete';
+    }
+    // === Stats ===
+    function updateStats() {
+      let overdue = allAssets.filter(a=>getAssetStatus(a)==='overdue').length;
+      let dueSoon = allAssets.filter(a=>getAssetStatus(a)==='due-soon').length;
+      let complete = allAssets.filter(a=>getAssetStatus(a)==='complete').length;
+      document.getElementById('overdue-count').textContent = overdue;
+      document.getElementById('due-soon-count').textContent = dueSoon;
+      document.getElementById('complete-count').textContent = complete;
+    }
+
+    // === Helper Functions ===
+    function canModifyAssets() {
+      return ['nexus', 'admin', 'manager'].includes(currentUserRole);
+    }
+
+    function getAssetInitial(asset) {
+      return (asset.kind || asset.type || 'A')[0].toUpperCase();
+    }
+
+    function getLastInspectionDate(asset) {
+      // Mock date - in production, query inspections collection
+      return asset.lastInspection || 'Not yet inspected';
+    }
+
+    async function loadAssetTypes() {
+      try {
+        const typesSnap = await db.collection(`clients/${clientId}/asset_types`).get();
+        const typeFilter = document.getElementById('asset-type-filter');
+        
+        typesSnap.forEach(doc => {
+          const opt = document.createElement('option');
+          opt.value = doc.id;
+          opt.textContent = doc.id;
+          typeFilter.appendChild(opt);
+        });
+      } catch (error) {
+        console.error('Error loading asset types:', error);
       }
     }
 
-    // ========== HELPER FUNCTIONS ==========
-    function isNexusUser() {
-      return sessionStorage.getItem('role') === 'nexus';
+    async function loadLocations() {
+      try {
+        const locSnap = await db.collection(`clients/${clientId}/locations`).get();
+        allLocations = [];
+        locSnap.forEach(doc => {
+          allLocations.push({ id: doc.id, ...doc.data() });
+        });
+        console.log('Loaded locations:', allLocations);
+      } catch (error) {
+        console.error('Error loading locations:', error);
+      }
+    }
+
+    async function loadClients() {
+      try {
+        const snapshot = await db.collection('clients').get();
+        const dropdown = document.getElementById('client-dropdown');
+        
+        snapshot.forEach(doc => {
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = doc.id.charAt(0).toUpperCase() + doc.id.slice(1);
+          dropdown.appendChild(option);
+        });
+
+        dropdown.addEventListener('change', (e) => {
+          if (e.target.value) {
+            sessionStorage.setItem('tenant_id', e.target.value);
+            location.reload();
+          }
+        });
+
+        dropdown.value = clientId;
+      } catch (error) {
+        console.error('Error loading clients:', error);
+      }
+    }
+
+    function viewAssetDetails(assetId) {
+      const asset = allAssets.find(a => a.id === assetId);
+      if (!asset) return;
+
+      const content = `
+        <div style="margin-bottom: 1rem;">
+          <h4 style="color: var(--nexus-yellow); margin-bottom: 0.5rem;">${asset.kind || asset.type || 'Asset'}</h4>
+          <p style="color: var(--nexus-muted);">${asset.type || 'Unknown Type'}</p>
+        </div>
+        
+        <div style="display: grid; gap: 1rem;">
+          <div>
+            <strong style="color: var(--nexus-light);">Asset ID:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.asset_id || 'Not set'}</span>
+          </div>
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Location:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">
+              ${asset.location || 'Not set'}${asset.sublocation ? ' / ' + asset.sublocation : ''}
+            </span>
+          </div>
+          
+          ${asset.precision ? `
+          <div>
+            <strong style="color: var(--nexus-light);">Precision Location:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.precision}</span>
+          </div>
+          ` : ''}
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Annual Due:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.annualDue || 'Not set'}</span>
+          </div>
+          
+          ${asset.serial ? `
+          <div>
+            <strong style="color: var(--nexus-light);">Serial Number:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.serial}</span>
+          </div>
+          ` : ''}
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Status:</strong>
+            <span style="color: var(--nexus-${getAssetStatus(asset) === 'complete' ? 'success' : getAssetStatus(asset) === 'due-soon' ? 'warning' : 'error'}); margin-left: 0.5rem;">
+              ${getAssetStatus(asset) === 'complete' ? 'Up to Date' : getAssetStatus(asset) === 'due-soon' ? 'Due Soon' : 'Overdue'}
+            </span>
+          </div>
+        </div>
+        
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--nexus-border);">
+          <button onclick="viewLastInspection('${asset.id}', '${asset.kind || asset.type || 'Asset'}')" 
+                  style="background: var(--nexus-yellow); color: var(--nexus-dark); border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            View Last Inspection
+          </button>
+        </div>
+      `;
+      
+      document.getElementById('asset-detail-content').innerHTML = content;
+      document.getElementById('asset-detail-modal').classList.add('active');
+    }
+
+    function viewLastInspection(assetId, assetName) {
+      // Mock functionality - will be connected to real inspection data
+      console.log(`Viewing last inspection for ${assetName} (${assetId})`);
+      
+      const mockData = {
+        date: 'December 15, 2024',
+        inspector: 'Sarah Johnson',
+        status: 'Passed',
+        issues: Math.random() > 0.7 ? ['Minor corrosion on valve'] : [],
+        nextDue: '12/2025'
+      };
+      
+      alert(`Last Inspection Report for ${assetName}\n\nDate: ${mockData.date}\nInspector: ${mockData.inspector}\nStatus: ${mockData.status}\nIssues: ${mockData.issues.length ? mockData.issues.join(', ') : 'None'}\nNext Due: ${mockData.nextDue}\n\nClick OK to view full report.`);
+      
+      // In production, this would:
+      // 1. Query the inspections collection for this asset's latest inspection
+      // 2. Open a modal or navigate to a detailed inspection report page
+      // 3. Show inspection results, photos, failed items, etc.
+    }
+
+    function showAddAssetModal() {
+      showToast('Add Asset functionality will be implemented next.', {type: 'error'});
+      // TODO: Implement add asset modal with form fields
+    }
+
+    function showBulkAddModal() {
+      showToast('Bulk Add functionality will be implemented next.', {type: 'error'});
+      // TODO: Implement bulk add modal with CSV upload or batch form
     }
   </script>
 </body>

@@ -519,6 +519,123 @@
       border: 1px solid var(--nexus-border);
     }
 
+    /* === TOAST NOTIFICATIONS === */
+    #toast-area {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .nexus-toast {
+      background: var(--nexus-card);
+      color: var(--nexus-light);
+      border-left: 6px solid var(--nexus-yellow);
+      border-radius: var(--radius-sm);
+      min-width: 240px;
+      max-width: 360px;
+      box-shadow: var(--shadow-card);
+      padding: 1rem 1.2rem 1rem 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: toast-in 0.4s forwards;
+      font-size: 1rem;
+    }
+
+    .nexus-toast.success {
+      border-color: var(--nexus-success);
+    }
+
+    .nexus-toast.error {
+      border-color: var(--nexus-error);
+    }
+
+    .nexus-toast .undo-btn {
+      color: var(--nexus-yellow);
+      font-weight: 700;
+      margin-left: 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: color 0.2s;
+    }
+
+    .nexus-toast .undo-btn:hover {
+      color: var(--nexus-light);
+    }
+
+    @keyframes toast-in {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes toast-out {
+      to {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+    }
+
+    /* === SKELETON LOADER === */
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .skeleton-card {
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      height: 220px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--nexus-border);
+    }
+
+    .skeleton-anim {
+      background: linear-gradient(90deg, var(--nexus-card-hover) 25%, var(--nexus-card) 50%, var(--nexus-card-hover) 75%);
+      background-size: 400% 100%;
+      animation: shimmer 1.2s linear infinite;
+    }
+
+    .skel-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      margin-bottom: 1.2rem;
+    }
+
+    .skel-bar {
+      height: 14px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      width: 80%;
+    }
+
+    .skel-bar.short {
+      width: 40%;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -400px 0;
+      }
+      100% {
+        background-position: 400px 0;
+      }
+    }
+
     /* === RESPONSIVE === */
     @media (max-width: 768px) {
       .header-container {
@@ -593,6 +710,31 @@
     </div>
   </section>
 
+  <!-- === SKELETON LOADER === -->
+  <div class="skeleton-grid" id="user-skeleton" style="display:none; max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
+    <div class="skeleton-card">
+      <div class="skeleton-anim skel-avatar"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skeleton-anim skel-avatar"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skeleton-anim skel-avatar"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+    </div>
+  </div>
+
   <!-- Main Container -->
   <main class="main-container">
     <!-- All Users in Single Grid -->
@@ -646,6 +788,38 @@
 
     // Global variables
     let clientId, username, role;
+
+    // === SKELETON LOADER ===
+    function showSkeleton() {
+      document.getElementById('all-users').style.display = 'none';
+      document.getElementById('user-skeleton').style.display = 'grid';
+    }
+
+    function hideSkeleton() {
+      document.getElementById('user-skeleton').style.display = 'none';
+      document.getElementById('all-users').style.display = '';
+    }
+
+    // === TOAST NOTIFICATIONS ===
+    function showToast(msg, {type='success', undoCallback=null, duration=4200}={}) {
+      const toast = document.createElement('div');
+      toast.className = 'nexus-toast '+type;
+      toast.innerHTML = `<span>${msg}</span>` + (undoCallback ? `<button class="undo-btn">Undo</button>` : '');
+      document.getElementById('toast-area').appendChild(toast);
+      
+      let hideTimer = setTimeout(()=>removeToast(), duration);
+      
+      function removeToast() {
+        toast.style.animation = 'toast-out 0.3s forwards';
+        setTimeout(()=>toast.remove(), 290);
+      }
+      
+      toast.querySelector('.undo-btn')?.addEventListener('click',()=>{
+        clearTimeout(hideTimer);
+        removeToast();
+        undoCallback && undoCallback();
+      });
+    }
 
     // Wait for DOM to load
     document.addEventListener('DOMContentLoaded', function() {
@@ -853,7 +1027,12 @@
 
     async function loadUsers() {
       try {
+        showSkeleton();
         console.log('Loading users for client:', clientId);
+        
+        // Simulate loading delay for better UX
+        await new Promise(resolve => setTimeout(resolve, 650));
+        
         const snapshot = await db.collection(`clients/${clientId}/users`).get();
         const users = [];
         
@@ -872,6 +1051,7 @@
         });
 
         console.log('Processed users:', users);
+        hideSkeleton();
         renderAllUsers(users);
         updateSummaryStats(users);
 
@@ -920,6 +1100,9 @@
         */
       } catch (error) {
         console.error('Error loading users:', error);
+        hideSkeleton();
+        showToast('Failed to load users. Please try again.', {type: 'error'});
+        
         // Show error state with fallback
         document.getElementById('all-users').innerHTML = `
           <div class="empty-group">
@@ -971,12 +1154,15 @@
         document.getElementById('modal-password').textContent = defaultPassword;
         document.getElementById('password-modal').classList.add('active');
 
+        // Show success toast
+        showToast(`Password reset for ${userName}`, {type: 'success'});
+
         // Auto-send notification to admin (mock)
         console.log(`Password reset notification sent for ${userName}`);
         
       } catch (error) {
         console.error('Error resetting password:', error);
-        alert('Failed to reset password. Please try again.');
+        showToast('Failed to reset password. Please try again.', {type: 'error'});
       }
     }
 
@@ -992,5 +1178,8 @@
     }
 
   </script>
+
+  <!-- === TOAST NOTIFICATIONS === -->
+  <div id="toast-area"></div>
 </body>
 </html>
