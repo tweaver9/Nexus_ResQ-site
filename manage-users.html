@@ -644,21 +644,65 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // Session check and initialization
-    const clientId = sessionStorage.getItem('tenant_id');
-    const username = sessionStorage.getItem('username');
-    const role = sessionStorage.getItem('role');
+    // Global variables
+    let clientId, username, role;
 
-    if (!clientId || !username || !role) {
-      window.location.href = "login.html";
-    }
+    // Wait for DOM to load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Session check and initialization
+      clientId = sessionStorage.getItem('tenant_id');
+      username = sessionStorage.getItem('username');
+      role = sessionStorage.getItem('role');
 
-    // Show client selector for Nexus users
-    if (role === 'nexus') {
-      document.getElementById('client-selector').style.display = 'block';
-      document.getElementById('nexus-group').style.display = 'block';
-      loadClients();
-    }
+      // Debug logging to see actual values
+      console.log('Session values:', { clientId, username, role });
+
+      if (!clientId || !username || !role) {
+        console.log('Missing session data, redirecting to login');
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Show client selector for Nexus users (check both role and client ID)
+      const isNexusUser = (role && role.toLowerCase() === 'nexus') ||
+                          clientId === 'nexusresq' ||
+                          clientId === 'nexus';
+      console.log('Is Nexus user?', isNexusUser);
+      
+      if (isNexusUser) {
+        const clientSelector = document.getElementById('client-selector');
+        console.log('Client selector element:', clientSelector);
+        if (clientSelector) {
+          clientSelector.style.display = 'block';
+          loadClients();
+        } else {
+          console.error('Client selector element not found in DOM');
+        }
+      }
+
+      // Initialize modal event listeners
+      const modalClose = document.getElementById('modal-close');
+      const passwordModal = document.getElementById('password-modal');
+      
+      if (modalClose) {
+        modalClose.addEventListener('click', () => {
+          if (passwordModal) {
+            passwordModal.classList.remove('active');
+          }
+        });
+      }
+
+      if (passwordModal) {
+        passwordModal.addEventListener('click', (e) => {
+          if (e.target.id === 'password-modal') {
+            passwordModal.classList.remove('active');
+          }
+        });
+      }
+
+      // Initialize
+      loadUsers();
+    });
 
     // Avatar colors for consistent user identification
     const avatarColors = [
@@ -712,7 +756,10 @@
 
     function createUserCard(user) {
       const monthlyStatus = getMonthlyStatus(user);
-      const canResetPassword = role === 'admin' || role === 'manager' || role === 'nexus';
+      const isNexusUser = (role && role.toLowerCase() === 'nexus') ||
+                          clientId === 'nexusresq' ||
+                          clientId === 'nexus';
+      const canResetPassword = role === 'admin' || role === 'manager' || isNexusUser;
       const assignedAreasText = user.assignedAreas && user.assignedAreas.length > 0 
         ? user.assignedAreas.join(', ') 
         : 'No areas assigned';
@@ -806,11 +853,15 @@
 
     async function loadUsers() {
       try {
+        console.log('Loading users for client:', clientId);
         const snapshot = await db.collection(`clients/${clientId}/users`).get();
         const users = [];
         
+        console.log('Found', snapshot.size, 'users in Firebase');
+        
         snapshot.forEach(doc => {
           const userData = doc.data();
+          console.log('User data:', doc.id, userData);
           users.push({
             id: doc.id,
             name: userData.name || userData.username || 'Unknown User',
@@ -820,6 +871,7 @@
           });
         });
 
+        console.log('Processed users:', users);
         renderAllUsers(users);
         updateSummaryStats(users);
 
@@ -868,7 +920,13 @@
         */
       } catch (error) {
         console.error('Error loading users:', error);
-        // Show error state or fallback
+        // Show error state with fallback
+        document.getElementById('all-users').innerHTML = `
+          <div class="empty-group">
+            Error loading users: ${error.message}<br>
+            Please check console for details.
+          </div>
+        `;
       }
     }
 
@@ -933,19 +991,6 @@
       // 3. Show inspection results, photos, failed items, etc.
     }
 
-    // Modal event listeners
-    document.getElementById('modal-close').addEventListener('click', () => {
-      document.getElementById('password-modal').classList.remove('active');
-    });
-
-    document.getElementById('password-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'password-modal') {
-        document.getElementById('password-modal').classList.remove('active');
-      }
-    });
-
-    // Initialize
-    loadUsers();
   </script>
 </body>
 </html>
