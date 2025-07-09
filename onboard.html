@@ -528,7 +528,7 @@ function showStep3() {
   // Add event listener to the first + button
   document.querySelector('.add-division-btn').onclick = addDivisionInput;
 
-  // Handle precision location followup
+  // Handle precision location followup (simplified - no UUID generation)
   document.querySelectorAll('input[name="preciseLoc"]').forEach(radio => {
     radio.addEventListener('change', function() {
       const val = document.querySelector('input[name="preciseLoc"]:checked').value;
@@ -541,50 +541,11 @@ function showStep3() {
               <label><input type="radio" name="hasNaming" value="yes" required> Yes</label>
               <label><input type="radio" name="hasNaming" value="no" style="margin-left:17px;"> No</label>
             </div>
+            <div style="font-size:0.9em;color:#93a7c6;margin-top:6px;">
+              Location management can be configured after onboarding is complete.
+            </div>
           </div>
-          <div id="namingFollowup"></div>
         `;
-        document.querySelectorAll('input[name="hasNaming"]').forEach(r => {
-          r.addEventListener('change', function() {
-            const nVal = document.querySelector('input[name="hasNaming"]:checked').value;
-            const nFollow = document.getElementById('namingFollowup');
-            if (nVal === "no") {
-              nFollow.innerHTML = `
-                <div class="form-row">
-                  <label>Would you like Nexus to create a UUID system for you?</label>
-                  <div>
-                    <label><input type="radio" name="nexusGen" value="yes" required> Yes</label>
-                    <label><input type="radio" name="nexusGen" value="no" style="margin-left:17px;"> No</label>
-                  </div>
-                </div>
-              `;
-            } else if (nVal === "yes") {
-              // Show division UUID input fields
-              let divisionInputs = '';
-              divisions.forEach((divName, index) => {
-                divisionInputs += `
-                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                    <label style="min-width:120px;font-size:1em;margin-bottom:0;">${divName}:</label>
-                    <input type="text" class="customUUIDInput" data-division="${divName}" maxlength="12" placeholder="Enter UUID/code..." style="flex:1;font-family:'Courier New',monospace;" />
-                  </div>
-                `;
-              });
-              nFollow.innerHTML = `
-                <div class="form-row">
-                  <label>Enter your UUID/code for each division (max 12 characters):</label>
-                  <div style="background:#18203a;padding:15px;border-radius:8px;margin-top:8px;">
-                    ${divisionInputs}
-                  </div>
-                  <div style="font-size:0.9em;color:#93a7c6;margin-top:6px;">
-                    These codes will be used to identify locations within each division.
-                  </div>
-                </div>
-              `;
-            } else {
-              nFollow.innerHTML = '';
-            }
-          });
-        });
       } else {
         followup.innerHTML = '';
       }
@@ -625,82 +586,21 @@ function showStep3() {
 
     const preciseLoc = document.querySelector('input[name="preciseLoc"]:checked').value;
     let hasNaming = "";
-    let wantsNexusGen = "";
     
     if (preciseLoc === "yes") {
       hasNaming = document.querySelector('input[name="hasNaming"]:checked') ? document.querySelector('input[name="hasNaming"]:checked').value : "";
-      if (hasNaming === "no") {
-        wantsNexusGen = document.querySelector('input[name="nexusGen"]:checked') ? document.querySelector('input[name="nexusGen"]:checked').value : "";
-      }
     }
     
     const scanOnly = document.querySelector('input[name="scanOnly"]:checked').value;
 
-    // Store all the data
+    // Store all the data (simplified - no UUID generation during onboarding)
     onboardingData.mapDivide = mapDivide;
     onboardingData.isCustomDivisions = isCustom;
     onboardingData.divisions = divisions;
     onboardingData.numDivisions = numDivisions;
     onboardingData.preciseLoc = preciseLoc;
     onboardingData.hasNaming = hasNaming;
-    onboardingData.wantsNexusGen = wantsNexusGen;
     onboardingData.scanOnly = scanOnly;
-
-    // Generate UUIDs if needed
-    if (preciseLoc === "yes" && hasNaming === "no" && wantsNexusGen === "yes") {
-      onboardingData.generatedLocationUUIDs = divisions.map((divName) => {
-        // Generate random 3-digit code (100-999)
-        const uuid = String(Math.floor(Math.random() * 900) + 100);
-        return {
-          name: divName,
-          uuid: uuid,
-          subLocationUUID: preciseLoc === "yes" ? "0000" : "0000" // Default for new sub-locations
-        };
-      });
-    } else if (preciseLoc === "yes" && hasNaming === "yes") {
-      // Collect custom UUIDs from user input
-      const customUUIDs = [];
-      const uuidInputs = document.querySelectorAll('.customUUIDInput');
-      let allValid = true;
-      
-      uuidInputs.forEach(input => {
-        const divisionName = input.getAttribute('data-division');
-        const uuid = input.value.trim();
-        if (!uuid) {
-          alert(`Please enter a UUID/code for ${divisionName}`);
-          allValid = false;
-          return;
-        }
-        if (uuid.length > 12) {
-          alert(`UUID for ${divisionName} must be 12 characters or less`);
-          allValid = false;
-          return;
-        }
-        customUUIDs.push({
-          name: divisionName,
-          uuid: uuid,
-          subLocationUUID: "0000" // Default for new sub-locations
-        });
-      });
-      
-      if (!allValid) return; // Stop form submission if validation fails
-      
-      onboardingData.generatedLocationUUIDs = customUUIDs;
-    } else if (preciseLoc === "no") {
-      // No precision scanning - use 0000 for all
-      onboardingData.generatedLocationUUIDs = divisions.map(divName => ({
-        name: divName,
-        uuid: "0000",
-        subLocationUUID: "0000"
-      }));
-    } else {
-      // They have their own naming system or don't want Nexus to generate
-      onboardingData.generatedLocationUUIDs = divisions.map(divName => ({
-        name: divName,
-        uuid: hasNaming === "yes" ? "CUSTOM" : "0000",
-        subLocationUUID: "0000"
-      }));
-    }
 
     showStep4();
   };
@@ -994,16 +894,11 @@ function showStep8() {
     </div>
   `;
 
-  // 3. Map & Scanning Setup
+  // 3. Map & Scanning Setup (simplified)
   let locationDetails = '';
-  if (onboardingData.generatedLocationUUIDs && onboardingData.generatedLocationUUIDs.length) {
-    locationDetails = `<div style="margin:8px 0 2px 0;"><span style="color:#fdd835;">Generated Location Structure:</span><ul style="margin:2px 0 6px 18px;">` +
-      onboardingData.generatedLocationUUIDs.map(loc => {
-        const uuidDisplay = loc.uuid === "CUSTOM" ? "Custom naming" : 
-                           loc.uuid === "0000" ? "No precision" : 
-                           `UUID: <code style="background:#12233d;padding:2px 6px;border-radius:4px;font-family:'Courier New',monospace;">${loc.uuid}</code>`;
-        return `<li>${loc.name}: <strong>${uuidDisplay}</strong></li>`;
-      }).join('') + `</ul></div>`;
+  if (onboardingData.divisions && onboardingData.divisions.length) {
+    locationDetails = `<div style="margin:8px 0 2px 0;"><span style="color:#fdd835;">Divisions to be created:</span><ul style="margin:2px 0 6px 18px;">` +
+      onboardingData.divisions.map(divName => `<li>${divName}</li>`).join('') + `</ul></div>`;
   }
   
   const mapSection = `
@@ -1014,10 +909,12 @@ function showStep8() {
         ${onboardingData.numDivisions ? `<div><b>Number of ${onboardingData.mapDivide}s:</b> ${onboardingData.numDivisions}</div>` : ''}
         <div><b>Total Divisions:</b> ${onboardingData.divisions ? onboardingData.divisions.length : 0}</div>
         <div><b>Precise Scan Required:</b> ${onboardingData.preciseLoc === "yes" ? "Yes" : "No"}</div>
-        ${onboardingData.preciseLoc === "yes" ? `<div><b>Has Sub-location Naming:</b> ${onboardingData.hasNaming || ''}</div>` : ""}
-        ${(onboardingData.preciseLoc === "yes" && onboardingData.hasNaming === "no") ? `<div><b>Nexus-generated UUIDs:</b> ${onboardingData.wantsNexusGen === "yes" ? "Yes" : "No"}</div>` : ""}
+        ${onboardingData.preciseLoc === "yes" ? `<div><b>Has Sub-location Naming:</b> ${onboardingData.hasNaming || 'Not specified'}</div>` : ""}
         <div><b>Typing Allowed:</b> ${onboardingData.scanOnly === "no" ? "Yes" : "No"}</div>
         ${locationDetails}
+        <div style="color:#93a7c6;font-size:0.9em;margin-top:8px;font-style:italic;">
+          Location management and codes will be configured after onboarding.
+        </div>
       </div>
     </div>
   `;
@@ -1150,26 +1047,23 @@ document.getElementById('finishBtn').onclick = async function() {
       createdAt: new Date().toISOString()
     });
 
-    // locations - Create individual location documents with UUIDs
-    if (onboardingData.generatedLocationUUIDs && onboardingData.generatedLocationUUIDs.length) {
-      for (const location of onboardingData.generatedLocationUUIDs) {
-        await setDoc(doc(collection(clientRef, 'locations'), location.name.toLowerCase().replace(/\s+/g, '_')), {
-          name: location.name,
-          uuid: location.uuid,
-          subLocationUUID: location.subLocationUUID,
+    // locations - Create basic location documents (no UUIDs during onboarding)
+    if (onboardingData.divisions && onboardingData.divisions.length) {
+      for (const divisionName of onboardingData.divisions) {
+        await setDoc(doc(collection(clientRef, 'locations'), divisionName.toLowerCase().replace(/\s+/g, '_')), {
+          name: divisionName,
           divisionType: onboardingData.mapDivide,
           isCustom: onboardingData.isCustomDivisions,
           preciseScanEnabled: onboardingData.preciseLoc === "yes",
           hasCustomNaming: onboardingData.hasNaming === "yes",
-          nexusGenerated: onboardingData.wantsNexusGen === "yes",
-          fullLocationCode: location.uuid !== "0000" && location.uuid !== "CUSTOM" ? 
-            `${location.uuid}-${location.subLocationUUID}` : "000-0000",
-          created: new Date().toISOString()
+          created: new Date().toISOString(),
+          // Location codes and UUIDs will be configured in location management
+          configurationPending: true
         });
       }
     }
 
-    // location_config - Store the overall configuration
+    // location_config - Store the overall configuration (no UUID generation settings)
     await setDoc(doc(collection(clientRef, 'location_config'), 'settings'), {
       map_divide: onboardingData.mapDivide || "",
       is_custom_divisions: onboardingData.isCustomDivisions || false,
@@ -1178,9 +1072,9 @@ document.getElementById('finishBtn').onclick = async function() {
       division_names: onboardingData.divisions || [],
       precise_loc: onboardingData.preciseLoc || "",
       has_naming: onboardingData.hasNaming || "",
-      wants_nexus_gen: onboardingData.wantsNexusGen || "",
       scan_only: onboardingData.scanOnly || "",
-      location_uuids_generated: onboardingData.wantsNexusGen === "yes"
+      configuration_status: "pending", // Will be completed in location management
+      onboarded_at: new Date().toISOString()
     });
 
     // asset_frequencies
