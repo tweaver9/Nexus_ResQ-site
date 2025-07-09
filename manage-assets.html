@@ -1101,20 +1101,46 @@
         console.log('Loading assets for client:', clientId);
         await new Promise(r=>setTimeout(r, 650)); // Simulate loading
         
-        const snap = await db.collection(`clients/${clientId}/assets`).get();
         allAssets = [];
         
-        console.log('Found', snap.size, 'assets in Firebase');
-        
-        snap.forEach(doc=>{
-          const assetData = doc.data();
-          console.log('Asset data:', doc.id, assetData);
-          allAssets.push({
-            id: doc.id,
-            ...assetData
+        // Load assets from root collection (NEW STRUCTURE)
+        try {
+          const rootSnap = await db.collection('assets').where('clientId', '==', clientId).get();
+          console.log('Found', rootSnap.size, 'assets in root collection');
+          
+          rootSnap.forEach(doc => {
+            const assetData = doc.data();
+            console.log('Root asset data:', doc.id, assetData);
+            allAssets.push({
+              id: doc.id,
+              ...assetData
+            });
           });
-        });
-         console.log('Processed assets:', allAssets);
+        } catch (error) {
+          console.warn('Could not load from root assets collection:', error);
+        }
+        
+        // Fallback to legacy client subcollection
+        try {
+          const clientSnap = await db.collection(`clients/${clientId}/assets`).get();
+          console.log('Found', clientSnap.size, 'assets in client subcollection');
+          
+          clientSnap.forEach(doc => {
+            const assetData = doc.data();
+            // Only add if not already loaded from root collection
+            if (!allAssets.find(a => a.id === doc.id)) {
+              console.log('Legacy asset data:', doc.id, assetData);
+              allAssets.push({
+                id: doc.id,
+                ...assetData
+              });
+            }
+          });
+        } catch (error) {
+          console.warn('Could not load from client assets subcollection:', error);
+        }
+        
+        console.log('Total processed assets:', allAssets.length);
         
         // Always add demo data for showcase (comment out for production)
         console.log('Adding demo data for showcase');
@@ -1966,21 +1992,66 @@
         // Generate unique ID for the asset
         const assetId = `asset_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         
-        // Prepare asset data
+        // Create asset type in root collection if it's a custom type
+        let assetTypeId = null;
+        if (assetFormData.type) {
+          // Generate asset type ID: {clientId}_{type_normalized}
+          const normalizedType = assetFormData.type.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+          assetTypeId = `${clientId}_${normalizedType}`;
+          
+          // Check if asset type already exists in root collection
+          const existingTypeDoc = await db.collection('asset_types').doc(assetTypeId).get();
+          if (!existingTypeDoc.exists()) {
+            // Create new asset type document in root collection
+            await db.collection('asset_types').doc(assetTypeId).set({
+              clientId: clientId,
+              id: normalizedType,
+              name: assetFormData.type,
+              createdAt: new Date().toISOString(),
+              createdBy: sessionStorage.getItem('user_email') || 'system'
+            });
+            console.log(`Created new asset type: ${assetTypeId}`);
+          }
+        }
+        
+        // Prepare asset data for root collection structure
         const assetData = {
-          ...assetFormData,
-          created: new Date().toISOString(),
+          id: assetId,
+          clientId: clientId,
+          assetTypeId: assetTypeId,
+          type: assetFormData.type, // Keep for backward compatibility
+          kind: assetFormData.kind,
+          asset_id: assetFormData.asset_id,
+          barcode: assetFormData.asset_id, // Use asset_id as barcode
+          serialNumber: assetFormData.serial,
+          location: assetFormData.location,
+          sublocation: assetFormData.sublocation,
+          precision: assetFormData.precision,
+          lastMonthlyInspection: assetFormData.lastMonthlyInspection,
+          lastAnnualInspection: assetFormData.lastAnnualInspection,
+          annualDue: assetFormData.annualDue,
+          status: 'active',
+          isActive: true,
+          createdAt: new Date().toISOString(),
           createdBy: sessionStorage.getItem('user_email') || 'system'
         };
         
-        // Save to Firebase
-        await db.collection(`clients/${clientId}/assets`).doc(assetId).set(assetData);
+        // Save to root assets collection (NEW STRUCTURE)
+        await db.collection('assets').doc(assetId).set(assetData);
+        
+        // Also save to legacy client subcollection for backward compatibility
+        try {
+          await db.collection(`clients/${clientId}/assets`).doc(assetId).set({
+            ...assetFormData,
+            created: new Date().toISOString(),
+            createdBy: sessionStorage.getItem('user_email') || 'system'
+          });
+        } catch (legacyError) {
+          console.warn('Could not save to legacy collection:', legacyError);
+        }
         
         // Add to local array
-        allAssets.push({
-          id: assetId,
-          ...assetData
-        });
+        allAssets.push(assetData);
         
         // Update UI
         renderAssets();
@@ -1992,7 +2063,10 @@
         // Show success toast
         showToast('Asset created successfully!', {
           undoCallback: async () => {
-            await db.collection(`clients/${clientId}/assets`).doc(assetId).delete();
+            await db.collection('assets').doc(assetId).delete();
+            try {
+              await db.collection(`clients/${clientId}/assets`).doc(assetId).delete();
+            } catch (e) { /* ignore legacy errors */ }
             allAssets = allAssets.filter(a => a.id !== assetId);
             renderAssets();
             updateStats();
@@ -2169,26 +2243,44 @@
       try {
         const allAssetTypes = new Set();
         
-        // 1. Load asset types from asset_types collection
+        // 1. Load asset types from root-level asset_types collection (NEW STRUCTURE)
         try {
-          const typesSnap = await db.collection(`clients/${clientId}/asset_types`).get();
+          const typesSnap = await db.collection('asset_types').get();
           typesSnap.forEach(doc => {
             const typeData = doc.data();
-            // Add the type name (prefer name field, fallback to doc ID)
-            const typeName = typeData.name || doc.id;
-            if (typeName && typeName.trim()) {
-              allAssetTypes.add(typeName.trim());
+            // Check if this asset type belongs to the current client
+            if (typeData.clientId === clientId) {
+              const typeName = typeData.name || typeData.id || doc.id.replace(`${clientId}_`, '');
+              if (typeName && typeName.trim()) {
+                allAssetTypes.add(typeName.trim());
+              }
             }
           });
-          console.log('Loaded asset types from asset_types collection:', Array.from(allAssetTypes));
+          console.log('Loaded asset types from root asset_types collection:', Array.from(allAssetTypes));
         } catch (error) {
-          console.warn('Could not load from asset_types collection:', error.message);
+          console.warn('Could not load from root asset_types collection:', error.message);
         }
         
-        // 2. Load asset types from existing assets
+        // 2. Load asset types from existing assets (check both root and client collections)
         try {
-          const assetsSnap = await db.collection(`clients/${clientId}/assets`).get();
-          assetsSnap.forEach(doc => {
+          // First try root assets collection (new structure)
+          const rootAssetsSnap = await db.collection('assets').where('clientId', '==', clientId).get();
+          rootAssetsSnap.forEach(doc => {
+            const assetData = doc.data();
+            if (assetData.assetTypeId) {
+              // Extract type name from assetTypeId (e.g., "nexusresq_fire_extinguisher" -> "Fire Extinguisher")
+              const typeName = assetData.assetTypeId.replace(`${clientId}_`, '').replace(/_/g, ' ');
+              if (typeName && typeName.trim()) {
+                allAssetTypes.add(typeName.trim());
+              }
+            } else if (assetData.type && assetData.type.trim()) {
+              allAssetTypes.add(assetData.type.trim());
+            }
+          });
+          
+          // Fallback to legacy client subcollection structure
+          const clientAssetsSnap = await db.collection(`clients/${clientId}/assets`).get();
+          clientAssetsSnap.forEach(doc => {
             const assetData = doc.data();
             if (assetData.type && assetData.type.trim()) {
               allAssetTypes.add(assetData.type.trim());

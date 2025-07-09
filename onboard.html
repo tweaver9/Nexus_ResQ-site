@@ -1064,10 +1064,27 @@ document.getElementById('finishBtn').onclick = async function() {
       onboarding_completed: true
     });
 
-    // 4. Create subcollections with starter/blank docs
+    // 4. Create asset types in root-level asset_types collection (NEW STRUCTURE)
+    if (onboardingData.assetTypes && onboardingData.assetTypes.length > 0) {
+      for (const assetType of onboardingData.assetTypes) {
+        const normalizedType = assetType.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        const assetTypeId = `${subdomain}_${normalizedType}`;
+        
+        await setDoc(doc(db, 'asset_types', assetTypeId), {
+          clientId: subdomain,
+          id: normalizedType,
+          name: assetType,
+          createdAt: new Date().toISOString(),
+          onboardingCreated: true
+        });
+        console.log(`Created asset type: ${assetTypeId}`);
+      }
+    }
+
+    // 5. Create subcollections with starter/blank docs (for backward compatibility)
     const clientRef = doc(db, 'clients', subdomain);
 
-    // asset_types
+    // Legacy asset_types subcollection
     await setDoc(doc(collection(clientRef, 'asset_types'), 'starter'), {
       types: onboardingData.assetTypes || []
     });
@@ -1087,7 +1104,7 @@ document.getElementById('finishBtn').onclick = async function() {
       console.warn('Bcrypt not available, using plain text password');
     }
 
-    // 5. Create admin user in flat users collection (CRITICAL: This goes with all other users)
+    // 6. Create admin user in flat users collection (CRITICAL: This goes with all other users)
     await setDoc(doc(db, 'users', onboardingData.adminUsername), {
       firstName: onboardingData.adminFirst,
       lastName: onboardingData.adminLast,
