@@ -122,16 +122,15 @@ async function showManageUsersModal(clientName) {
         <form id="add-user-form">
           <input type="text" id="firstName" placeholder="First Name" required>
           <input type="text" id="lastName" placeholder="Last Name" required>
-          <input type="password" id="newPassword" placeholder="Password (leave blank for default)" value="">
           <div class="form-hint">
-            Default password will be the client name (${subdomain}) if left blank
+            Default password will be: ${subdomain}
           </div>
           <select id="role" required>
             <option value="">Select Role</option>
-            <option value="user">User</option>
-            <option value="manager">Manager</option>
-            <option value="admin">Admin</option>
-            <option value="nexus">Nexus</option>
+            <option value="User">User</option>
+            <option value="Manager">Manager</option>
+            <option value="Admin">Admin</option>
+            <option value="Nexus">Nexus</option>
           </select>
           <div class="form-actions">
             <button type="button" id="cancel-add-user" class="explorer-btn danger">Cancel</button>
@@ -167,7 +166,6 @@ async function showManageUsersModal(clientName) {
       try {
         const firstName = modal.querySelector('#firstName').value.trim();
         const lastName = modal.querySelector('#lastName').value.trim();
-        let newPassword = modal.querySelector('#newPassword').value.trim();
         const role = modal.querySelector('#role').value;
         
         // Validate required fields
@@ -176,8 +174,8 @@ async function showManageUsersModal(clientName) {
           return;
         }
         
-        // Validate role is one of the allowed values
-        const validRoles = ['user', 'manager', 'admin', 'nexus'];
+        // Validate role is one of the allowed values (capitalized)
+        const validRoles = ['User', 'Manager', 'Admin', 'Nexus'];
         if (!validRoles.includes(role)) {
           showNotification('Invalid role selected', 'warning');
           return;
@@ -188,10 +186,8 @@ async function showManageUsersModal(clientName) {
         const cleanLastName = lastName.replace(/[^a-zA-Z]/g, '');
         const newUsername = `${cleanFirstName[0]}${cleanLastName}`.toLowerCase() + '@' + subdomain;
         
-        // Use client name as default password (not slugified)
-        if (!newPassword) {
-          newPassword = subdomain; // Use actual client name as password
-        }
+        // Always use client name as default password
+        const defaultPassword = subdomain;
 
         const currentUser = getCurrentUser();
         const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/signup", {
@@ -199,10 +195,10 @@ async function showManageUsersModal(clientName) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             username: newUsername,
-            password: newPassword,
+            password: defaultPassword,
             firstName,
             lastName,
-            role: role, // Role is already lowercase from validation
+            role: role, // Role is already capitalized from validation
             clientId: currentUser.subdomain
           })
         });
@@ -213,7 +209,7 @@ async function showManageUsersModal(clientName) {
         const successMessage = `✅ User Created Successfully!\n\n` +
           `👤 Name: ${firstName} ${lastName}\n` +
           `📧 Username: ${newUsername}\n` +
-          `🔑 Default Password: ${newPassword}\n\n` +
+          `🔑 Default Password: ${defaultPassword}\n\n` +
           `⚠️ Important: User should change password on first login`;
         
         showNotification(successMessage, 'success');
@@ -264,7 +260,7 @@ function showBulkAddUsersModal(clientName) {
         <br>
         📋 Paste CSV rows below (First Name,Last Name,Role):<br>
         📧 Username format: FirstInitialLastName@${getSubdomain()}<br>
-        <div class="bulk-instructions-detail">Valid roles: user, manager, admin. All users will start with the default password (${getSubdomain()}).</div>
+        <div class="bulk-instructions-detail">Valid roles: User, Manager, Admin. All users will start with the default password (${getSubdomain()}).</div>
       </div>
         <textarea id="bulk-users-textarea"></textarea>
         <div class="file-upload-section">
@@ -348,11 +344,11 @@ function showBulkAddUsersModal(clientName) {
         }
         
         // Validate role
-        const validRoles = ['user', 'manager', 'admin', 'nexus'];
-        if (!validRoles.includes(role.toLowerCase())) { 
+        const validRoles = ['User', 'Manager', 'Admin', 'Nexus'];
+        if (!validRoles.includes(role)) { 
           console.error(`Invalid role "${role}" for user ${firstName} ${lastName}`);
           failed++; 
-          failedUsers.push(`${firstName} ${lastName} - Invalid role: ${role}`);
+          failedUsers.push(`${firstName} ${lastName} - Invalid role: ${role} (must be: User, Manager, Admin, or Nexus)`);
           continue; 
         }
         
@@ -371,7 +367,7 @@ function showBulkAddUsersModal(clientName) {
               password: defaultPassword,
               firstName,
               lastName,
-              role: role.toLowerCase(), // Ensure role is lowercase
+              role: role, // Keep role as-is from CSV (should be capitalized)
               clientId: currentUser.subdomain
             })
           });
