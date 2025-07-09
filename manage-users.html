@@ -1289,43 +1289,73 @@
         });
       }
 
-      // Wire up management buttons with delayed check for external script functions
+      // Wire up management buttons with better error handling
       document.getElementById('add-single-user-btn').addEventListener('click', function() {
         const clientName = sessionStorage.getItem('tenant_id') || 'nexusresq';
         
+        console.log('Add User clicked. Function available:', typeof window.showManageUsersModal);
+        
         // Try immediate call first
         if (typeof window.showManageUsersModal === 'function') {
-          window.showManageUsersModal(clientName);
-          return;
+          try {
+            window.showManageUsersModal(clientName);
+            return;
+          } catch (error) {
+            console.error('Error calling showManageUsersModal:', error);
+            showToast(`Error opening Add User modal: ${error.message}`, {type: 'error'});
+            return;
+          }
         }
         
         // If not available, wait a bit for script to load
+        showToast('Loading user management...', {type: 'info', duration: 1000});
         setTimeout(() => {
           if (typeof window.showManageUsersModal === 'function') {
-            window.showManageUsersModal(clientName);
+            try {
+              window.showManageUsersModal(clientName);
+            } catch (error) {
+              console.error('Error calling showManageUsersModal after delay:', error);
+              showToast(`Error opening Add User modal: ${error.message}`, {type: 'error'});
+            }
           } else {
-            showToast('Add User functionality not available. Please refresh the page.', {type: 'error'});
+            console.error('showManageUsersModal still not available after delay');
+            showToast('Add User functionality failed to load. Check console for errors and try refreshing the page.', {type: 'error', duration: 6000});
           }
-        }, 100);
+        }, 200);
       });
 
       document.getElementById('bulk-add-users-btn').addEventListener('click', function() {
         const clientName = sessionStorage.getItem('tenant_id') || 'nexusresq';
         
+        console.log('Bulk Add clicked. Function available:', typeof window.showBulkAddModal);
+        
         // Try immediate call first
         if (typeof window.showBulkAddModal === 'function') {
-          window.showBulkAddModal(clientName);
-          return;
+          try {
+            window.showBulkAddModal(clientName);
+            return;
+          } catch (error) {
+            console.error('Error calling showBulkAddModal:', error);
+            showToast(`Error opening Bulk Add modal: ${error.message}`, {type: 'error'});
+            return;
+          }
         }
         
         // If not available, wait a bit for script to load
+        showToast('Loading bulk add...', {type: 'info', duration: 1000});
         setTimeout(() => {
           if (typeof window.showBulkAddModal === 'function') {
-            window.showBulkAddModal(clientName);
+            try {
+              window.showBulkAddModal(clientName);
+            } catch (error) {
+              console.error('Error calling showBulkAddModal after delay:', error);
+              showToast(`Error opening Bulk Add modal: ${error.message}`, {type: 'error'});
+            }
           } else {
-            showToast('Bulk Add functionality not available. Please refresh the page.', {type: 'error'});
+            console.error('showBulkAddModal still not available after delay');
+            showToast('Bulk Add functionality failed to load. Check console for errors and try refreshing the page.', {type: 'error', duration: 6000});
           }
-        }, 100);
+        }, 200);
       });
 
       document.getElementById('refresh-users-btn').addEventListener('click', function() {

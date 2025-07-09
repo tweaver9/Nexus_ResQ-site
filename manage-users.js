@@ -1,7 +1,28 @@
 // manage-users.js - User Management Modal Functionality
 
 // Use the same Firebase instance as the HTML file
-const db = firebase.firestore();
+let db;
+
+// Wait for Firebase to be available
+function ensureFirebase() {
+  if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+    db = firebase.firestore();
+    return true;
+  }
+  return false;
+}
+
+// Try to initialize Firebase connection immediately
+if (!ensureFirebase()) {
+  // If Firebase isn't ready, wait for it
+  console.log('Waiting for Firebase to initialize...');
+  const checkFirebase = setInterval(() => {
+    if (ensureFirebase()) {
+      console.log('Firebase initialized for manage-users.js');
+      clearInterval(checkFirebase);
+    }
+  }, 100);
+}
 
 // Helper to slugify client name for username
 function slugify(str) {
@@ -61,27 +82,33 @@ function getCurrentUser() {
 }
 
 window.showManageUsersModal = async function(clientName) {
-  // Remove any existing modals to prevent conflicts
-  const existingModals = document.querySelectorAll('.manage-users-modal-bg');
-  existingModals.forEach(modal => modal.remove());
-
-  const subdomain = getSubdomain();
-
-  // Fetch users directly from Firestore using the flat users collection
-  let users = [];
   try {
-    const usersRef = db.collection('users');
-    const snapshot = await usersRef.where('clientId', '==', subdomain).get();
-    users = snapshot.docs
-      .map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      .filter(user => !user.soft_deleted);
-  } catch (e) {
-    console.error('Error fetching users:', e);
-    users = [];
-  }
+    // Ensure Firebase is available
+    if (!ensureFirebase()) {
+      throw new Error('Firebase not initialized');
+    }
+
+    // Remove any existing modals to prevent conflicts
+    const existingModals = document.querySelectorAll('.manage-users-modal-bg');
+    existingModals.forEach(modal => modal.remove());
+
+    const subdomain = getSubdomain();
+
+    // Fetch users directly from Firestore using the flat users collection
+    let users = [];
+    try {
+      const usersRef = db.collection('users');
+      const snapshot = await usersRef.where('clientId', '==', subdomain).get();
+      users = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+        .filter(user => !user.soft_deleted);
+    } catch (e) {
+      console.error('Error fetching users:', e);
+      users = [];
+    }
 
   // Modal HTML
   modal = document.createElement('div');
@@ -353,13 +380,27 @@ window.showManageUsersModal = async function(clientName) {
   modal.querySelector('#bulk-add-users-btn').onclick = () => {
     showBulkAddUsersModal(clientName);
   };
+  } catch (error) {
+    console.error('Error in showManageUsersModal:', error);
+    if (typeof showNotification === 'function') {
+      showNotification(`Error loading user management: ${error.message}`, 'error');
+    } else {
+      alert(`Error loading user management: ${error.message}`);
+    }
+  }
 }
 
 // Bulk Add Users Modal
 function showBulkAddUsersModal(clientName) {
-  // Remove any existing modals to prevent conflicts
-  const existingModals = document.querySelectorAll('.manage-users-modal-bg');
-  existingModals.forEach(modal => modal.remove());
+  try {
+    // Ensure Firebase is available
+    if (!ensureFirebase()) {
+      throw new Error('Firebase not initialized');
+    }
+
+    // Remove any existing modals to prevent conflicts
+    const existingModals = document.querySelectorAll('.manage-users-modal-bg');
+    existingModals.forEach(modal => modal.remove());
 
   const templateUrl = "https://firebasestorage.googleapis.com/v0/b/nexus-res-q.appspot.com/o/Bulk%20Add%20Template%2FBulk%20User%20Add%20CSV%20Template.csv?alt=media";
 
@@ -530,9 +571,25 @@ function showBulkAddUsersModal(clientName) {
       saveBtn.textContent = originalText;
     }
   };
+  } catch (error) {
+    console.error('Error in showBulkAddUsersModal:', error);
+    if (typeof showNotification === 'function') {
+      showNotification(`Error loading bulk add: ${error.message}`, 'error');
+    } else {
+      alert(`Error loading bulk add: ${error.message}`);
+    }
+  }
 }
 
 // Wrapper function for easier access
 window.showBulkAddModal = function(clientName) {
   showBulkAddUsersModal(clientName);
 };
+
+// Test that functions are properly exposed
+console.log('✅ manage-users.js loaded. Functions available:', {
+  showManageUsersModal: typeof window.showManageUsersModal,
+  showBulkAddModal: typeof window.showBulkAddModal,
+  firebase: typeof firebase,
+  firebaseApps: typeof firebase !== 'undefined' ? firebase.apps.length : 0
+});
