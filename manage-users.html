@@ -270,10 +270,9 @@
 
     .user-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 0.5rem;
-      /* TESTING: Very small cards to force 5+ per row */
-      background: rgba(255, 0, 0, 0.1); /* Red tint for debugging */
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      /* Fixed to exactly 4 cards per row */
     }
 
     .empty-group {
@@ -290,15 +289,12 @@
     /* === USER CARDS === */
     .user-card {
       background: var(--nexus-card);
-      border: 3px solid var(--nexus-yellow); /* OBVIOUS BORDER FOR TESTING */
+      border: 1px solid var(--nexus-border);
       border-radius: var(--radius);
-      padding: 0.5rem;
+      padding: 1.25rem;
       box-shadow: var(--shadow-card);
       transition: all 0.2s ease;
       cursor: pointer;
-      /* Debug: Very compact for 5+ cards */
-      min-width: 0; /* Allow cards to shrink */
-      font-size: 0.85rem; /* Smaller text */
     }
 
     .user-card:hover {
@@ -1054,6 +1050,18 @@
       }
     }
 
+    @media (min-width: 769px) and (max-width: 1200px) {
+      .user-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 1201px) {
+      .user-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
     /* === AVATAR COLORS === */
     .avatar-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
     .avatar-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
@@ -1070,9 +1078,6 @@
   <header class="site-header">
     <div class="header-container">
       <h1 class="site-title">User Management</h1>
-      <div style="background: red; color: white; padding: 0.5rem; border-radius: 4px; font-weight: bold;">
-        🔥 TESTING MODE - Changes Active! 🔥
-      </div>
       <a href="dashboard.html" class="back-nav">
         ← Back to Dashboard
       </a>
@@ -1283,11 +1288,6 @@
           }
         });
       }
-
-      // Debug: Check if external functions are available
-      console.log('🔍 Checking external script functions:');
-      console.log('showManageUsersModal:', typeof window.showManageUsersModal);
-      console.log('showBulkAddModal:', typeof window.showBulkAddModal);
 
       // Wire up management buttons with delayed check for external script functions
       document.getElementById('add-single-user-btn').addEventListener('click', function() {
