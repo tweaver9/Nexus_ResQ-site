@@ -1284,23 +1284,48 @@
         });
       }
 
-      // Wire up management buttons
+      // Debug: Check if external functions are available
+      console.log('🔍 Checking external script functions:');
+      console.log('showManageUsersModal:', typeof window.showManageUsersModal);
+      console.log('showBulkAddModal:', typeof window.showBulkAddModal);
+
+      // Wire up management buttons with delayed check for external script functions
       document.getElementById('add-single-user-btn').addEventListener('click', function() {
         const clientName = sessionStorage.getItem('tenant_id') || 'nexusresq';
+        
+        // Try immediate call first
         if (typeof window.showManageUsersModal === 'function') {
           window.showManageUsersModal(clientName);
-        } else {
-          showToast('User management not loaded. Please refresh the page.', {type: 'error'});
+          return;
         }
+        
+        // If not available, wait a bit for script to load
+        setTimeout(() => {
+          if (typeof window.showManageUsersModal === 'function') {
+            window.showManageUsersModal(clientName);
+          } else {
+            showToast('Add User functionality not available. Please refresh the page.', {type: 'error'});
+          }
+        }, 100);
       });
 
       document.getElementById('bulk-add-users-btn').addEventListener('click', function() {
         const clientName = sessionStorage.getItem('tenant_id') || 'nexusresq';
+        
+        // Try immediate call first
         if (typeof window.showBulkAddModal === 'function') {
           window.showBulkAddModal(clientName);
-        } else {
-          showToast('User management not loaded. Please refresh the page.', {type: 'error'});
+          return;
         }
+        
+        // If not available, wait a bit for script to load
+        setTimeout(() => {
+          if (typeof window.showBulkAddModal === 'function') {
+            window.showBulkAddModal(clientName);
+          } else {
+            showToast('Bulk Add functionality not available. Please refresh the page.', {type: 'error'});
+          }
+        }, 100);
       });
 
       document.getElementById('refresh-users-btn').addEventListener('click', function() {
@@ -1626,7 +1651,7 @@
   </script>
 
   <!-- Include manage-users.js for modal functionality -->
-  <script src="manage-users.js"></script>
+  <script src="manage-users.js" onload="console.log('✅ manage-users.js loaded successfully')" onerror="console.error('❌ Failed to load manage-users.js')"></script>
 
   <!-- === TOAST NOTIFICATIONS === -->
   <div id="toast-area"></div>

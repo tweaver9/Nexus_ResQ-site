@@ -1,3 +1,6 @@
+// manage-users.js - User Management Modal Functionality
+console.log('🚀 manage-users.js script starting to load...');
+
 // Use the same Firebase instance as the HTML file
 const db = firebase.firestore();
 
@@ -535,3 +538,7 @@ window.showBulkAddModal = function(clientName) {
   showBulkAddUsersModal(clientName);
 };
 
+console.log('✅ manage-users.js script loaded completely. Functions available:', {
+  showManageUsersModal: typeof window.showManageUsersModal,
+  showBulkAddModal: typeof window.showBulkAddModal
+});
