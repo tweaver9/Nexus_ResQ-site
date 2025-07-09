@@ -1008,6 +1008,9 @@ document.getElementById('finishBtn').onclick = async function() {
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '');
 
+  console.log('Starting onboarding submission for:', subdomain);
+  console.log('Onboarding data:', onboardingData);
+
   let logoUrl = '';
   try {
     // 1. Check for existing client with same subdomain
@@ -1028,13 +1031,37 @@ document.getElementById('finishBtn').onclick = async function() {
       logoUrl = await getDownloadURL(logoRef);
     }
 
-    // 3. Save root client doc (minimal fields)
+    // 3. Save comprehensive client document in clients collection
     await setDoc(doc(db, 'clients', subdomain), {
       name: onboardingData.clientName,
       logo_url: logoUrl,
       subdomain: subdomain,
       primary_color: "#fdd835",
-      secondary_color: "#12233d"
+      secondary_color: "#12233d",
+      // Comprehensive onboarding data
+      onboarding_data: {
+        asset_types: onboardingData.assetTypes || [],
+        asset_frequencies: onboardingData.assetFrequencies || {},
+        custom_questions: onboardingData.customQuestions || {},
+        map_configuration: {
+          map_divide: onboardingData.mapDivide || "",
+          is_custom_divisions: onboardingData.isCustomDivisions || false,
+          num_divisions: onboardingData.numDivisions || 0,
+          total_divisions: onboardingData.divisions ? onboardingData.divisions.length : 0,
+          division_names: onboardingData.divisions || [],
+          precise_loc: onboardingData.preciseLoc || "",
+          has_naming: onboardingData.hasNaming || "",
+          scan_only: onboardingData.scanOnly || ""
+        },
+        csv_import: {
+          has_csv: !!onboardingData.assetCsv,
+          csv_data: onboardingData.assetCsv || ""
+        }
+      },
+      admin_username: onboardingData.adminUsername,
+      created_at: new Date().toISOString(),
+      status: "active",
+      onboarding_completed: true
     });
 
     // 4. Create subcollections with starter/blank docs
@@ -1060,7 +1087,7 @@ document.getElementById('finishBtn').onclick = async function() {
       console.warn('Bcrypt not available, using plain text password');
     }
 
-    // users (admin user) - Updated for flat structure with clientId field
+    // 5. Create admin user in flat users collection (CRITICAL: This goes with all other users)
     await setDoc(doc(db, 'users', onboardingData.adminUsername), {
       firstName: onboardingData.adminFirst,
       lastName: onboardingData.adminLast,
@@ -1070,9 +1097,14 @@ document.getElementById('finishBtn').onclick = async function() {
       active: true,
       soft_deleted: false,
       must_change_password: true,
-      clientId: subdomain, // Key field for flat structure
+      clientId: subdomain, // Key field linking to client - FLAT STRUCTURE
+      client_name: onboardingData.clientName, // Additional reference
       createdAt: new Date().toISOString(),
-      onboardingCreated: true
+      onboardingCreated: true,
+      user_type: "admin",
+      permissions: ["read", "write", "delete", "manage_users"],
+      last_login: null,
+      login_count: 0
     });
 
     // locations - Create basic location documents (no UUIDs during onboarding)
@@ -1133,12 +1165,29 @@ document.getElementById('finishBtn').onclick = async function() {
     });
 
     // Success! Show completion message
+    console.log('✅ Onboarding completed successfully!');
+    console.log('✅ Client created in clients collection:', subdomain);
+    console.log('✅ Admin user created in users collection:', onboardingData.adminUsername);
     showOnboardingSuccess(subdomain);
 
   } catch (err) {
-    alert("Error saving to Firebase: " + err.message);
-    document.getElementById('finishBtn').disabled = false;
-    document.getElementById('finishBtn').textContent = 'Finish & Submit';
+    console.error('❌ Onboarding error:', err);
+    console.error('❌ Error details:', err.message, err.stack);
+    
+    // Try to get a more specific error message
+    let errorMessage = err.message;
+    if (err.code) {
+      errorMessage = `Firebase Error (${err.code}): ${err.message}`;
+    }
+    
+    alert("Error saving to Firebase: " + errorMessage);
+    
+    // Re-enable button only if elements still exist
+    const finishBtn = document.getElementById('finishBtn');
+    if (finishBtn) {
+      finishBtn.disabled = false;
+      finishBtn.textContent = 'Finish & Submit';
+    }
   }
 };
 
@@ -1214,7 +1263,18 @@ function showOnboardingSuccess(subdomain) {
       </div>
       
       <div style="margin-top: 2rem; padding: 1rem; background: rgba(253, 216, 53, 0.1); border-radius: 8px; border-left: 4px solid #fdd835;">
-        <div style="font-size: 1rem; color: #fdd835; font-weight: 600; margin-bottom: 0.5rem;">Next Steps:</div>
+        <div style="font-size: 1rem; color: #fdd835; font-weight: 600; margin-bottom: 0.5rem;">Data Successfully Saved:</div>
+        <div style="font-size: 0.9rem; color: #ccc; line-height: 1.4;">
+          ✅ <strong>Client Data:</strong> Saved to <code>clients/${subdomain}</code><br>
+          ✅ <strong>Admin User:</strong> Created in <code>users/${onboardingData.adminUsername}</code><br>
+          ✅ <strong>Asset Configuration:</strong> Stored with client data<br>
+          ✅ <strong>Location Setup:</strong> Prepared for configuration<br>
+          ✅ <strong>Custom Questions:</strong> Ready for inspections
+        </div>
+      </div>
+      
+      <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(40, 230, 64, 0.1); border-radius: 8px; border-left: 4px solid #28e640;">
+        <div style="font-size: 1rem; color: #28e640; font-weight: 600; margin-bottom: 0.5rem;">Next Steps:</div>
         <div style="font-size: 0.9rem; color: #ccc; line-height: 1.4;">
           • Use the admin credentials you created to log in<br>
           • Complete your asset inventory setup<br>
@@ -1225,8 +1285,7 @@ function showOnboardingSuccess(subdomain) {
     </div>
   `;
   
-  // Hide the finish button since we're done
-  document.getElementById('finishBtn').style.display = 'none';
+  // Note: No need to hide finishBtn since it's replaced by the success content
 }
 
 </script>
