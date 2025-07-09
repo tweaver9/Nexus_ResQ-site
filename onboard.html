@@ -1034,17 +1034,19 @@ document.getElementById('finishBtn').onclick = async function() {
       types: onboardingData.assetTypes || []
     });
 
-    // users (admin user)
-    await setDoc(doc(collection(clientRef, 'users'), onboardingData.adminUsername), {
+    // users (admin user) - Updated for flat structure with clientId field
+    await setDoc(doc(db, 'users', onboardingData.adminUsername), {
       firstName: onboardingData.adminFirst,
       lastName: onboardingData.adminLast,
       username: onboardingData.adminUsername,
       hashedPassword: window.bcrypt.hashSync(onboardingData.adminPassword, 10),
-      role: "admin",
+      role: "Admin", // Capitalized role for API compatibility
       active: true,
       soft_deleted: false,
       must_change_password: true,
-      createdAt: new Date().toISOString()
+      clientId: subdomain, // Key field for flat structure
+      createdAt: new Date().toISOString(),
+      onboardingCreated: true
     });
 
     // locations - Create basic location documents (no UUIDs during onboarding)
