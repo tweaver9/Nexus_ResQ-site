@@ -1,32 +1,50 @@
 // manage-users.js - User Management Modal Functionality
 
-// Use the same Firebase instance as the HTML file
-let db;
+// Use the same Firebase instance as the HTML file (db is declared in HTML)
+// No need to declare db here as it's already declared in the HTML file
 
-// Wait for Firebase to be available
+// Wait for Firebase and db to be available
 function ensureFirebase() {
-  if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-    db = firebase.firestore();
+  if (typeof firebase !== 'undefined' && firebase.apps.length > 0 && typeof db !== 'undefined') {
     return true;
   }
   return false;
 }
 
-// Try to initialize Firebase connection immediately
+// Try to check Firebase connection immediately
 if (!ensureFirebase()) {
   // If Firebase isn't ready, wait for it
-  console.log('Waiting for Firebase to initialize...');
+  console.log('Waiting for Firebase and db to be available...');
   const checkFirebase = setInterval(() => {
     if (ensureFirebase()) {
-      console.log('Firebase initialized for manage-users.js');
+      console.log('Firebase and db are now available for manage-users.js');
       clearInterval(checkFirebase);
+      // Expose functions to global scope once Firebase is ready
+      exposeGlobalFunctions();
     }
   }, 100);
+} else {
+  // Firebase is ready, expose functions immediately
+  exposeGlobalFunctions();
 }
 
 // Helper to slugify client name for username
 function slugify(str) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+// Function to expose all modal functions to global scope
+function exposeGlobalFunctions() {
+  console.log('🔧 Exposing global functions...');
+  
+  // Expose the main functions to window object
+  window.showManageUsersModal = showManageUsersModal;
+  window.showBulkAddModal = showBulkAddUsersModal;
+  
+  console.log('✅ Global functions exposed:', {
+    showManageUsersModal: typeof window.showManageUsersModal,
+    showBulkAddModal: typeof window.showBulkAddModal
+  });
 }
 
 // Custom notification function that matches the theme
@@ -81,7 +99,7 @@ function getCurrentUser() {
   };
 }
 
-window.showManageUsersModal = async function(clientName) {
+async function showManageUsersModal(clientName) {
   try {
     // Ensure Firebase is available
     if (!ensureFirebase()) {
@@ -581,15 +599,5 @@ function showBulkAddUsersModal(clientName) {
   }
 }
 
-// Wrapper function for easier access
-window.showBulkAddModal = function(clientName) {
-  showBulkAddUsersModal(clientName);
-};
-
-// Test that functions are properly exposed
-console.log('✅ manage-users.js loaded. Functions available:', {
-  showManageUsersModal: typeof window.showManageUsersModal,
-  showBulkAddModal: typeof window.showBulkAddModal,
-  firebase: typeof firebase,
-  firebaseApps: typeof firebase !== 'undefined' ? firebase.apps.length : 0
-});
+// Initial function exposure check - will be done again after Firebase is ready
+console.log('📄 manage-users.js loaded, waiting for Firebase...');
