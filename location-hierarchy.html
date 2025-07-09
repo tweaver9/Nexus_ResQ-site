@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nexus Res-Q | Location Hierarchy Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --nexus-yellow: #fdd835;
+    --nexus-bg: #12233d;
+    --nexus-card: #1c3050;
+    --nexus-input: #203358;
+    --nexus-light: #e6e6f1;
+    --nexus-shadow: 0 12px 28px 0 rgba(0,0,0,0.16);
+    --radius: 18px;
+  }
+  
+  body {
+    font-family: 'Oswald', Arial, sans-serif;
+    background: var(--nexus-bg);
+    color: var(--nexus-light);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--nexus-card);
+    border-radius: var(--radius);
+    padding: 30px;
+    box-shadow: var(--nexus-shadow);
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #233358;
+  }
+  
+  .header h1 {
+    color: var(--nexus-yellow);
+    margin: 0;
+    font-size: 2em;
+    font-weight: 600;
+  }
+  
+  .back-btn {
+    background: #ececec;
+    color: var(--nexus-bg);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s;
+  }
+  
+  .back-btn:hover {
+    background: #d0d0d0;
+  }
+  
+  .info-panel {
+    background: #18203a;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    border-left: 4px solid var(--nexus-yellow);
+  }
+  
+  .info-panel h3 {
+    color: var(--nexus-yellow);
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+  
+  .info-panel p {
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  
+  .main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  
+  .section {
+    background: #18203a;
+    border-radius: 12px;
+    padding: 25px;
+  }
+  
+  .section h2 {
+    color: var(--nexus-yellow);
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.4em;
+  }
+  
+  .current-structure {
+    background: #203358;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .location-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: var(--nexus-card);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--nexus-yellow);
+  }
+  
+  .location-info {
+    flex: 1;
+  }
+  
+  .location-name {
+    font-weight: 600;
+    color: var(--nexus-light);
+    margin-bottom: 4px;
+  }
+  
+  .location-uuid {
+    font-family: 'Courier New', monospace;
+    color: var(--nexus-yellow);
+    font-size: 0.9em;
+  }
+  
+  .expand-btn {
+    background: var(--nexus-yellow);
+    color: var(--nexus-bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s;
+  }
+  
+  .expand-btn:hover {
+    background: #ffe45e;
+    transform: translateY(-1px);
+  }
+  
+  .expand-btn:disabled {
+    background: #666;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    color: var(--nexus-yellow);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid var(--nexus-card);
+    border-radius: 6px;
+    background: var(--nexus-input);
+    color: var(--nexus-light);
+    font-family: 'Oswald', Arial, sans-serif;
+    font-size: 1em;
+    box-sizing: border-box;
+  }
+  
+  .form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: var(--nexus-yellow);
+    box-shadow: 0 0 0 2px rgba(253, 216, 53, 0.2);
+  }
+  
+  .btn-primary {
+    background: var(--nexus-yellow);
+    color: var(--nexus-bg);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1.1em;
+    width: 100%;
+    transition: all 0.2s;
+  }
+  
+  .btn-primary:hover {
+    background: #ffe45e;
+    transform: translateY(-1px);
+  }
+  
+  .btn-primary:disabled {
+    background: #666;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  .hierarchy-preview {
+    background: var(--nexus-card);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+    border: 2px dashed #233358;
+  }
+  
+  .hierarchy-level {
+    margin-left: 20px;
+    padding: 8px;
+    border-left: 2px solid var(--nexus-yellow);
+    margin-bottom: 8px;
+  }
+  
+  .level-0 { margin-left: 0; }
+  .level-1 { margin-left: 20px; }
+  .level-2 { margin-left: 40px; }
+  .level-3 { margin-left: 60px; }
+  
+  .warning {
+    background: #ff6b35;
+    color: white;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+  
+  .success {
+    background: #28a745;
+    color: white;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+  
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+  }
+  
+  @media (max-width: 768px) {
+    .main-content {
+      grid-template-columns: 1fr;
+    }
+    
+    .container {
+      padding: 20px;
+      margin: 10px;
+    }
+    
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Location Hierarchy Management</h1>
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+  </div>
+
+  <div class="info-panel">
+    <h3>🏗️ Optional Advanced Feature</h3>
+    <p><strong>This is completely optional!</strong> Your current location structure from onboarding works perfectly as-is.</p>
+    <p>Use this tool only if you need to create sub-divisions within your existing locations (e.g., Zone 1 → Building A → Floor 2 → Room 201).</p>
+    <p><strong>Benefits:</strong> Drill-down navigation, more precise asset tracking, hierarchical reporting.</p>
+  </div>
+
+  <div id="loadingState" class="loading">
+    <div>Loading your current location structure...</div>
+  </div>
+
+  <div id="mainContent" class="main-content" style="display: none;">
+    <div class="section">
+      <h2>Current Location Structure</h2>
+      <div class="current-structure">
+        <h4 style="color: var(--nexus-yellow); margin-top: 0;">Your Current Locations:</h4>
+        <div id="currentLocations">
+          <!-- Locations will be loaded here -->
+        </div>
+      </div>
+      
+      <div class="warning" id="warningMessage" style="display: none;">
+        <strong>⚠️ Important:</strong> Expanding locations will create sub-levels. This action cannot be easily undone. Make sure you really need hierarchical locations before proceeding.
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Expand Location</h2>
+      <div id="expansionForm" style="display: none;">
+        <div class="form-group">
+          <label for="selectedLocation">Selected Location:</label>
+          <input type="text" id="selectedLocation" readonly style="background: #666; color: #ccc;">
+        </div>
+        
+        <div class="form-group">
+          <label for="subDivisionType">What type of sub-divisions?</label>
+          <select id="subDivisionType">
+            <option value="">Choose sub-division type...</option>
+            <option value="building">Buildings</option>
+            <option value="floor">Floors</option>
+            <option value="room">Rooms</option>
+            <option value="unit">Units</option>
+            <option value="section">Sections</option>
+            <option value="area">Areas</option>
+            <option value="custom">Custom Names</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="numSubDivisionsGroup" style="display: none;">
+          <label for="numSubDivisions">How many <span id="subDivisionLabel"></span>?</label>
+          <input type="number" id="numSubDivisions" min="1" max="50" placeholder="Enter number...">
+        </div>
+
+        <div id="customSubDivisions" style="display: none;">
+          <div class="form-group">
+            <label>Enter custom sub-division names:</label>
+            <div id="customSubInputs">
+              <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="text" class="customSubInput" placeholder="Sub-division name..." style="flex: 1;">
+                <button type="button" class="add-sub-btn" style="background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="generateUUIDs" checked style="margin-right: 8px;">
+            Generate new UUIDs for sub-locations
+          </label>
+        </div>
+
+        <div class="hierarchy-preview" id="hierarchyPreview" style="display: none;">
+          <h4 style="color: var(--nexus-yellow); margin-top: 0;">Preview:</h4>
+          <div id="previewContent"></div>
+        </div>
+
+        <button class="btn-primary" id="expandLocationBtn" disabled>Create Sub-Locations</button>
+      </div>
+
+      <div id="selectLocationMessage">
+        <p style="color: #666; text-align: center; padding: 40px;">
+          Select a location from the left to expand it with sub-divisions.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, getDocs, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// Role and client check
+const userRole = sessionStorage.getItem('role');
+const clientSubdomain = sessionStorage.getItem('clientSubdomain');
+
+if (userRole !== 'admin' && userRole !== 'nexus') {
+  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">Access Denied<br><br>This feature requires admin privileges.<br><br><a href="dashboard.html" style="color:#fdd835;">Return to Dashboard</a></div>';
+  throw new Error("Unauthorized Access");
+}
+
+if (!clientSubdomain) {
+  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">No Client Selected<br><br>Please return to dashboard and select a client.<br><br><a href="dashboard.html" style="color:#fdd835;">Return to Dashboard</a></div>';
+  throw new Error("No client subdomain");
+}
+
+// Firebase setup
+const firebaseConfig = {
+  apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
+  authDomain: "nexus-res-q.firebaseapp.com",
+  projectId: "nexus-res-q",
+  storageBucket: "nexus-res-q.firebasestorage.app",
+  messagingSenderId: "203995658810",
+  appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let currentLocations = [];
+let selectedLocation = null;
+
+// Load current locations
+async function loadCurrentLocations() {
+  try {
+    const clientRef = doc(db, 'clients', clientSubdomain);
+    const locationsSnapshot = await getDocs(collection(clientRef, 'locations'));
+    
+    currentLocations = [];
+    locationsSnapshot.forEach((doc) => {
+      if (doc.id !== 'starter') {
+        currentLocations.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      }
+    });
+
+    renderCurrentLocations();
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'grid';
+  } catch (error) {
+    console.error('Error loading locations:', error);
+    document.getElementById('loadingState').innerHTML = `
+      <div style="color: #ff5656;">
+        Error loading locations: ${error.message}<br>
+        <a href="dashboard.html" style="color: #fdd835;">Return to Dashboard</a>
+      </div>
+    `;
+  }
+}
+
+function renderCurrentLocations() {
+  const container = document.getElementById('currentLocations');
+  
+  if (currentLocations.length === 0) {
+    container.innerHTML = '<div style="color: #666; padding: 20px; text-align: center;">No locations found. Please complete client onboarding first.</div>';
+    return;
+  }
+
+  container.innerHTML = currentLocations.map(location => `
+    <div class="location-item">
+      <div class="location-info">
+        <div class="location-name">${location.name || location.id}</div>
+        <div class="location-uuid">UUID: ${location.uuid || 'N/A'}</div>
+        ${location.hasSubLocations ? '<div style="color: #43ff7a; font-size: 0.8em;">✓ Has sub-locations</div>' : ''}
+      </div>
+      <button class="expand-btn" onclick="selectLocation('${location.id}')" ${location.hasSubLocations ? 'disabled' : ''}>
+        ${location.hasSubLocations ? 'Already Expanded' : 'Expand'}
+      </button>
+    </div>
+  `).join('');
+}
+
+// Make selectLocation global
+window.selectLocation = function(locationId) {
+  selectedLocation = currentLocations.find(loc => loc.id === locationId);
+  if (!selectedLocation) return;
+
+  document.getElementById('selectedLocation').value = selectedLocation.name || selectedLocation.id;
+  document.getElementById('expansionForm').style.display = 'block';
+  document.getElementById('selectLocationMessage').style.display = 'none';
+  document.getElementById('warningMessage').style.display = 'block';
+  
+  // Reset form
+  document.getElementById('subDivisionType').value = '';
+  document.getElementById('numSubDivisionsGroup').style.display = 'none';
+  document.getElementById('customSubDivisions').style.display = 'none';
+  document.getElementById('hierarchyPreview').style.display = 'none';
+  document.getElementById('expandLocationBtn').disabled = true;
+};
+
+// Handle sub-division type change
+document.getElementById('subDivisionType').addEventListener('change', function() {
+  const value = this.value;
+  const numGroup = document.getElementById('numSubDivisionsGroup');
+  const customGroup = document.getElementById('customSubDivisions');
+  const label = document.getElementById('subDivisionLabel');
+  
+  if (value === 'custom') {
+    numGroup.style.display = 'none';
+    customGroup.style.display = 'block';
+  } else if (value) {
+    numGroup.style.display = 'block';
+    customGroup.style.display = 'none';
+    label.textContent = value + 's';
+  } else {
+    numGroup.style.display = 'none';
+    customGroup.style.display = 'none';
+  }
+  
+  updatePreview();
+});
+
+// Handle number input change
+document.getElementById('numSubDivisions').addEventListener('input', updatePreview);
+document.getElementById('generateUUIDs').addEventListener('change', updatePreview);
+
+// Add custom sub-division input
+function addCustomSubInput() {
+  const container = document.getElementById('customSubInputs');
+  const newDiv = document.createElement('div');
+  newDiv.style = 'display: flex; gap: 10px; margin-bottom: 10px;';
+  newDiv.innerHTML = `
+    <input type="text" class="customSubInput" placeholder="Sub-division name..." style="flex: 1;">
+    <button type="button" onclick="this.parentElement.remove(); updatePreview();" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">−</button>
+  `;
+  container.appendChild(newDiv);
+  
+  // Add event listener to new input
+  newDiv.querySelector('.customSubInput').addEventListener('input', updatePreview);
+}
+
+// Add event listener to first + button
+document.querySelector('.add-sub-btn').addEventListener('click', addCustomSubInput);
+
+// Listen for custom input changes
+document.addEventListener('input', function(e) {
+  if (e.target.classList.contains('customSubInput')) {
+    updatePreview();
+  }
+});
+
+function updatePreview() {
+  const subType = document.getElementById('subDivisionType').value;
+  const numSubs = parseInt(document.getElementById('numSubDivisions').value);
+  const generateUUIDs = document.getElementById('generateUUIDs').checked;
+  const preview = document.getElementById('hierarchyPreview');
+  const previewContent = document.getElementById('previewContent');
+  const expandBtn = document.getElementById('expandLocationBtn');
+  
+  if (!subType || !selectedLocation) {
+    preview.style.display = 'none';
+    expandBtn.disabled = true;
+    return;
+  }
+
+  let subDivisions = [];
+  
+  if (subType === 'custom') {
+    const customInputs = document.querySelectorAll('.customSubInput');
+    customInputs.forEach(input => {
+      const value = input.value.trim();
+      if (value) subDivisions.push(value);
+    });
+  } else if (numSubs && numSubs > 0) {
+    for (let i = 1; i <= numSubs; i++) {
+      subDivisions.push(`${subType.charAt(0).toUpperCase() + subType.slice(1)} ${i}`);
+    }
+  }
+
+  if (subDivisions.length === 0) {
+    preview.style.display = 'none';
+    expandBtn.disabled = true;
+    return;
+  }
+
+  // Generate preview
+  const baseUUID = selectedLocation.uuid;
+  previewContent.innerHTML = `
+    <div class="hierarchy-level level-0">
+      <strong>${selectedLocation.name}</strong> (${baseUUID})
+      ${subDivisions.map((sub, index) => {
+        const subUUID = generateUUIDs ? String(Math.floor(Math.random() * 900) + 100) : '000';
+        return `<div class="hierarchy-level level-1">├── ${sub} (${baseUUID}-${subUUID})</div>`;
+      }).join('')}
+    </div>
+  `;
+  
+  preview.style.display = 'block';
+  expandBtn.disabled = false;
+}
+
+// Expand location
+document.getElementById('expandLocationBtn').addEventListener('click', async function() {
+  if (!selectedLocation) return;
+  
+  const subType = document.getElementById('subDivisionType').value;
+  const numSubs = parseInt(document.getElementById('numSubDivisions').value);
+  const generateUUIDs = document.getElementById('generateUUIDs').checked;
+  
+  let subDivisions = [];
+  
+  if (subType === 'custom') {
+    const customInputs = document.querySelectorAll('.customSubInput');
+    customInputs.forEach(input => {
+      const value = input.value.trim();
+      if (value) subDivisions.push(value);
+    });
+  } else if (numSubs && numSubs > 0) {
+    for (let i = 1; i <= numSubs; i++) {
+      subDivisions.push(`${subType.charAt(0).toUpperCase() + subType.slice(1)} ${i}`);
+    }
+  }
+
+  if (subDivisions.length === 0) {
+    alert('Please specify sub-divisions to create.');
+    return;
+  }
+
+  this.disabled = true;
+  this.textContent = 'Creating...';
+
+  try {
+    const clientRef = doc(db, 'clients', clientSubdomain);
+    const baseUUID = selectedLocation.uuid;
+
+    // Create sub-location documents
+    for (const subName of subDivisions) {
+      const subUUID = generateUUIDs ? String(Math.floor(Math.random() * 900) + 100) : '000';
+      const fullLocationCode = `${baseUUID}-${subUUID}`;
+      const docId = `${selectedLocation.id}_${subName.toLowerCase().replace(/\s+/g, '_')}`;
+
+      await setDoc(doc(collection(clientRef, 'locations'), docId), {
+        name: subName,
+        parentLocation: selectedLocation.id,
+        parentName: selectedLocation.name,
+        uuid: subUUID,
+        fullLocationCode: fullLocationCode,
+        level: 1,
+        divisionType: subType,
+        isSubLocation: true,
+        created: new Date().toISOString()
+      });
+    }
+
+    // Update parent location to mark it as expanded
+    await setDoc(doc(collection(clientRef, 'locations'), selectedLocation.id), {
+      ...selectedLocation,
+      hasSubLocations: true,
+      subLocationType: subType,
+      subLocationCount: subDivisions.length,
+      expandedAt: new Date().toISOString()
+    });
+
+    // Show success and reload
+    alert(`Successfully created ${subDivisions.length} sub-locations under ${selectedLocation.name}!`);
+    location.reload();
+
+  } catch (error) {
+    console.error('Error creating sub-locations:', error);
+    alert('Error creating sub-locations: ' + error.message);
+    this.disabled = false;
+    this.textContent = 'Create Sub-Locations';
+  }
+});
+
+// Initialize
+loadCurrentLocations();
+</script>
+
+</body>
+</html>

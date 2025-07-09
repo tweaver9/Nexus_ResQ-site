@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Asset Management | Nexus Res-Q</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --nexus-yellow: #fdd835;
+      --nexus-bg: #0a0e1a;
+      --nexus-card: #151b2e;
+      --nexus-card-hover: #1a2138;
+      --nexus-dark: #0f1419;
+      --nexus-border: #2a3441;
+      --nexus-light: #ffffff;
+      --nexus-muted: #8792a3;
+      --nexus-success: #10b981;
+      --nexus-warning: #f59e0b;
+      --nexus-error: #ef4444;
+      --nexus-info: #3b82f6;
+      --radius: 16px;
+      --radius-sm: 8px;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.4);
+      --glow-success: 0 0 16px rgba(16, 185, 129, 0.4);
+      --glow-warning: 0 0 16px rgba(245, 158, 11, 0.4);
+      --glow-error: 0 0 16px rgba(239, 68, 68, 0.4);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--nexus-bg); color: var(--nexus-light);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6; min-height: 100vh;
+    }
+    .site-header {
+      background: linear-gradient(135deg, var(--nexus-dark) 0%, var(--nexus-card) 100%);
+      border-bottom: 1px solid var(--nexus-border);
+      box-shadow: var(--shadow-card);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-container {
+      max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .site-title {
+      color: var(--nexus-yellow);
+      font-size: 2.25rem; font-weight: 700; letter-spacing: -0.025em;
+      text-shadow: 0 2px 8px rgba(253, 216, 53, 0.3);
+    }
+    .back-nav {
+      color: var(--nexus-muted); text-decoration: none; font-weight: 500;
+      font-size: 1rem; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .back-nav:hover { color: var(--nexus-yellow); text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);}
+    .client-selector { margin: 2rem auto; max-width: 1400px; padding: 0 2rem; }
+    .client-dropdown {
+      background: var(--nexus-card); border: 1px solid var(--nexus-border); border-radius: var(--radius);
+      color: var(--nexus-light); padding: 0.75rem 1rem; font-size: 1rem; font-weight: 500;
+      min-width: 200px; cursor: pointer; transition: all 0.2s ease;
+    }
+    .client-dropdown:focus { outline: none; border-color: var(--nexus-yellow); box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);}
+    .summary-stats {
+      max-width: 1400px; margin: 0 auto 3rem; padding: 0 2rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;
+    }
+    .stat-card {
+      background: var(--nexus-card); border-radius: var(--radius); padding: 2rem;
+      box-shadow: var(--shadow-card); transition: all 0.3s ease; border: 1px solid var(--nexus-border);
+      cursor: pointer;
+    }
+    .stat-card.active { box-shadow: var(--shadow-heavy); border-width: 2px;}
+    .stat-card.overdue { border-color: var(--nexus-error); background: linear-gradient(135deg, var(--nexus-card) 0%, rgba(239, 68, 68, 0.05) 100%);}
+    .stat-card.due-soon { border-color: var(--nexus-warning); background: linear-gradient(135deg, var(--nexus-card) 0%, rgba(245, 158, 11, 0.05) 100%);}
+    .stat-card.complete { border-color: var(--nexus-success); background: linear-gradient(135deg, var(--nexus-card) 0%, rgba(16, 185, 129, 0.05) 100%);}
+    .stat-number { font-size: 3rem; font-weight: 700; line-height: 1; margin-bottom: 0.5rem;}
+    .stat-card.overdue .stat-number { color: var(--nexus-error);}
+    .stat-card.due-soon .stat-number { color: var(--nexus-warning);}
+    .stat-card.complete .stat-number { color: var(--nexus-success);}
+    .stat-label { color: var(--nexus-muted); font-size: 1.1rem; font-weight: 500;}
+    .main-container { max-width: 1400px; margin: 0 auto; padding: 0 2rem 3rem;}
+    .user-group { margin-bottom: 3rem;}
+    .group-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;}
+    .group-title { font-size: 1.75rem; font-weight: 700; color: var(--nexus-light);}
+    .group-count { background: var(--nexus-yellow); color: var(--nexus-dark); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;}
+    .user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;}
+    .empty-group {
+      background: var(--nexus-card); border: 2px dashed var(--nexus-border); border-radius: var(--radius);
+      padding: 3rem; text-align: center; color: var(--nexus-muted); font-size: 1.125rem; font-weight: 500;
+    }
+    .user-card {
+      background: var(--nexus-card); border: 1px solid var(--nexus-border); border-radius: var(--radius);
+      padding: 1.5rem; box-shadow: var(--shadow-card); transition: all 0.2s ease; cursor: pointer;
+      will-change: transform, box-shadow;
+    }
+    .user-card:hover {
+      background: var(--nexus-card-hover);
+      transform: translateY(-2px) scale(1.012);
+      box-shadow: var(--shadow-heavy);
+      transition: all 0.25s cubic-bezier(.4,1.7,.64,1);
+    }
+    .user-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;}
+    .user-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.125rem; color: var(--nexus-dark); flex-shrink: 0; background: var(--nexus-yellow);}
+    .user-info { flex: 1;}
+    .user-name { font-size: 1.25rem; font-weight: 600; color: var(--nexus-light); margin-bottom: 0.25rem;}
+    .role-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+    .role-badge.user { background: var(--nexus-muted); color: white;}
+    .assigned-areas { color: var(--nexus-muted); font-size: 0.875rem; margin-bottom: 1rem; line-height: 1.4;}
+    .areas-label { color: var(--nexus-light); font-weight: 500; display: block; margin-bottom: 0.25rem;}
+    .areas-list { color: var(--nexus-yellow); font-weight: 500;}
+    .monthly-status { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border-radius: var(--radius-sm); border: 1px solid var(--nexus-border);}
+    .status-indicator { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; position: relative;}
+    .status-indicator.complete { background: var(--nexus-success); box-shadow: var(--glow-success);}
+    .status-indicator.due-soon { background: var(--nexus-warning); box-shadow: var(--glow-warning);}
+    .status-indicator.overdue { background: var(--nexus-error); box-shadow: var(--glow-error); animation: blink 1s infinite;}
+    @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.3; }}
+    .status-text { font-weight: 500; color: var(--nexus-light);}
+    .status-tooltip { position: relative; cursor: help;}
+    .status-tooltip:hover::after {
+      content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+      background: var(--nexus-dark); color: var(--nexus-light); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm);
+      font-size: 0.875rem; white-space: nowrap; z-index: 1000; box-shadow: var(--shadow-card); border: 1px solid var(--nexus-border);
+    }
+    .last-activity { color: var(--nexus-muted); font-size: 0.875rem; line-height: 1.4;}
+    .activity-highlight { color: var(--nexus-light); font-weight: 500;}
+    .last-inspection { display: flex; align-items: center; gap: 0.5rem; color: var(--nexus-muted); font-size: 0.875rem; margin-top: 0.75rem; cursor: pointer; transition: all 0.2s ease; padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid transparent;}
+    .last-inspection:hover { color: var(--nexus-yellow); border-color: var(--nexus-border); background: rgba(255, 255, 255, 0.02);}
+    .inspection-icon { width: 16px; height: 16px; background: var(--nexus-muted); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' /%3E%3C/svg%3E") no-repeat center/contain; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' /%3E%3C/svg%3E") no-repeat center/contain; transition: all 0.2s ease;}
+    .last-inspection:hover .inspection-icon { background: var(--nexus-yellow);}
+    .inspection-label { font-weight: 500;}
+    .reset-password { color: var(--nexus-yellow); text-decoration: underline; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; margin-bottom: 0.75rem; display: inline-block;}
+    .reset-password:hover { color: var(--nexus-light); text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);}
+    /* MODALS & SKELETON LOADER (NEW) */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8);
+      display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; visibility: visible;}
+    .modal { background: var(--nexus-card); border-radius: var(--radius); padding: 2rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; border: 1px solid var(--nexus-border); box-shadow: var(--shadow-heavy); transform: scale(0.9); transition: all 0.3s ease; opacity: 0; scrollbar-width: thin; scrollbar-color: var(--nexus-yellow) transparent;}
+    .modal::-webkit-scrollbar { width: 6px;}
+    .modal::-webkit-scrollbar-track { background: transparent;}
+    .modal::-webkit-scrollbar-thumb { background: var(--nexus-yellow); border-radius: 3px; opacity: 0.7;}
+    .modal::-webkit-scrollbar-thumb:hover { background: #fbc02d; opacity: 1;}
+    .modal-overlay.active .modal { transform: scale(1) translateY(0); opacity: 1;}
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;}
+    .modal-title { font-size: 1.48rem; font-weight: 600; color: var(--nexus-light);}
+    .modal-close { background: none; border: none; color: var(--nexus-muted); font-size: 1.5rem; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s ease;}
+    .modal-close:hover { background: var(--nexus-border); color: var(--nexus-light);}
+    .modal-content { color: var(--nexus-muted); line-height: 1.6;}
+    /* SHIMMER SKELETON */
+    .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; }
+    .skeleton-card {
+      background: var(--nexus-card); border-radius: var(--radius);
+      height: 180px; padding: 1.5rem; position: relative; overflow: hidden;
+      box-shadow: var(--shadow-card); border: 1px solid var(--nexus-border);
+    }
+    .skeleton-anim {
+      background: linear-gradient(90deg, var(--nexus-card-hover) 25%, var(--nexus-card) 50%, var(--nexus-card-hover) 75%);
+      background-size: 400% 100%;
+      animation: shimmer 1.2s linear infinite;
+    }
+    .skel-avatar { width:48px; height:48px; border-radius:50%; margin-bottom:1.2rem; }
+    .skel-bar { height: 14px; border-radius:8px; margin-bottom:10px; width:80%; }
+    .skel-bar.short { width: 40%; }
+    @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+    /* TOASTS */
+    #toast-area {
+      position: fixed; bottom: 32px; right: 32px; z-index: 3000;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .nexus-toast {
+      background: var(--nexus-card); color: var(--nexus-light);
+      border-left: 6px solid var(--nexus-yellow);
+      border-radius: var(--radius-sm); min-width: 240px; max-width: 360px;
+      box-shadow: var(--shadow-card); padding: 1rem 1.2rem 1rem 1.6rem;
+      display: flex; align-items: center; justify-content: space-between;
+      opacity: 0; transform: translateY(20px); animation: toast-in 0.4s forwards;
+      font-size: 1rem;
+    }
+    .nexus-toast.success { border-color: var(--nexus-success);}
+    .nexus-toast.error { border-color: var(--nexus-error);}
+    .nexus-toast .undo-btn {
+      color: var(--nexus-yellow); font-weight: 700; margin-left: 1rem;
+      background: none; border: none; cursor: pointer; font-size: 1rem;
+      transition: color .2s;
+    }
+    .nexus-toast .undo-btn:hover { color: var(--nexus-light);}
+    @keyframes toast-in { to { opacity: 1; transform: translateY(0); } }
+    @keyframes toast-out { to { opacity: 0; transform: translateY(20px); } }
+    /* STICKY FILTER BAR */
+    #sticky-filters {
+      position: sticky; top:84px;
+      background: var(--nexus-bg);
+      padding-top: 0.5rem; padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--nexus-border);
+      z-index: 10;
+      transition: box-shadow 0.2s;
+      display:flex; gap:1rem; margin-bottom:2rem;
+    }
+    #sticky-filters.stuck { box-shadow: var(--shadow-card);}
+    
+    /* === ADD ASSET MODAL STYLING === */
+    .add-asset-modal {
+      max-width: 700px;
+      width: 95%;
+      max-height: 85vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: var(--nexus-yellow) transparent;
+    }
+    
+    .add-asset-modal::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .add-asset-modal::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .add-asset-modal::-webkit-scrollbar-thumb {
+      background: var(--nexus-yellow);
+      border-radius: 3px;
+      opacity: 0.7;
+    }
+    
+    .add-asset-modal::-webkit-scrollbar-thumb:hover {
+      background: #fbc02d;
+      opacity: 1;
+    }
+    
+    .asset-stepper {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+      padding: 0 1rem;
+    }
+    
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      position: relative;
+    }
+    
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 60%;
+      right: -40%;
+      height: 2px;
+      background: var(--nexus-border);
+      z-index: 1;
+    }
+    
+    .step.active:not(:last-child)::after,
+    .step.completed:not(:last-child)::after {
+      background: var(--nexus-yellow);
+    }
+    
+    .step-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--nexus-border);
+      color: var(--nexus-muted);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      position: relative;
+      z-index: 2;
+      font-size: 0.8rem;
+    }
+    
+    .step.active .step-circle {
+      background: var(--nexus-yellow);
+      color: var(--nexus-dark);
+    }
+    
+    .step.completed .step-circle {
+      background: var(--nexus-success);
+      color: white;
+    }
+    
+    .step-label {
+      font-size: 0.75rem;
+      color: var(--nexus-muted);
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    .step.active .step-label {
+      color: var(--nexus-yellow);
+      font-weight: 600;
+    }
+    
+    .step.completed .step-label {
+      color: var(--nexus-success);
+    }
+    
+    .step-content {
+      min-height: 220px;
+      padding: 0.6rem 0;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: var(--nexus-light);
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+    
+    .form-input, .form-select {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      background: var(--nexus-card-hover);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      color: var(--nexus-light);
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+    
+    .form-input[type="month"] {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background: var(--nexus-card-hover);
+      color: var(--nexus-light);
+      position: relative;
+    }
+    
+    .form-input[type="month"]::-webkit-calendar-picker-indicator {
+      opacity: 0;
+      position: absolute;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+    
+    .form-input.error, .form-select.error {
+      border-color: var(--nexus-error);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    .error-message {
+      color: var(--nexus-error);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+    
+    .error-message.show {
+      display: block;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+    
+    .checkbox-input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--nexus-yellow);
+    }
+    
+    .checkbox-label {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      margin: 0;
+    }
+    
+    .date-picker-group {
+      position: relative;
+    }
+    
+    .date-input {
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .calendar-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--nexus-muted);
+      pointer-events: none;
+      z-index: 0;
+      font-size: 0.875rem;
+    }
+    
+    .location-selection {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 0.8rem;
+      margin-top: 0.8rem;
+    }
+    
+    .location-title {
+      color: var(--nexus-yellow);
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+      font-size: 0.95rem;
+    }
+    
+    .precision-info {
+      background: rgba(253, 216, 53, 0.1);
+      border: 1px solid var(--nexus-yellow);
+      border-radius: var(--radius-sm);
+      padding: 0.8rem;
+      margin-top: 0.8rem;
+    }
+    
+    .precision-code {
+      font-family: 'Courier New', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--nexus-yellow);
+      text-align: center;
+      margin: 0.4rem 0;
+    }
+    
+    .modal-actions {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+      padding-top: 0.8rem;
+      border-top: 1px solid var(--nexus-border);
+    }
+    
+    .btn {
+      padding: 0.65rem 1.3rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+    }
+    
+    .btn-secondary {
+      background: var(--nexus-border);
+      color: var(--nexus-light);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--nexus-muted);
+    }
+    
+    .btn-primary {
+      background: var(--nexus-yellow);
+      color: var(--nexus-dark);
+    }
+    
+    .btn-primary:hover {
+      background: #fbc02d;
+      transform: translateY(-1px);
+    }
+    
+    .btn-primary:disabled {
+      background: var(--nexus-border);
+      color: var(--nexus-muted);
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-success {
+      background: var(--nexus-success);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #059669;
+      transform: translateY(-1px);
+    }
+    
+    .loading-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 0.5rem;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* HOVER DELETE BUTTON */
+    .delete-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      background: var(--nexus-error);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    
+    .user-card:hover .delete-btn {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .delete-btn:hover {
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+    
+    /* PREMIUM ADD ASSET BUTTON */
+    .premium-add-btn {
+      background: linear-gradient(135deg, var(--nexus-yellow) 0%, #fbc02d 100%);
+      color: var(--nexus-dark);
+      border: none;
+      padding: 0.875rem 1.75rem;
+      border-radius: var(--radius-lg);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      box-shadow: 0 4px 12px rgba(253, 216, 53, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .premium-add-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .premium-add-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(253, 216, 53, 0.4);
+    }
+    
+    .premium-add-btn:hover::before {
+      left: 100%;
+    }
+    
+    .premium-add-btn:active {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 15px rgba(253, 216, 53, 0.3);
+    }
+    
+    .premium-add-btn svg {
+      transition: transform 0.2s ease;
+    }
+    
+    .premium-add-btn:hover svg {
+      transform: rotate(90deg);
+    }
+    
+    /* Editable fields */
+    .editable-field {
+      display: inline-block;
+      border-bottom: 1px dashed var(--nexus-yellow);
+      cursor: pointer;
+      padding: 1px 4px;
+      transition: background 0.2s;
+    }
+    .editable-field:hover, .editable-field:focus {
+      background: rgba(253,216,53,0.09);
+      outline: none;
+    }
+    .inline-edit-input {
+      border-radius: 5px;
+      border: 1px solid var(--nexus-yellow);
+      padding: 1px 5px;
+      font-size: inherit;
+      color: var(--nexus-light);
+      background: var(--nexus-card);
+      width: 90px;
+    }
+    
+    /* Asset type filter styling */
+    .asset-type-filter:focus {
+      outline: none;
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+    
+    /* Asset search styling */
+    .asset-search:focus {
+      outline: none;
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+    @media (max-width: 768px) {
+      .header-container { padding: 1rem; flex-direction: column; gap: 1rem; text-align: center;}
+      .site-title { font-size: 1.75rem;}
+      .summary-stats, .main-container { padding: 0 1rem;}
+      .user-grid, .skeleton-grid { grid-template-columns: 1fr;}
+      .group-header { flex-direction: column; align-items: flex-start; gap: 0.5rem;}
+      #sticky-filters { flex-direction:column; gap:0.5rem;}
+      #toast-area { right:8px; bottom: 8px;}
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <h1 class="site-title">Asset Management</h1>
+      <a href="dashboard.html" class="back-nav">← Back to Dashboard</a>
+    </div>
+  </header>
+  <!-- Client Selector (Nexus only) -->
+  <div class="client-selector" id="client-selector" style="display: none;">
+    <label style="color: var(--nexus-muted); font-size: 0.875rem; margin-bottom: 0.5rem; display: block;">Select Client to Manage:</label>
+    <select class="client-dropdown" id="client-dropdown">
+      <option value="">Select Client...</option>
+    </select>
+  </div>
+  <!-- Summary Stats -->
+  <section class="summary-stats">
+    <div class="stat-card overdue">
+      <div class="stat-number" id="overdue-count">0</div>
+      <div class="stat-label">Assets Overdue</div>
+    </div>
+    <div class="stat-card due-soon">
+      <div class="stat-number" id="due-soon-count">0</div>
+      <div class="stat-label">Due Soon</div>
+    </div>
+    <div class="stat-card complete">
+      <div class="stat-number" id="complete-count">0</div>
+      <div class="stat-label">Assets Complete</div>
+    </div>
+  </section>
+  <!-- === STICKY FILTER BAR (NEW) === -->
+  <div id="sticky-filters" style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
+    <input id="asset-search" type="search" placeholder="Search assets..." style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:200px;">
+    <select id="asset-type-filter" style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:150px;">
+      <option value="">All Types</option>
+    </select>
+    <button class="premium-add-btn" id="add-asset-btn" style="margin-left:auto;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Add Asset
+    </button>
+    <button class="reset-password" id="bulk-add-btn">Bulk Add</button>
+  </div>
+  <!-- === SKELETON LOADER (NEW) === -->
+  <div class="skeleton-grid" id="asset-skeleton" style="display:none; max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
+    <div class="skeleton-card">
+      <div class="skeleton-anim skel-avatar"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skeleton-anim skel-avatar"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skeleton-anim skel-avatar"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+      <div class="skeleton-anim skel-bar"></div>
+      <div class="skeleton-anim skel-bar short"></div>
+    </div>
+  </div>
+  <!-- === MAIN GRID === -->
+  <main class="main-container">
+    <section class="user-group">
+      <div class="group-header">
+        <h2 class="group-title">Assets</h2>
+        <span class="group-count" id="total-count">0</span>
+      </div>
+      <div class="user-grid" id="all-assets">
+        <div class="empty-group">Loading assets...</div>
+      </div>
+    </section>
+  </main>
+  <!-- === TOASTS (NEW) === -->
+  <div id="toast-area"></div>
+  <!-- === ASSET DETAIL MODAL === -->
+  <div class="modal-overlay" id="asset-detail-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Asset Details</h3>
+        <button class="modal-close" id="asset-detail-close">×</button>
+      </div>
+      <div class="modal-content" id="asset-detail-content"></div>
+    </div>
+  </div>
+  
+  <!-- === ADD ASSET MODAL === -->
+  <div class="modal-overlay" id="add-asset-modal">
+    <div class="modal add-asset-modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New Asset</h3>
+        <button class="modal-close" id="add-asset-close">×</button>
+      </div>
+      
+      <!-- Stepper -->
+      <div class="asset-stepper">
+        <div class="step active" id="step-1">
+          <div class="step-circle">1</div>
+          <div class="step-label">Asset Type</div>
+        </div>
+        <div class="step" id="step-2">
+          <div class="step-circle">2</div>
+          <div class="step-label">Details</div>
+        </div>
+        <div class="step" id="step-3">
+          <div class="step-circle">3</div>
+          <div class="step-label">Inspections</div>
+        </div>
+        <div class="step" id="step-4">
+          <div class="step-circle">4</div>
+          <div class="step-label">Location</div>
+        </div>
+        <div class="step" id="step-5">
+          <div class="step-circle">5</div>
+          <div class="step-label">Review</div>
+        </div>
+      </div>
+      
+      <!-- Step Content -->
+      <div class="step-content">
+        <!-- Step 1: Asset Type -->
+        <div class="step-panel" id="panel-1">
+          <h4 style="color: var(--nexus-yellow); margin-bottom: 1.2rem; font-size: 1.1rem;">What type of asset are you adding?</h4>
+          
+          <div class="form-group">
+            <label class="form-label">Asset Type</label>
+            <select class="form-select" id="asset-type-select">
+              <option value="">Loading types...</option>
+            </select>
+            <div class="error-message" id="type-error">Please select an asset type</div>
+          </div>
+          
+          <div class="form-group" id="custom-type-group" style="display: none;">
+            <label class="form-label">Custom Asset Type</label>
+            <input type="text" class="form-input" id="custom-type-input" placeholder="Enter new asset type">
+            <div class="error-message" id="custom-type-error">Custom type cannot be empty</div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Asset Kind/Subtype</label>
+            <select class="form-select" id="asset-kind-select">
+              <option value="">First select a type...</option>
+            </select>
+            <div class="error-message" id="kind-error">Please select or enter an asset kind</div>
+          </div>
+          
+          <div class="form-group" id="custom-kind-group" style="display: none;">
+            <label class="form-label">Custom Asset Kind</label>
+            <input type="text" class="form-input" id="custom-kind-input" placeholder="Enter asset kind/subtype">
+            <div class="error-message" id="custom-kind-error">Custom kind cannot be empty</div>
+          </div>
+        </div>
+        
+        <!-- Step 2: Details -->
+        <div class="step-panel" id="panel-2" style="display: none;">
+          <h4 style="color: var(--nexus-yellow); margin-bottom: 1.2rem; font-size: 1.1rem;">Asset Details</h4>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Asset ID</label>
+              <input type="text" class="form-input" id="asset-id-input" placeholder="e.g., FE-001-2025">
+              <div class="error-message" id="asset-id-error">Asset ID is required</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Serial Number</label>
+              <input type="text" class="form-input" id="serial-input" placeholder="Manufacturer serial number">
+              <div class="error-message" id="serial-error">Serial number is required</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Hydro Due Date</label>
+            <div class="date-picker-group">
+              <input type="month" class="form-input date-input" id="hydro-due-input">
+              <span class="calendar-icon">📅</span>
+            </div>
+            <div class="error-message" id="hydro-due-error">Please select a valid hydro due date</div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Inspections -->
+        <div class="step-panel" id="panel-3" style="display: none;">
+          <h4 style="color: var(--nexus-yellow); margin-bottom: 1.2rem; font-size: 1.1rem;">Inspection Dates</h4>
+          
+          <div class="form-group">
+            <label class="form-label">Last Monthly Inspection</label>
+            <div class="date-picker-group">
+              <input type="date" class="form-input" id="monthly-inspection-input">
+              <div class="calendar-icon">📅</div>
+            </div>
+            <div class="error-message" id="monthly-error">Please select the last monthly inspection date</div>
+          </div>
+          
+          <div class="checkbox-group">
+            <input type="checkbox" class="checkbox-input" id="same-date-checkbox">
+            <label class="checkbox-label">Annual inspection is the same date</label>
+          </div>
+          
+          <div class="form-group" id="annual-inspection-group">
+            <label class="form-label">Last Annual Inspection</label>
+            <div class="date-picker-group">
+              <input type="date" class="form-input" id="annual-inspection-input">
+              <div class="calendar-icon">📅</div>
+            </div>
+            <div class="error-message" id="annual-error">Please select the last annual inspection date</div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Location -->
+        <div class="step-panel" id="panel-4" style="display: none;">
+          <h4 style="color: var(--nexus-yellow); margin-bottom: 1.2rem; font-size: 1.1rem;">Asset Location</h4>
+          
+          <div class="form-group">
+            <label class="form-label">Primary Location</label>
+            <select class="form-select" id="location-select">
+              <option value="">Select location...</option>
+            </select>
+            <div class="error-message" id="location-error">Please select a location</div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Sub-location</label>
+            <select class="form-select" id="sublocation-select">
+              <option value="">First select a location...</option>
+            </select>
+            <div class="error-message" id="sublocation-error">Please select a sub-location</div>
+          </div>
+          
+          <div class="location-selection" id="precision-section" style="display: none;">
+            <div class="location-title">Precision Location Setup</div>
+            
+            <div style="margin-bottom: 1rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="radio" name="precision-option" value="replace" style="accent-color: var(--nexus-yellow);">
+                <span style="color: var(--nexus-light);">Replacing an existing asset</span>
+              </label>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="radio" name="precision-option" value="new" style="accent-color: var(--nexus-yellow);">
+                <span style="color: var(--nexus-light);">Adding new asset (create new precision location)</span>
+              </label>
+            </div>
+            
+            <div class="form-group" id="existing-precision-group" style="display: none;">
+              <label class="form-label">Existing Precision Location</label>
+              <select class="form-select" id="existing-precision-select">
+                <option value="">Select existing precision location...</option>
+              </select>
+            </div>
+            
+            <div class="precision-info" id="new-precision-info" style="display: none;">
+              <div style="text-align: center; color: var(--nexus-light);">
+                <strong>New Precision Location Code:</strong>
+                <div class="precision-code" id="generated-precision">####</div>
+                <small style="color: var(--nexus-muted);">This unique code will be generated automatically</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Review -->
+        <div class="step-panel" id="panel-5" style="display: none;">
+          <h4 style="color: var(--nexus-yellow); margin-bottom: 1.2rem; font-size: 1.1rem;">Review Asset Information</h4>
+          
+          <div id="review-content" style="background: var(--nexus-card); padding: 1.5rem; border-radius: var(--radius-sm); border: 1px solid var(--nexus-border);">
+            <!-- Review content will be populated here -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal Actions -->
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="asset-prev-btn" style="display: none;">Previous</button>
+        <button class="btn btn-primary" id="asset-next-btn">Next</button>
+        <button class="btn btn-success" id="asset-submit-btn" style="display: none;">
+          <span class="loading-spinner" style="display: none;"></span>
+          Create Asset
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- === FIREBASE === -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    if (!firebase.apps.length) {
+      firebase.initializeApp({
+        apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
+        authDomain: "nexus-res-q.firebaseapp.com",
+        projectId: "nexus-res-q",
+        storageBucket: "nexus-res-q.appspot.com",
+        messagingSenderId: "203995658810",
+        appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303",
+        measurementId: "G-B7B1QZVWFG"
+      });
+    }
+    const db = firebase.firestore();
+    // =========================
+    //  SHIMMER LOADER / SKELETON
+    // =========================
+    function showSkeleton() {
+      document.getElementById('all-assets').style.display = 'none';
+      document.getElementById('asset-skeleton').style.display = 'grid';
+    }
+    function hideSkeleton() {
+      document.getElementById('asset-skeleton').style.display = 'none';
+      document.getElementById('all-assets').style.display = '';
+    }
+    // =========================
+    //  TOAST + UNDO
+    // =========================
+    function showToast(msg, {type='success', undoCallback=null, duration=4200}={}) {
+      const toast = document.createElement('div');
+      toast.className = 'nexus-toast '+type;
+      toast.innerHTML = `<span>${msg}</span>` + (undoCallback ? `<button class="undo-btn">Undo</button>` : '');
+      document.getElementById('toast-area').appendChild(toast);
+      let hideTimer = setTimeout(()=>removeToast(), duration);
+      function removeToast() {
+        toast.style.animation = 'toast-out 0.3s forwards';
+        setTimeout(()=>toast.remove(), 290);
+      }
+      toast.querySelector('.undo-btn')?.addEventListener('click',()=>{
+        clearTimeout(hideTimer);
+        removeToast();
+        undoCallback && undoCallback();
+      });
+    }
+    // =========================
+    //  STICKY FILTER BAR
+    // =========================
+    window.addEventListener('scroll', function() {
+      const filters = document.getElementById('sticky-filters');
+      if (!filters) return;
+      if (window.scrollY > filters.offsetTop + 16) filters.classList.add('stuck');
+      else filters.classList.remove('stuck');
+    });
+    // =========================
+    //  ASSET LOGIC
+    // =========================
+    let clientId = sessionStorage.getItem('tenant_id') || "demo";
+    let currentUserRole = sessionStorage.getItem('user_role') || 'nexus'; // Changed to nexus for demo
+    let allAssets = [];
+    let allLocations = [];
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('Asset Management page loading for client:', clientId);
+      
+      // Session validation with proper redirects
+      if (!clientId) {
+        console.warn('No client ID found, redirecting to login');
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Show client selector for Nexus role
+      if (currentUserRole === 'nexus') {
+        document.getElementById('client-selector').style.display = 'block';
+        await loadClients();
+      }
+
+      // Modal event handlers
+      document.getElementById('asset-detail-close').onclick = () => document.getElementById('asset-detail-modal').classList.remove('active');
+      document.getElementById('asset-detail-modal').onclick = e => { 
+        if (e.target.id === 'asset-detail-modal') e.target.classList.remove('active'); 
+      };
+
+      // Add Asset Modal handlers
+      document.getElementById('add-asset-close').onclick = () => closeAddAssetModal();
+      document.getElementById('add-asset-modal').onclick = e => { 
+        if (e.target.id === 'add-asset-modal') closeAddAssetModal(); 
+      };
+      document.getElementById('asset-next-btn').onclick = () => nextAssetStep();
+      document.getElementById('asset-prev-btn').onclick = () => prevAssetStep();
+      document.getElementById('asset-submit-btn').onclick = () => submitNewAsset();
+
+      // Add Asset form handlers
+      document.getElementById('asset-type-select').onchange = handleTypeChange;
+      document.getElementById('asset-kind-select').onchange = handleKindChange;
+      document.getElementById('same-date-checkbox').onchange = handleSameDateChange;
+      document.getElementById('location-select').onchange = handleLocationChange;
+      document.getElementById('sublocation-select').onchange = handleSublocationChange;
+      
+      // Custom type input handler for enabling kind field
+      document.getElementById('custom-type-input').oninput = function() {
+        const kindSelect = document.getElementById('asset-kind-select');
+        const customKindGroup = document.getElementById('custom-kind-group');
+        
+        if (this.value.trim()) {
+          kindSelect.disabled = false;
+          kindSelect.innerHTML = '<option value="">Not applicable</option>';
+          // For custom types, we always show the custom kind input
+          customKindGroup.style.display = 'block';
+        } else {
+          kindSelect.disabled = true;
+          kindSelect.innerHTML = '<option value="">Enter custom type first...</option>';
+          customKindGroup.style.display = 'none';
+        }
+      };
+      
+      // Precision location handlers
+      document.querySelectorAll('input[name="precision-option"]').forEach(radio => {
+        radio.onchange = handlePrecisionOptionChange;
+      });
+
+      // Filter event handlers
+      document.getElementById('asset-search').oninput = filterAssets;
+      document.getElementById('asset-type-filter').onchange = filterAssets;
+
+      // Action button handlers (role-based access)
+      document.getElementById('add-asset-btn').onclick = () => {
+        if (!canModifyAssets()) {
+          showToast('Insufficient permissions to add assets.', {type: 'error'});
+          return;
+        }
+        showAddAssetModal();
+      };
+      
+      document.getElementById('bulk-add-btn').onclick = () => {
+        if (!canModifyAssets()) {
+          showToast('Insufficient permissions for bulk operations.', {type: 'error'});
+          return;
+        }
+        showBulkAddModal();
+      };
+
+      // Load data
+      try {
+        await Promise.all([
+          loadAssetTypes(),
+          loadLocations(),
+          loadAssets()
+        ]);
+      } catch (error) {
+        console.error('Error during initial load:', error);
+        showToast('Error loading data. Please refresh the page.', {type: 'error'});
+      }
+    });
+    // Show shimmer loader during async load
+    async function loadAssets() {
+      showSkeleton();
+      try {
+        console.log('Loading assets for client:', clientId);
+        await new Promise(r=>setTimeout(r, 650)); // Simulate loading
+        
+        const snap = await db.collection(`clients/${clientId}/assets`).get();
+        allAssets = [];
+        
+        console.log('Found', snap.size, 'assets in Firebase');
+        
+        snap.forEach(doc=>{
+          const assetData = doc.data();
+          console.log('Asset data:', doc.id, assetData);
+          allAssets.push({
+            id: doc.id,
+            ...assetData
+          });
+        });
+         console.log('Processed assets:', allAssets);
+        
+        // Always add demo data for showcase (comment out for production)
+        console.log('Adding demo data for showcase');
+        allAssets = [
+          {
+            id: 'demo1',
+            kind: '30# ABC Extinguisher',
+            type: 'Fire Extinguisher',
+            asset_id: 'FE-001-2024',
+            location: 'Building A',
+            sublocation: 'Main Hallway',
+            precision: '1234',
+            annualDue: '03/2025',
+            monthlyDue: '02/2025',
+            serial: 'SE123456789',
+            lastInspection: 'January 15, 2025'
+          },
+          {
+            id: 'demo2',
+            kind: 'Emergency Exit Sign',
+            type: 'Exit Sign',
+            asset_id: 'ES-047-2024',
+            location: 'Building A',
+            sublocation: 'East Wing',
+            precision: '5678',
+            annualDue: '01/2025',
+            monthlyDue: '01/2025',
+            serial: 'EXIT789012',
+            lastInspection: 'December 20, 2024'
+          },
+          {
+            id: 'demo3',
+            kind: 'Fire Hose',
+            type: 'Hose',
+            asset_id: 'FH-023-2024',
+            location: 'Warehouse C',
+            sublocation: 'Loading Dock',
+            precision: '9012',
+            annualDue: '06/2025',
+            monthlyDue: '03/2025',
+            serial: 'HOSE345678',
+            lastInspection: 'November 30, 2024'
+          },
+          {
+            id: 'demo4',
+            kind: 'PIV Valve',
+            type: 'PIV',
+            asset_id: 'PIV-089-2024',
+            location: 'Powerhouse',
+            precision: '3456',
+            annualDue: '11/2024',
+            monthlyDue: '01/2025',
+            serial: 'PIV901234',
+            lastInspection: 'October 10, 2024'
+          },
+          {
+            id: 'demo5',
+            kind: '5# ABC Extinguisher',
+            type: 'Fire Extinguisher',
+            asset_id: 'FE-134-2024',
+            location: 'Building B',
+            sublocation: 'Server Room',
+            precision: '7890',
+            annualDue: '09/2025',
+            monthlyDue: '02/2025',
+            serial: 'SMALL567890',
+            lastInspection: 'January 8, 2025'
+          },
+          {
+            id: 'demo6',
+            kind: 'Emergency Light',
+            type: 'Emergency Equipment',
+            asset_id: 'EL-067-2024',
+            location: 'Manufacturing Wing',
+            sublocation: 'Assembly Line 2',
+            precision: '2345',
+            annualDue: '04/2025',
+            monthlyDue: '02/2025',
+            serial: 'LIGHT123456',
+            lastInspection: 'December 15, 2024'
+          }
+        ];
+        
+        hideSkeleton();
+        renderAssets();
+        updateStats();
+      } catch (error) {
+        console.error('Error loading assets:', error);
+        hideSkeleton();
+        document.getElementById('all-assets').innerHTML = `
+          <div class="empty-group">
+            Error loading assets: ${error.message}<br>
+            Please check console for details.
+          </div>
+        `;
+        showToast('Failed to load assets. Please try again.', {type: 'error'});
+      }
+    }
+    function renderAssets(list = allAssets) {
+      const grid = document.getElementById('all-assets');
+      const count = document.getElementById('total-count');
+      
+      if (!list.length) {
+        grid.innerHTML = '<div class="empty-group">No assets found.</div>';
+        count.textContent = '0';
+        return;
+      }
+      
+      count.textContent = list.length;
+      grid.innerHTML = list.map(asset=>`
+        <div class="user-card" data-id="${asset.id}" onclick="viewAssetDetails('${asset.id}')" style="position: relative;">
+          ${canModifyAssets() && !asset.id.startsWith('demo') ? `
+            <button class="delete-btn" onclick="event.stopPropagation(); deleteAsset('${asset.id}')" title="Delete Asset">
+              🗑️
+            </button>
+          ` : ''}
+          <div class="user-header">
+            <div class="user-avatar">${getAssetInitial(asset)}</div>
+            <div class="user-info">
+              <div class="user-name">${asset.kind || asset.type || 'Asset'}</div>
+              <span class="role-badge user">${asset.type || 'Unknown Type'}</span>
+            </div>
+          </div>
+          
+          <div class="assigned-areas">
+            <span class="areas-label">Location:</span>
+            <div class="areas-list">
+              ${canModifyAssets() ? 
+                `<span class="editable-field" data-field="location" onclick="event.stopPropagation()">${asset.location || '--'}</span>` +
+                (asset.sublocation ? ` / <span class="editable-field" data-field="sublocation" onclick="event.stopPropagation()">${asset.sublocation}</span>` : '') :
+                `${asset.location || '--'}${asset.sublocation ? ' / ' + asset.sublocation : ''}`
+              }
+            </div>
+          </div>
+          
+          ${asset.precision ? `
+          <div class="assigned-areas">
+            <span class="areas-label">Precision Loc:</span>
+            ${canModifyAssets() ? 
+              `<span class="editable-field" data-field="precision" onclick="event.stopPropagation()">${asset.precision}</span>` :
+              asset.precision
+            }
+          </div>
+          ` : ''}
+          
+          <div class="monthly-status status-tooltip" data-tooltip="Monthly Due: ${asset.monthlyDue || 'Not set'} | Annual Due: ${asset.annualDue || 'Not set'}">
+            <div class="status-indicator ${getAssetStatus(asset)}"></div>
+            <span class="status-text">
+              Due: ${canModifyAssets() ? 
+                `<span class="editable-field" data-field="monthlyDue" onclick="event.stopPropagation()">${asset.monthlyDue || '--'}</span>` :
+                (asset.monthlyDue || '--')
+              }
+            </span>
+          </div>
+          
+          <div class="last-activity">
+            <span class="activity-highlight">Asset ID:</span>
+            ${canModifyAssets() ? 
+              `<span class="editable-field" data-field="asset_id" onclick="event.stopPropagation()">${(asset.asset_id || '').slice(0,12) || '--'}</span>` :
+              ((asset.asset_id || '').slice(0,12) || '--')
+            }
+          </div>
+          
+          ${asset.serial ? `
+          <div class="last-activity">
+            <span class="activity-highlight">Serial:</span>
+            ${isNexusUser() ? 
+              `<span class="editable-field" data-field="serial" onclick="event.stopPropagation()">${asset.serial}</span>` :
+              asset.serial
+            }
+          </div>
+          ` : ''}
+          
+          ${isNexusUser() && asset.type ? `
+          <div class="last-activity">
+            <span class="activity-highlight">Type:</span>
+            <span style="color: var(--nexus-muted);">${asset.type}</span>
+          </div>
+          ` : ''}
+          
+          <div class="last-inspection" onclick="event.stopPropagation(); viewLastInspection('${asset.id}', '${asset.kind || asset.type || 'Asset'}')">
+            <div class="inspection-icon"></div>
+            <span class="inspection-label">Last Inspection: ${getLastInspectionDate(asset)}</span>
+          </div>
+        </div>
+      `).join('');
+      
+      if (canModifyAssets()) {
+        attachInlineEdit();
+      }
+    }
+    // === Inline Editing for Asset Fields ===
+    function attachInlineEdit() {
+      document.querySelectorAll('.editable-field').forEach(el=>{
+        el.onclick = async function(e) {
+          if (el.classList.contains('editing')) return; // Prevent duplicate edits
+          const assetCard = el.closest('.user-card');
+          const assetId = assetCard.dataset.id;
+          const asset = allAssets.find(a=>a.id===assetId);
+          const field = el.dataset.field;
+          
+          // Prevent editing of type/kind fields - too dangerous for data integrity
+          if (field === 'type' || field === 'kind') {
+            console.log('Type/Kind editing disabled for data safety');
+            return;
+          }
+          
+          el.classList.add('editing');
+          const oldVal = el.textContent;
+          let input = document.createElement('input');
+          input.className = 'inline-edit-input';
+          input.value = oldVal==='--' ? '' : oldVal;
+          el.textContent = '';
+          el.appendChild(input);
+          input.focus();
+          // Field-specific input configuration
+          if (field==='annualDue' || field==='monthlyDue') {
+            input.type = 'text';
+            input.placeholder = 'MM/YYYY';
+          }
+          if (field==='asset_id') input.maxLength = 16;
+          if (field==='serial') input.maxLength = 20;
+          if (field==='precision') input.maxLength = 4;
+          if (field==='type' && isNexusUser()) {
+            // For type field, show dropdown for Nexus users
+            input.type = 'text';
+            input.placeholder = 'Asset Type';
+          }
+          input.onblur = finishEdit;
+          input.onkeydown = function(ev){
+            if(ev.key==='Enter'){ input.blur(); }
+            if(ev.key==='Escape'){ cancelEdit(); }
+          };
+          function cancelEdit() {
+            el.classList.remove('editing');
+            el.textContent = oldVal;
+          }
+          async function finishEdit() {
+            let newVal = input.value.trim();
+            if ((field === 'annualDue' || field === 'monthlyDue') && !/^\d{2}\/\d{4}$/.test(newVal) && newVal!=='') {
+              showToast('Enter MM/YYYY format!',{type:'error'});
+              cancelEdit();
+              return;
+            }
+            if (newVal === oldVal || (!newVal && !oldVal)) { cancelEdit(); return; }
+            // Location fields—cascade logic
+            if (['location','sublocation','precision'].includes(field)) {
+              await inlineLocationEdit(asset, assetId, field, newVal, oldVal, el, cancelEdit);
+              return;
+            }
+            // Save to Firebase, update UI
+            let oldAsset = {...asset};
+            try {
+              await db.collection(`clients/${clientId}/assets`).doc(assetId).update({ [field]: newVal });
+              asset[field] = newVal;
+              el.classList.remove('editing');
+              el.textContent = newVal || '--';
+              showToast('Asset updated!', {
+                undoCallback: async()=>{
+                  await db.collection(`clients/${clientId}/assets`).doc(assetId).update({ [field]: oldVal });
+                  asset[field] = oldVal;
+                  el.textContent = oldVal;
+                  showToast('Undo complete.');
+                }
+              });
+            } catch(err) {
+              showToast('Error updating asset!',{type:'error'});
+              cancelEdit();
+            }
+          }
+        }
+      });
+    }
+    // Guided location logic
+    async function inlineLocationEdit(asset, assetId, field, newVal, oldVal, el, cancelEdit) {
+      if (!newVal) { cancelEdit(); return; }
+      // If editing "location", must prompt for new sublocation and precision as well
+      if (field === 'location') {
+        let sub = prompt('Enter sublocation (if any) for this Location:', asset.sublocation||'');
+        let prec = prompt('Enter new precision code (####):', asset.precision||'');
+        // TODO: Add uniqueness checks here per your rules!
+        await db.collection(`clients/${clientId}/assets`).doc(assetId).update({
+          location: newVal, sublocation: sub, precision: prec
+        });
+        asset.location = newVal; asset.sublocation = sub; asset.precision = prec;
+        el.classList.remove('editing');
+        el.textContent = newVal;
+        // Refresh card for all fields
+        await loadAssets();
+        showToast('Location updated!', {
+          undoCallback: async()=>{
+            await db.collection(`clients/${clientId}/assets`).doc(assetId).update({
+              location: oldVal, sublocation: asset.sublocation, precision: asset.precision
+            });
+            showToast('Undo complete.');
+            await loadAssets();
+          }
+        });
+        return;
+      }
+      // Sublocation/Precision fields just edit one field
+      await db.collection(`clients/${clientId}/assets`).doc(assetId).update({ [field]: newVal });
+      asset[field] = newVal;
+      el.classList.remove('editing');
+      el.textContent = newVal;
+      showToast(field.charAt(0).toUpperCase()+field.slice(1)+' updated!', {
+        undoCallback: async()=>{
+          await db.collection(`clients/${clientId}/assets`).doc(assetId).update({ [field]: oldVal });
+          asset[field] = oldVal;
+          el.textContent = oldVal;
+          showToast('Undo complete.');
+        }
+      });
+    }
+    // === Filtering ===
+    function filterAssets() {
+      let search = document.getElementById('asset-search').value.toLowerCase();
+      let type = document.getElementById('asset-type-filter').value;
+      let filtered = allAssets.filter(asset=>{
+        let matchesType = !type || (asset.type===type);
+        let matchesSearch = !search || (
+          (asset.kind||'').toLowerCase().includes(search) ||
+          (asset.asset_id||'').toLowerCase().includes(search) ||
+          (asset.serial||'').toLowerCase().includes(search) ||
+          (asset.location||'').toLowerCase().includes(search)
+        );
+        return matchesType && matchesSearch;
+      });
+      renderAssets(filtered);
+    }
+    // === Asset Status (demo logic) ===
+    function getAssetStatus(asset) {
+      // Use monthly due for primary status, fall back to annual
+      const dueDate = asset.monthlyDue || asset.annualDue;
+      if (!dueDate) return 'due-soon';
+      let [mm,yyyy] = dueDate.split('/');
+      let due = new Date(+yyyy, +mm-1, 1);
+      let now = new Date();
+      let days = (due-now)/(1000*60*60*24);
+      if (days < 0) return 'overdue';
+      if (days < 30) return 'due-soon';
+      return 'complete';
+    }
+    // === Stats ===
+    function updateStats() {
+      let overdue = allAssets.filter(a=>getAssetStatus(a)==='overdue').length;
+      let dueSoon = allAssets.filter(a=>getAssetStatus(a)==='due-soon').length;
+      let complete = allAssets.filter(a=>getAssetStatus(a)==='complete').length;
+      document.getElementById('overdue-count').textContent = overdue;
+      document.getElementById('due-soon-count').textContent = dueSoon;
+      document.getElementById('complete-count').textContent = complete;
+    }
+
+    // === Helper Functions ===
+    function canModifyAssets() {
+      // Nexus has full permissions, admin/manager have standard permissions
+      return ['nexus', 'admin', 'manager'].includes(currentUserRole);
+    }
+
+    function isNexusUser() {
+      return currentUserRole === 'nexus';
+    }
+
+    function getAssetInitial(asset) {
+      return (asset.kind || asset.type || 'A')[0].toUpperCase();
+    }
+
+    function getLastInspectionDate(asset) {
+      // Mock date - in production, query inspections collection
+      return asset.lastInspection || 'Not yet inspected';
+    }
+
+    async function loadAssetTypes() {
+      try {
+        const typesSnap = await db.collection(`clients/${clientId}/asset_types`).get();
+        const typeFilter = document.getElementById('asset-type-filter');
+        
+        let hasTypes = false;
+        typesSnap.forEach(doc => {
+          hasTypes = true;
+          const opt = document.createElement('option');
+          opt.value = doc.id;
+          opt.textContent = doc.id;
+          typeFilter.appendChild(opt);
+        });
+        
+        // Add demo types if none found
+        if (!hasTypes) {
+          const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
+          demoTypes.forEach(type => {
+            const opt = document.createElement('option');
+            opt.value = type;
+            opt.textContent = type;
+            typeFilter.appendChild(opt);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading asset types:', error);
+        // Add demo types on error
+        const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
+        const typeFilter = document.getElementById('asset-type-filter');
+        demoTypes.forEach(type => {
+          const opt = document.createElement('option');
+          opt.value = type;
+          opt.textContent = type;
+          typeFilter.appendChild(opt);
+        });
+      }
+    }
+
+    async function loadLocations() {
+      try {
+        const locSnap = await db.collection(`clients/${clientId}/locations`).get();
+        allLocations = [];
+        locSnap.forEach(doc => {
+          allLocations.push({ id: doc.id, ...doc.data() });
+        });
+        console.log('Loaded locations:', allLocations);
+      } catch (error) {
+        console.error('Error loading locations:', error);
+      }
+    }
+
+    async function loadClients() {
+      try {
+        const snapshot = await db.collection('clients').get();
+        const dropdown = document.getElementById('client-dropdown');
+        
+        let hasClients = false;
+        snapshot.forEach(doc => {
+          hasClients = true;
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = doc.id.charAt(0).toUpperCase() + doc.id.slice(1);
+          dropdown.appendChild(option);
+        });
+        
+        // Add demo clients if none found
+        if (!hasClients) {
+          const demoClients = ['demo', 'spacex', 'tesla', 'boeing', 'lockheed'];
+          demoClients.forEach(client => {
+            const option = document.createElement('option');
+            option.value = client;
+            option.textContent = client.charAt(0).toUpperCase() + client.slice(1);
+            dropdown.appendChild(option);
+          });
+        }
+
+        dropdown.addEventListener('change', (e) => {
+          if (e.target.value) {
+            sessionStorage.setItem('tenant_id', e.target.value);
+            location.reload();
+          }
+        });
+
+        dropdown.value = clientId;
+      } catch (error) {
+        console.error('Error loading clients:', error);
+        // Add demo clients on error
+        const dropdown = document.getElementById('client-dropdown');
+        const demoClients = ['demo', 'spacex', 'tesla', 'boeing', 'lockheed'];
+        demoClients.forEach(client => {
+          const option = document.createElement('option');
+          option.value = client;
+          option.textContent = client.charAt(0).toUpperCase() + client.slice(1);
+          dropdown.appendChild(option);
+        });
+        dropdown.value = clientId;
+      }
+    }
+
+    function viewAssetDetails(assetId) {
+      const asset = allAssets.find(a => a.id === assetId);
+      if (!asset) return;
+
+      const content = `
+        <div style="margin-bottom: 1rem;">
+          <h4 style="color: var(--nexus-yellow); margin-bottom: 0.5rem;">${asset.kind || asset.type || 'Asset'}</h4>
+          <p style="color: var(--nexus-muted);">${asset.type || 'Unknown Type'}</p>
+        </div>
+        
+        <div style="display: grid; gap: 1rem;">
+          <div>
+            <strong style="color: var(--nexus-light);">Asset ID:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.asset_id || 'Not set'}</span>
+          </div>
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Location:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">
+              ${asset.location || 'Not set'}${asset.sublocation ? ' / ' + asset.sublocation : ''}
+            </span>
+          </div>
+          
+          ${asset.precision ? `
+          <div>
+            <strong style="color: var(--nexus-light);">Precision Location:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.precision}</span>
+          </div>
+          ` : ''}
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Monthly Due:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.monthlyDue || 'Not set'}</span>
+          </div>
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Annual Due:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.annualDue || 'Not set'}</span>
+          </div>
+          
+          ${asset.serial ? `
+          <div>
+            <strong style="color: var(--nexus-light);">Serial Number:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.serial}</span>
+          </div>
+          ` : ''}
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Status:</strong>
+            <span style="color: var(--nexus-${getAssetStatus(asset) === 'complete' ? 'success' : getAssetStatus(asset) === 'due-soon' ? 'warning' : 'error'}); margin-left: 0.5rem;">
+              ${getAssetStatus(asset) === 'complete' ? 'Up to Date' : getAssetStatus(asset) === 'due-soon' ? 'Due Soon' : 'Overdue'}
+            </span>
+          </div>
+        </div>
+        
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--nexus-border);">
+          <button onclick="viewLastInspection('${asset.id}', '${asset.kind || asset.type || 'Asset'}')" 
+                  style="background: var(--nexus-yellow); color: var(--nexus-dark); border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            View Last Inspection
+          </button>
+        </div>
+      `;
+      
+      document.getElementById('asset-detail-content').innerHTML = content;
+      document.getElementById('asset-detail-modal').classList.add('active');
+    }
+
+    function viewLastInspection(assetId, assetName) {
+      // Mock functionality - will be connected to real inspection data
+      console.log(`Viewing last inspection for ${assetName} (${assetId})`);
+      
+      const mockData = {
+        date: 'December 15, 2024',
+        inspector: 'Sarah Johnson',
+        status: 'Passed',
+        issues: Math.random() > 0.7 ? ['Minor corrosion on valve'] : [],
+        nextDue: '12/2025'
+      };
+      
+      alert(`Last Inspection Report for ${assetName}\n\nDate: ${mockData.date}\nInspector: ${mockData.inspector}\nStatus: ${mockData.status}\nIssues: ${mockData.issues.length ? mockData.issues.join(', ') : 'None'}\nNext Due: ${mockData.nextDue}\n\nClick OK to view full report.`);
+      
+      // In production, this would:
+      // 1. Query the inspections collection for this asset's latest inspection
+      // 2. Open a modal or navigate to a detailed inspection report page
+      // 3. Show inspection results, photos, failed items, etc.
+    }
+
+    // === ADD ASSET MODAL FUNCTIONALITY ===
+    let currentAssetStep = 1;
+    let assetFormData = {};
+    
+    async function showAddAssetModal() {
+      console.log('Opening Add Asset modal');
+      currentAssetStep = 1;
+      assetFormData = {};
+      
+      // Reset form
+      resetAssetForm();
+      
+      // Load data for form
+      await Promise.all([
+        loadAssetTypesForForm(),
+        loadLocationsForForm()
+      ]);
+      
+      // Show modal
+      document.getElementById('add-asset-modal').classList.add('active');
+      updateStepDisplay();
+    }
+    
+    function closeAddAssetModal() {
+      document.getElementById('add-asset-modal').classList.remove('active');
+      resetAssetForm();
+    }
+    
+    function resetAssetForm() {
+      // Reset all form fields
+      document.querySelectorAll('.form-input, .form-select').forEach(el => {
+        el.value = '';
+        el.classList.remove('error');
+      });
+      
+      document.querySelectorAll('.error-message').forEach(el => {
+        el.classList.remove('show');
+      });
+      
+      // Reset custom field visibility
+      document.getElementById('custom-type-group').style.display = 'none';
+      document.getElementById('custom-kind-group').style.display = 'none';
+      document.getElementById('precision-section').style.display = 'none';
+      
+      // Reset stepper
+      currentAssetStep = 1;
+      updateStepDisplay();
+    }
+    
+    function updateStepDisplay() {
+      // Update stepper visual state
+      for (let i = 1; i <= 5; i++) {
+        const step = document.getElementById(`step-${i}`);
+        const panel = document.getElementById(`panel-${i}`);
+        
+        if (i < currentAssetStep) {
+          step.className = 'step completed';
+        } else if (i === currentAssetStep) {
+          step.className = 'step active';
+        } else {
+          step.className = 'step';
+        }
+        
+        panel.style.display = i === currentAssetStep ? 'block' : 'none';
+      }
+      
+      // Update button visibility
+      document.getElementById('asset-prev-btn').style.display = currentAssetStep > 1 ? 'block' : 'none';
+      document.getElementById('asset-next-btn').style.display = currentAssetStep < 5 ? 'block' : 'none';
+      document.getElementById('asset-submit-btn').style.display = currentAssetStep === 5 ? 'block' : 'none';
+      
+      // Update review content if on last step
+      if (currentAssetStep === 5) {
+        updateReviewContent();
+      }
+    }
+    
+    function validateCurrentStep() {
+      let isValid = true;
+      
+      // Clear previous errors
+      document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+      document.querySelectorAll('.form-input, .form-select').forEach(el => el.classList.remove('error'));
+      
+      switch (currentAssetStep) {
+        case 1: // Asset Type
+          const typeSelect = document.getElementById('asset-type-select');
+          const customType = document.getElementById('custom-type-input');
+          const kindSelect = document.getElementById('asset-kind-select');
+          const customKind = document.getElementById('custom-kind-input');
+          
+          if (!typeSelect.value) {
+            showFieldError('asset-type-select', 'type-error');
+            isValid = false;
+          } else if (typeSelect.value === 'custom' && !customType.value.trim()) {
+            showFieldError('custom-type-input', 'custom-type-error');
+            isValid = false;
+          }
+          
+          // For custom types, always require custom kind input
+          if (typeSelect.value === 'custom') {
+            if (!customKind.value.trim()) {
+              showFieldError('custom-kind-input', 'custom-kind-error');
+              isValid = false;
+            }
+          } else {
+            // For regular types, check kind selection
+            if (!kindSelect.value) {
+              showFieldError('asset-kind-select', 'kind-error');
+              isValid = false;
+            } else if (kindSelect.value === 'custom' && !customKind.value.trim()) {
+              showFieldError('custom-kind-input', 'custom-kind-error');
+              isValid = false;
+            }
+          }
+          break;
+          
+        case 2: // Details
+          if (!document.getElementById('asset-id-input').value.trim()) {
+            showFieldError('asset-id-input', 'asset-id-error');
+            isValid = false;
+          }
+          if (!document.getElementById('serial-input').value.trim()) {
+            showFieldError('serial-input', 'serial-error');
+            isValid = false;
+          }
+          if (!document.getElementById('hydro-due-input').value.trim()) {
+            showFieldError('hydro-due-input', 'hydro-due-error');
+            isValid = false;
+          }
+          break;
+          
+        case 3: // Inspections
+          if (!document.getElementById('monthly-inspection-input').value) {
+            showFieldError('monthly-inspection-input', 'monthly-error');
+            isValid = false;
+          }
+          if (!document.getElementById('same-date-checkbox').checked && !document.getElementById('annual-inspection-input').value) {
+            showFieldError('annual-inspection-input', 'annual-error');
+            isValid = false;
+          }
+          break;
+          
+        case 4: // Location
+          if (!document.getElementById('location-select').value) {
+            showFieldError('location-select', 'location-error');
+            isValid = false;
+          }
+          if (!document.getElementById('sublocation-select').value) {
+            showFieldError('sublocation-select', 'sublocation-error');
+            isValid = false;
+          }
+          break;
+      }
+      
+      return isValid;
+    }
+    
+    function showFieldError(fieldId, errorId) {
+      document.getElementById(fieldId).classList.add('error');
+      document.getElementById(errorId).classList.add('show');
+    }
+    
+    function nextAssetStep() {
+      if (validateCurrentStep()) {
+        saveCurrentStepData();
+        currentAssetStep++;
+        updateStepDisplay();
+      }
+    }
+    
+    function prevAssetStep() {
+      if (currentAssetStep > 1) {
+        currentAssetStep--;
+        updateStepDisplay();
+      }
+    }
+    
+    function saveCurrentStepData() {
+      switch (currentAssetStep) {
+        case 1:
+          const typeSelect = document.getElementById('asset-type-select');
+          const customTypeInput = document.getElementById('custom-type-input');
+          const kindSelect = document.getElementById('asset-kind-select');
+          const customKindInput = document.getElementById('custom-kind-input');
+          
+          // Handle type
+          if (typeSelect.value === 'custom') {
+            assetFormData.type = makeSmartSingular(customTypeInput.value.trim());
+          } else {
+            assetFormData.type = typeSelect.value;
+          }
+          
+          // Handle kind
+          if (typeSelect.value === 'custom') {
+            // For custom types, always use custom kind input
+            assetFormData.kind = customKindInput.value.trim();
+          } else if (kindSelect.value === 'custom') {
+            // For regular types with custom kind
+            assetFormData.kind = customKindInput.value.trim();
+          } else {
+            // Regular type and kind
+            assetFormData.kind = kindSelect.value;
+          }
+          break;
+        case 2:
+          assetFormData.asset_id = document.getElementById('asset-id-input').value.trim();
+          assetFormData.serial = document.getElementById('serial-input').value.trim();
+          
+          // Convert month input (YYYY-MM) to MM/YYYY format
+          const hydroDueValue = document.getElementById('hydro-due-input').value;
+          if (hydroDueValue) {
+            const [year, month] = hydroDueValue.split('-');
+            assetFormData.annualDue = `${month}/${year}`;
+          } else {
+            assetFormData.annualDue = '';
+          }
+          break;
+        case 3:
+          assetFormData.lastMonthlyInspection = document.getElementById('monthly-inspection-input').value;
+          assetFormData.lastAnnualInspection = document.getElementById('same-date-checkbox').checked
+            ? document.getElementById('monthly-inspection-input').value
+            : document.getElementById('annual-inspection-input').value;
+          break;
+        case 4:
+          assetFormData.location = document.getElementById('location-select').value;
+          assetFormData.sublocation = document.getElementById('sublocation-select').value;
+          
+          const precisionOption = document.querySelector('input[name="precision-option"]:checked')?.value;
+          if (precisionOption === 'replace') {
+            assetFormData.precision = document.getElementById('existing-precision-select').value;
+          } else if (precisionOption === 'new') {
+            assetFormData.precision = generatePrecisionLocation();
+          }
+          break;
+      }
+    }
+    
+    function updateReviewContent() {
+      const reviewContent = document.getElementById('review-content');
+      reviewContent.innerHTML = `
+        <div style="display: grid; gap: 1rem;">
+          <div><strong style="color: var(--nexus-light);">Type:</strong> <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${assetFormData.type}</span></div>
+          <div><strong style="color: var(--nexus-light);">Kind:</strong> <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${assetFormData.kind}</span></div>
+          <div><strong style="color: var(--nexus-light);">Asset ID:</strong> <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${assetFormData.asset_id}</span></div>
+          <div><strong style="color: var(--nexus-light);">Serial:</strong> <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${assetFormData.serial}</span></div>
+          <div><strong style="color: var(--nexus-light);">Hydro Due:</strong> <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${assetFormData.annualDue}</span></div>
+          <div><strong style="color: var(--nexus-light);">Location:</strong> <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${assetFormData.location} / ${assetFormData.sublocation}</span></div>
+          ${assetFormData.precision ? `<div><strong style="color: var(--nexus-light);">Precision:</strong> <span style="color: var(--nexus-yellow); margin-left: 0.5rem; font-family: monospace;">${assetFormData.precision}</span></div>` : ''}
+          <div><strong style="color: var(--nexus-light);">Last Monthly:</strong> <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${assetFormData.lastMonthlyInspection}</span></div>
+          <div><strong style="color: var(--nexus-light);">Last Annual:</strong> <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${assetFormData.lastAnnualInspection}</span></div>
+        </div>
+      `;
+    }
+    
+    async function submitNewAsset() {
+      const submitBtn = document.getElementById('asset-submit-btn');
+      const spinner = submitBtn.querySelector('.loading-spinner');
+      
+      // Show loading state
+      submitBtn.disabled = true;
+      spinner.style.display = 'inline-block';
+      
+      try {
+        // Generate unique ID for the asset
+        const assetId = `asset_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Prepare asset data
+        const assetData = {
+          ...assetFormData,
+          created: new Date().toISOString(),
+          createdBy: sessionStorage.getItem('user_email') || 'system'
+        };
+        
+        // Save to Firebase
+        await db.collection(`clients/${clientId}/assets`).doc(assetId).set(assetData);
+        
+        // Add to local array
+        allAssets.push({
+          id: assetId,
+          ...assetData
+        });
+        
+        // Update UI
+        renderAssets();
+        updateStats();
+        
+        // Close modal
+        closeAddAssetModal();
+        
+        // Show success toast
+        showToast('Asset created successfully!', {
+          undoCallback: async () => {
+            await db.collection(`clients/${clientId}/assets`).doc(assetId).delete();
+            allAssets = allAssets.filter(a => a.id !== assetId);
+            renderAssets();
+            updateStats();
+            showToast('Asset creation undone.');
+          }
+        });
+        
+        // Ask if they want to add another
+        setTimeout(() => {
+          if (confirm('Asset created successfully! Would you like to add another asset?')) {
+            showAddAssetModal();
+          }
+        }, 1500);
+        
+      } catch (error) {
+        console.error('Error creating asset:', error);
+        showToast('Failed to create asset. Please try again.', {type: 'error'});
+      } finally {
+        submitBtn.disabled = false;
+        spinner.style.display = 'none';
+      }
+    }
+    
+    // Form change handlers
+    function handleTypeChange() {
+      const typeSelect = document.getElementById('asset-type-select');
+      const customTypeGroup = document.getElementById('custom-type-group');
+      const kindSelect = document.getElementById('asset-kind-select');
+      const customKindGroup = document.getElementById('custom-kind-group');
+      
+      if (typeSelect.value === 'custom') {
+        customTypeGroup.style.display = 'block';
+        // Show custom kind input immediately when type is custom
+        customKindGroup.style.display = 'block';
+        kindSelect.innerHTML = '<option value="">First enter custom type...</option>';
+      } else {
+        customTypeGroup.style.display = 'none';
+        customKindGroup.style.display = 'none';
+        // Load kinds for selected type
+        loadKindsForType(typeSelect.value);
+      }
+    }
+    
+    function handleKindChange() {
+      const kindSelect = document.getElementById('asset-kind-select');
+      const customKindGroup = document.getElementById('custom-kind-group');
+      
+      if (kindSelect.value === 'custom') {
+        customKindGroup.style.display = 'block';
+      } else {
+        customKindGroup.style.display = 'none';
+      }
+    }
+    
+    // Smart singularization function
+    function makeSmartSingular(text) {
+      if (!text) return text;
+      
+      const trimmed = text.trim();
+      
+      // Common irregular plurals that should be handled specially
+      const irregularPlurals = {
+        'feet': 'foot',
+        'children': 'child',
+        'men': 'man',
+        'women': 'woman',
+        'teeth': 'tooth',
+        'geese': 'goose'
+      };
+      
+      const lowerText = trimmed.toLowerCase();
+      if (irregularPlurals[lowerText]) {
+        return irregularPlurals[lowerText];
+      }
+      
+      // Don't remove 's' from words that shouldn't be singularized
+      const keepAsIs = [
+        'glass', 'compass', 'mass', 'class', 'grass', 'brass', 'gas', 'pass',
+        'stress', 'dress', 'press', 'mess', 'less', 'kiss', 'miss', 'bliss',
+        'process', 'progress', 'address', 'express', 'success', 'access',
+        'business', 'fitness', 'darkness', 'weakness', 'thickness', 'illness'
+      ];
+      
+      if (keepAsIs.includes(lowerText)) {
+        return trimmed;
+      }
+      
+      // Simple rule: if it ends with 's' and is more than 3 characters, remove the 's'
+      if (trimmed.length > 3 && trimmed.endsWith('s') && !trimmed.endsWith('ss')) {
+        // Check if it's likely a plural (not ending in 'us' or other non-plural 's' endings)
+        if (!trimmed.toLowerCase().endsWith('us') && 
+            !trimmed.toLowerCase().endsWith('is') &&
+            !trimmed.toLowerCase().endsWith('os')) {
+          return trimmed.slice(0, -1);
+        }
+      }
+      
+      return trimmed;
+    }
+    
+    // Add event listener for smart singularization
+    document.addEventListener('DOMContentLoaded', function() {
+      const customTypeInput = document.getElementById('custom-type-input');
+      if (customTypeInput) {
+        customTypeInput.addEventListener('blur', function() {
+          this.value = makeSmartSingular(this.value);
+        });
+      }
+    });
+    
+    function handleSameDateChange() {
+      const checkbox = document.getElementById('same-date-checkbox');
+      const annualGroup = document.getElementById('annual-inspection-group');
+      const annualInput = document.getElementById('annual-inspection-input');
+      const monthlyInput = document.getElementById('monthly-inspection-input');
+      
+      if (checkbox.checked) {
+        annualGroup.style.display = 'none';
+        annualInput.value = monthlyInput.value;
+      } else {
+        annualGroup.style.display = 'block';
+      }
+    }
+    
+    function handleLocationChange() {
+      const locationSelect = document.getElementById('location-select');
+      const sublocationSelect = document.getElementById('sublocation-select');
+      
+      // Load sublocations for selected location
+      loadSublocationsForLocation(locationSelect.value);
+    }
+    
+    function handleSublocationChange() {
+      const precisionSection = document.getElementById('precision-section');
+      
+      // Show precision section if both location and sublocation are selected
+      if (document.getElementById('location-select').value && document.getElementById('sublocation-select').value) {
+        precisionSection.style.display = 'block';
+        loadExistingPrecisionLocations();
+      } else {
+        precisionSection.style.display = 'none';
+      }
+    }
+    
+    function handlePrecisionOptionChange() {
+      const selectedOption = document.querySelector('input[name="precision-option"]:checked')?.value;
+      const existingGroup = document.getElementById('existing-precision-group');
+      const newInfo = document.getElementById('new-precision-info');
+      
+      if (selectedOption === 'replace') {
+        existingGroup.style.display = 'block';
+        newInfo.style.display = 'none';
+      } else if (selectedOption === 'new') {
+        existingGroup.style.display = 'none';
+        newInfo.style.display = 'block';
+        document.getElementById('generated-precision').textContent = generatePrecisionLocation();
+      }
+    }
+    
+    function generatePrecisionLocation() {
+      // Generate UUID-style precision location
+      const locationCode = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      const sublocationCode = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      const uniqueCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      
+      return `${locationCode}${sublocationCode}${uniqueCode}`;
+    }
+    
+    // Data loading functions for the form
+    async function loadAssetTypesForForm() {
+      const typeSelect = document.getElementById('asset-type-select');
+      typeSelect.innerHTML = '<option value="">Select asset type...</option>';
+      
+      try {
+        const typesSnap = await db.collection(`clients/${clientId}/asset_types`).get();
+        
+        let hasTypes = false;
+        typesSnap.forEach(doc => {
+          hasTypes = true;
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = doc.id;
+          typeSelect.appendChild(option);
+        });
+        
+        // Add demo types if none found
+        if (!hasTypes) {
+          const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
+          demoTypes.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = type;
+            typeSelect.appendChild(option);
+          });
+        }
+        
+        // Add custom option at the top
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.textContent = '- Custom -';
+        typeSelect.insertBefore(customOption, typeSelect.children[1]);
+        
+      } catch (error) {
+        console.error('Error loading asset types for form:', error);
+      }
+    }
+    
+    async function loadKindsForType(assetType) {
+      const kindSelect = document.getElementById('asset-kind-select');
+      kindSelect.innerHTML = '<option value="">Select asset kind...</option>';
+      
+      if (!assetType || assetType === 'custom') {
+        kindSelect.innerHTML = '<option value="">Enter custom type first...</option>';
+        kindSelect.disabled = true;
+        return;
+      }
+      
+      kindSelect.disabled = false;
+      
+      try {
+        const kindsSnap = await db.collection(`clients/${clientId}/asset_kinds`)
+          .where('type', '==', assetType).get();
+        
+        let hasKinds = false;
+        kindsSnap.forEach(doc => {
+          hasKinds = true;
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = doc.data().name || doc.id;
+          kindSelect.appendChild(option);
+        });
+        
+        // Add demo kinds based on type
+        if (!hasKinds) {
+          const demoKinds = getDemoKindsForType(assetType);
+          demoKinds.forEach(kind => {
+            const option = document.createElement('option');
+            option.value = kind;
+            option.textContent = kind;
+            kindSelect.appendChild(option);
+          });
+        }
+        
+        // Add custom option
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.textContent = '- Custom -';
+        kindSelect.appendChild(customOption);
+        
+      } catch (error) {
+        console.error('Error loading kinds for type:', error);
+      }
+    }
+    
+    function getDemoKindsForType(type) {
+      const kindMap = {
+        'Fire Extinguisher': ['5# ABC', '10# ABC', '20# ABC', '30# ABC', '150# Wheeled Unit'],
+        'Exit Sign': ['LED Exit Sign', 'Emergency Exit Sign', 'Illuminated Exit'],
+        'Hose': ['1.5" Fire Hose', '2.5" Fire Hose', 'Standpipe Hose'],
+        'PIV': ['6" PIV Valve', '8" PIV Valve', '10" PIV Valve'],
+        'Emergency Equipment': ['Emergency Light', 'Horn Strobe', 'Pull Station'],
+        'Hydrant': ['Wet Barrel Hydrant', 'Dry Barrel Hydrant']
+      };
+      
+      return kindMap[type] || ['Standard Unit'];
+    }
+    
+    async function loadLocationsForForm() {
+      const locationSelect = document.getElementById('location-select');
+      locationSelect.innerHTML = '<option value="">Select location...</option>';
+      
+      try {
+        const locSnap = await db.collection(`clients/${clientId}/locations`).get();
+        
+        let hasLocations = false;
+        locSnap.forEach(doc => {
+          hasLocations = true;
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = doc.data().name || doc.id;
+          locationSelect.appendChild(option);
+        });
+        
+        // Add demo locations if none found
+        if (!hasLocations) {
+          const demoLocations = ['Building A', 'Building B', 'Warehouse C', 'Manufacturing Wing', 'Powerhouse'];
+          demoLocations.forEach(location => {
+            const option = document.createElement('option');
+            option.value = location;
+            option.textContent = location;
+            locationSelect.appendChild(option);
+          });
+        }
+        
+      } catch (error) {
+        console.error('Error loading locations for form:', error);
+      }
+    }
+    
+    function loadSublocationsForLocation(location) {
+      const sublocationSelect = document.getElementById('sublocation-select');
+      sublocationSelect.innerHTML = '<option value="">Select sub-location...</option>';
+      
+      if (!location) {
+        sublocationSelect.innerHTML = '<option value="">First select a location...</option>';
+        return;
+      }
+      
+      // Demo sublocations based on location
+      const sublocationMap = {
+        'Building A': ['Main Hallway', 'East Wing', 'West Wing', 'Lobby'],
+        'Building B': ['Server Room', 'Conference Room', 'Kitchen', 'Storage'],
+        'Warehouse C': ['Loading Dock', 'Storage Area A', 'Storage Area B'],
+        'Manufacturing Wing': ['Assembly Line 1', 'Assembly Line 2', 'Quality Control'],
+        'Powerhouse': ['Main Floor', 'Control Room', 'Equipment Room']
+      };
+      
+      const sublocations = sublocationMap[location] || ['Main Area', 'Secondary Area'];
+      sublocations.forEach(sublocation => {
+        const option = document.createElement('option');
+        option.value = sublocation;
+        option.textContent = sublocation;
+        sublocationSelect.appendChild(option);
+      });
+    }
+    
+    function loadExistingPrecisionLocations() {
+      const existingSelect = document.getElementById('existing-precision-select');
+      existingSelect.innerHTML = '<option value="">Select existing precision location...</option>';
+      
+      const location = document.getElementById('location-select').value;
+      const sublocation = document.getElementById('sublocation-select').value;
+      
+      // Find existing assets in the same location/sublocation
+      const existingAssets = allAssets.filter(asset => 
+        asset.location === location && 
+        asset.sublocation === sublocation && 
+        asset.precision
+      );
+      
+      existingAssets.forEach(asset => {
+        const option = document.createElement('option');
+        option.value = asset.precision;
+        option.textContent = `${asset.precision} (${asset.kind || asset.type})`;
+        existingSelect.appendChild(option);
+      });
+      
+      if (existingAssets.length === 0) {
+        existingSelect.innerHTML = '<option value="">No existing precision locations found</option>';
+      }
+    }
+    
+    // Delete asset function
+    async function deleteAsset(assetId) {
+      if (!confirm('Are you sure you want to delete this asset? This action cannot be undone.')) {
+        return;
+      }
+      
+      try {
+        const asset = allAssets.find(a => a.id === assetId);
+        
+        // Remove from Firebase
+        await db.collection(`clients/${clientId}/assets`).doc(assetId).delete();
+        
+        // Remove from local array
+        allAssets = allAssets.filter(a => a.id !== assetId);
+        
+        // Update UI
+        renderAssets();
+        updateStats();
+        
+        // Show success toast with undo
+        showToast('Asset deleted successfully', {
+          undoCallback: async () => {
+            await db.collection(`clients/${clientId}/assets`).doc(assetId).set(asset);
+            allAssets.push(asset);
+            renderAssets();
+            updateStats();
+            showToast('Asset deletion undone.');
+          }
+        });
+        
+      } catch (error) {
+        console.error('Error deleting asset:', error);
+        showToast('Failed to delete asset. Please try again.', {type: 'error'});
+      }
+    }
+
+    function showBulkAddModal() {
+      showToast('Bulk Add functionality will be implemented next.', {type: 'error'});
+      // TODO: Implement bulk add modal with CSV upload or batch form
+    }
+  </script>
+</body>
+</html>
