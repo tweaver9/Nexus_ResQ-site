@@ -30,15 +30,17 @@ window.showManageUsersModal = async function(clientName) {
 
   const subdomain = getSubdomain();
 
-  // Fetch users directly from Firestore (since backend doesn't have list-users endpoint)
+  // Fetch users directly from Firestore using the flat users collection
   let users = [];
   try {
-    const usersRef = collection(db, 'clients', subdomain, 'users');
+    const usersRef = collection(db, 'users');
     const snapshot = await getDocs(usersRef);
-    users = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })).filter(user => !user.soft_deleted);
+    users = snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .filter(user => user.clientId === subdomain && !user.soft_deleted);
   } catch (e) {
     console.error('Error fetching users:', e);
     users = [];
@@ -90,11 +92,16 @@ window.showManageUsersModal = async function(clientName) {
       <form id="add-user-form">
         <input type="text" id="firstName" placeholder="First Name" required>
         <input type="text" id="lastName" placeholder="Last Name" required>
-        <input type="password" id="newPassword" placeholder="Password" required>
+        <input type="password" id="newPassword" placeholder="Password (leave blank for default)" value="">
+        <div style="font-size:0.85em;color:#ffe066;margin-bottom:8px;">
+          Default password will be the client name (${slugify(getSubdomain())}) if left blank
+        </div>
         <select id="role" required>
-          <option value="user">User</option>
-          <option value="manager">Manager</option>
-          <option value="admin">Admin</option>
+          <option value="">Select Role</option>
+          <option value="User">User</option>
+          <option value="Manager">Manager</option>
+          <option value="Admin">Admin</option>
+          <option value="Nexus">Nexus</option>
         </select>
         <div style="text-align:right;">
           <button type="button" id="cancel-manage-users" class="explorer-btn danger">Cancel</button>
@@ -116,13 +123,12 @@ window.showManageUsersModal = async function(clientName) {
       
       const currentUser = getCurrentUser();
       try {
-        const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/deactivate", {
+        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/deactivate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            subdomain: currentUser.subdomain,
-            username: currentUser.username,
-            targetUsername 
+            clientId: currentUser.subdomain,
+            username: targetUsername 
           })
         });
         
@@ -144,13 +150,12 @@ window.showManageUsersModal = async function(clientName) {
       
       const currentUser = getCurrentUser();
       try {
-        const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/reactivate", {
+        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/reactivate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            subdomain: currentUser.subdomain,
-            username: currentUser.username,
-            targetUsername 
+            clientId: currentUser.subdomain,
+            username: targetUsername 
           })
         });
         
@@ -172,13 +177,12 @@ window.showManageUsersModal = async function(clientName) {
       
       const currentUser = getCurrentUser();
       try {
-        const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/delete", {
+        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/delete", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            subdomain: currentUser.subdomain,
-            username: currentUser.username,
-            targetUsername 
+            clientId: currentUser.subdomain,
+            username: targetUsername 
           })
         });
         
@@ -201,7 +205,7 @@ window.showManageUsersModal = async function(clientName) {
       
       const currentUser = getCurrentUser();
       try {
-        const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/reset-password", {
+        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/reset-password", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
@@ -227,21 +231,42 @@ window.showManageUsersModal = async function(clientName) {
     e.preventDefault();
     const firstName = modal.querySelector('#firstName').value.trim();
     const lastName = modal.querySelector('#lastName').value.trim();
-    const newPassword = modal.querySelector('#newPassword').value.trim();
+    let newPassword = modal.querySelector('#newPassword').value.trim();
     const role = modal.querySelector('#role').value;
+    
+    // Validate required fields
+    if (!firstName || !lastName || !role) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    // Validate role is one of the allowed values
+    const validRoles = ['User', 'Manager', 'Admin', 'Nexus'];
+    if (!validRoles.includes(role)) {
+      alert('Invalid role selected');
+      return;
+    }
+    
+    // Generate username in correct format
     const newUsername = `${firstName[0]}${lastName}`.toLowerCase() + '@' + getSubdomain();
+    
+    // Use default password if none provided (slugged client name)
+    if (!newPassword) {
+      newPassword = slugify(getSubdomain());
+    }
 
     const currentUser = getCurrentUser();
     try {
-      const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/signup", {
+      const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          subdomain: currentUser.subdomain,
-          username: currentUser.username,
-          newUsername,
-          newPassword,
-          role
+          username: newUsername,
+          password: newPassword,
+          firstName,
+          lastName,
+          role,
+          clientId: currentUser.subdomain
         })
       });
       
@@ -279,7 +304,7 @@ function showBulkAddUsersModal(clientName) {
           <a href="${templateUrl}" download style="color:#fdd835;text-decoration:underline;">Download CSV Template</a>
           <br>
           Paste CSV rows below (First Name,Last Name,Role):<br>
-          <span style="font-size:0.93em;color:#ffe066;">All users will start with the default password for this client.</span>
+          <span style="font-size:0.93em;color:#ffe066;">Valid roles: User, Manager, Admin. All users will start with the default password (${slugify(getSubdomain())}).</span>
         </div>
         <textarea id="bulk-users-textarea" style="width:100%;height:120px;"></textarea>
         <div style="margin:8px 0 0 0;">
@@ -324,19 +349,29 @@ function showBulkAddUsersModal(clientName) {
     for (const line of lines) {
       const [firstName, lastName, role] = line.split(',').map(s => s.trim());
       if (!firstName || !lastName || !role) { failed++; continue; }
+      
+      // Validate role
+      const validRoles = ['User', 'Manager', 'Admin', 'Nexus'];
+      if (!validRoles.includes(role)) { 
+        console.error(`Invalid role "${role}" for user ${firstName} ${lastName}`);
+        failed++; 
+        continue; 
+      }
+      
       const newUsername = `${firstName[0]}${lastName}`.toLowerCase() + '@' + currentUser.subdomain;
-      const defaultPassword = currentUser.subdomain; // Use subdomain as default password
+      const defaultPassword = slugify(currentUser.subdomain); // Use slugged subdomain as default password
       
       try {
-        const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/signup", {
+        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            subdomain: currentUser.subdomain,
-            username: currentUser.username,
-            newUsername,
-            newPassword: defaultPassword,
-            role
+            username: newUsername,
+            password: defaultPassword,
+            firstName,
+            lastName,
+            role,
+            clientId: currentUser.subdomain
           })
         });
         
@@ -352,4 +387,9 @@ function showBulkAddUsersModal(clientName) {
     window.showManageUsersModal(clientName); // Refresh
   };
 }
+
+// Wrapper function for easier access
+window.showBulkAddModal = function(clientName) {
+  showBulkAddUsersModal(clientName);
+};
 
