@@ -112,298 +112,129 @@ async function showManageUsersModal(clientName) {
 
     const subdomain = getSubdomain();
 
-    // Fetch users directly from Firestore using the flat users collection
-    let users = [];
-    try {
-      const usersRef = db.collection('users');
-      const snapshot = await usersRef.where('clientId', '==', subdomain).get();
-      users = snapshot.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-        .filter(user => !user.soft_deleted);
-    } catch (e) {
-      console.error('Error fetching users:', e);
-      users = [];
-    }
-
-  // Modal HTML
-  modal = document.createElement('div');
-  modal.id = 'manage-users-modal';
-  modal.className = 'manage-users-modal-bg';
-  modal.innerHTML = `
-    <div class="manage-users-modal-content">
-      <div class="manage-users-modal-title">Manage Users</div>
-      <div>
-        <div class="manage-users-section-title">Existing Users</div>
-        <table class="manage-users-table" id="existing-users-table">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${users.map(u => `
-              <tr data-username="${u.username}">
-                <td>${u.username}</td>
-                <td>${u.firstName} ${u.lastName}</td>
-                <td>${u.role}</td>
-                <td>
-                  ${u.active ? 
-                    `<button type="button" class="deactivate-user explorer-btn danger" data-username="${u.username}">Deactivate</button>` :
-                    `<button type="button" class="reactivate-user explorer-btn" data-username="${u.username}">Reactivate</button>`
-                  }
-                  <button type="button" class="reset-password explorer-btn" data-username="${u.username}">Reset Password</button>
-                  ${getCurrentUser().role === 'nexus' ? 
-                    `<button type="button" class="delete-user explorer-btn danger" data-username="${u.username}">Delete</button>` : ''
-                  }
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
+    // Simple Add User Modal - no need to fetch existing users
+    const modal = document.createElement('div');
+    modal.id = 'add-user-modal';
+    modal.className = 'manage-users-modal-bg';
+    modal.innerHTML = `
+      <div class="manage-users-modal-content">
+        <div class="manage-users-modal-title">Add New User</div>
+        <form id="add-user-form">
+          <input type="text" id="firstName" placeholder="First Name" required>
+          <input type="text" id="lastName" placeholder="Last Name" required>
+          <input type="password" id="newPassword" placeholder="Password (leave blank for default)" value="">
+          <div class="form-hint">
+            Default password will be the client name (${subdomain}) if left blank
+          </div>
+          <select id="role" required>
+            <option value="">Select Role</option>
+            <option value="user">User</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+            <option value="nexus">Nexus</option>
+          </select>
+          <div class="form-actions">
+            <button type="button" id="cancel-add-user" class="explorer-btn danger">Cancel</button>
+            <button type="submit" class="explorer-btn">Add User</button>
+          </div>
+        </form>
       </div>
-      <div class="form-section-header">
-        <div class="manage-users-section-title">Add New User</div>
-        <button type="button" id="bulk-add-users-btn" class="explorer-btn">Bulk Add</button>
-      </div>
-      <form id="add-user-form">
-        <input type="text" id="firstName" placeholder="First Name" required>
-        <input type="text" id="lastName" placeholder="Last Name" required>
-        <input type="password" id="newPassword" placeholder="Password (leave blank for default)" value="">
-        <div class="form-hint">
-          Default password will be the client name (${getSubdomain()}) if left blank
-        </div>
-        <select id="role" required>
-          <option value="">Select Role</option>
-          <option value="user">User</option>
-          <option value="manager">Manager</option>
-          <option value="admin">Admin</option>
-          <option value="nexus">Nexus</option>
-        </select>
-        <div class="form-actions">
-          <button type="button" id="cancel-manage-users" class="explorer-btn danger">Cancel</button>
-          <button type="submit" class="explorer-btn">Add User</button>
-        </div>
-      </form>
-    </div>
-  `;
-  document.body.appendChild(modal);
+    `;
+    document.body.appendChild(modal);
 
-  // Click outside to close modal
-  modal.addEventListener('click', function(e) {
-    if (e.target === modal) {
+    // Click outside to close modal
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+
+    // Cancel button
+    document.getElementById('cancel-add-user').addEventListener('click', function() {
       modal.remove();
-    }
-  });
+    });
 
-  // Remove modal on cancel
-  modal.querySelector('#cancel-manage-users').onclick = () => modal.remove();
-
-  // Deactivate user
-  modal.querySelectorAll('.deactivate-user').forEach(btn => {
-    btn.onclick = async function() {
-      const targetUsername = btn.getAttribute('data-username');
-      if (!confirm(`Deactivate user "${targetUsername}"?`)) return;
+    // Add user form submission
+    modal.querySelector('#add-user-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const submitBtn = modal.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
       
-      const currentUser = getCurrentUser();
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Adding User...';
+      
       try {
-        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/deactivate", {
+        const firstName = modal.querySelector('#firstName').value.trim();
+        const lastName = modal.querySelector('#lastName').value.trim();
+        let newPassword = modal.querySelector('#newPassword').value.trim();
+        const role = modal.querySelector('#role').value;
+        
+        // Validate required fields
+        if (!firstName || !lastName || !role) {
+          showNotification('Please fill in all required fields', 'warning');
+          return;
+        }
+        
+        // Validate role is one of the allowed values
+        const validRoles = ['user', 'manager', 'admin', 'nexus'];
+        if (!validRoles.includes(role)) {
+          showNotification('Invalid role selected', 'warning');
+          return;
+        }
+        
+        // Generate username in correct format: FirstInitialLastName@clientName (no dots/spaces)
+        const cleanFirstName = firstName.replace(/[^a-zA-Z]/g, '');
+        const cleanLastName = lastName.replace(/[^a-zA-Z]/g, '');
+        const newUsername = `${cleanFirstName[0]}${cleanLastName}`.toLowerCase() + '@' + subdomain;
+        
+        // Use client name as default password (not slugified)
+        if (!newPassword) {
+          newPassword = subdomain; // Use actual client name as password
+        }
+
+        const currentUser = getCurrentUser();
+        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            clientId: currentUser.subdomain,
-            username: targetUsername 
+          body: JSON.stringify({
+            username: newUsername,
+            password: newPassword,
+            firstName,
+            lastName,
+            role: role, // Role is already lowercase from validation
+            clientId: currentUser.subdomain
           })
         });
         
         if (!res.ok) throw new Error(await res.text());
         
-        // Close modal and refresh the main page instead of reopening modal
+        // Show detailed success notification
+        const successMessage = `✅ User Created Successfully!\n\n` +
+          `👤 Name: ${firstName} ${lastName}\n` +
+          `📧 Username: ${newUsername}\n` +
+          `🔑 Default Password: ${newPassword}\n\n` +
+          `⚠️ Important: User should change password on first login`;
+        
+        showNotification(successMessage, 'success');
+        // Close modal and refresh the main page
         modal.remove();
-        location.reload(); // This will refresh the main page
+        location.reload();
       } catch (err) {
-        showNotification('Error deactivating user: ' + err.message, 'error');
+        showNotification('Error creating user: ' + err.message, 'error');
+      } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
       }
     };
-  });
 
-  // Reactivate user
-  modal.querySelectorAll('.reactivate-user').forEach(btn => {
-    btn.onclick = async function() {
-      const targetUsername = btn.getAttribute('data-username');
-      if (!confirm(`Reactivate user "${targetUsername}"?`)) return;
-      
-      const currentUser = getCurrentUser();
-      try {
-        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/reactivate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            clientId: currentUser.subdomain,
-            username: targetUsername 
-          })
-        });
-        
-        if (!res.ok) throw new Error(await res.text());
-        
-        // Close modal and refresh the main page instead of reopening modal
-        modal.remove();
-        location.reload(); // This will refresh the main page
-      } catch (err) {
-        showNotification('Error reactivating user: ' + err.message, 'error');
-      }
-    };
-  });
-
-  // Delete user (Nexus only)
-  modal.querySelectorAll('.delete-user').forEach(btn => {
-    btn.onclick = async function() {
-      const targetUsername = btn.getAttribute('data-username');
-      if (!confirm(`PERMANENTLY DELETE user "${targetUsername}"? This cannot be undone!`)) return;
-      
-      const currentUser = getCurrentUser();
-      try {
-        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/delete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            clientId: currentUser.subdomain,
-            username: targetUsername 
-          })
-        });
-        
-        if (!res.ok) throw new Error(await res.text());
-        
-        // Close modal and refresh the main page instead of reopening modal
-        modal.remove();
-        location.reload(); // This will refresh the main page
-      } catch (err) {
-        showNotification('Error deleting user: ' + err.message, 'error');
-      }
-    };
-  });
-
-  // Reset password
-  modal.querySelectorAll('.reset-password').forEach(btn => {
-    btn.onclick = async function() {
-      const targetUsername = btn.getAttribute('data-username');
-      const newPassword = prompt(`Enter new password for "${targetUsername}":`);
-      if (!newPassword) return;
-      
-      const currentUser = getCurrentUser();
-      try {
-        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/reset-password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            subdomain: currentUser.subdomain,
-            username: targetUsername,
-            newPassword 
-          })
-        });
-        
-        if (!res.ok) throw new Error(await res.text());
-        
-        showNotification(`Password reset successfully for ${targetUsername}`, 'success');
-        // Close modal and refresh the main page instead of reopening modal
-        modal.remove();
-        location.reload(); // This will refresh the main page
-      } catch (err) {
-        showNotification('Error resetting password: ' + err.message, 'error');
-      }
-    };
-  });
-
-  // Add user
-  modal.querySelector('#add-user-form').onsubmit = async (e) => {
-    e.preventDefault();
-    const submitBtn = modal.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    
-    // Show loading state
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Adding User...';
-    
-    try {
-      const firstName = modal.querySelector('#firstName').value.trim();
-      const lastName = modal.querySelector('#lastName').value.trim();
-      let newPassword = modal.querySelector('#newPassword').value.trim();
-      const role = modal.querySelector('#role').value;
-      
-      // Validate required fields
-      if (!firstName || !lastName || !role) {
-        showNotification('Please fill in all required fields', 'warning');
-        return;
-      }
-      
-      // Validate role is one of the allowed values
-      const validRoles = ['user', 'manager', 'admin', 'nexus'];
-      if (!validRoles.includes(role)) {
-        showNotification('Invalid role selected', 'warning');
-        return;
-      }
-      
-      // Generate username in correct format: FirstInitialLastName@clientName (no dots/spaces)
-      const cleanFirstName = firstName.replace(/[^a-zA-Z]/g, '');
-      const cleanLastName = lastName.replace(/[^a-zA-Z]/g, '');
-      const newUsername = `${cleanFirstName[0]}${cleanLastName}`.toLowerCase() + '@' + getSubdomain();
-      
-      // Use client name as default password (not slugified)
-      if (!newPassword) {
-        newPassword = getSubdomain(); // Use actual client name as password
-      }
-
-      const currentUser = getCurrentUser();
-      const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: newUsername,
-          password: newPassword,
-          firstName,
-          lastName,
-          role: role, // Role is already lowercase from validation
-          clientId: currentUser.subdomain
-        })
-      });
-      
-      if (!res.ok) throw new Error(await res.text());
-      
-      // Show detailed success notification
-      const successMessage = `✅ User Created Successfully!\n\n` +
-        `👤 Name: ${firstName} ${lastName}\n` +
-        `📧 Username: ${newUsername}\n` +
-        `🔑 Default Password: ${newPassword}\n\n` +
-        `⚠️ Important: User should change password on first login`;
-      
-      showNotification(successMessage, 'success');
-      // Close modal and refresh the main page instead of reopening modal
-      modal.remove();
-      location.reload(); // This will refresh the main page
-    } catch (err) {
-      showNotification('Error creating user: ' + err.message, 'error');
-    } finally {
-      // Reset button state
-      submitBtn.disabled = false;
-      submitBtn.textContent = originalText;
-    }
-  };
-
-  // --- BULK ADD USERS ---
-  modal.querySelector('#bulk-add-users-btn').onclick = () => {
-    showBulkAddUsersModal(clientName);
-  };
   } catch (error) {
     console.error('Error in showManageUsersModal:', error);
     if (typeof showNotification === 'function') {
-      showNotification(`Error loading user management: ${error.message}`, 'error');
+      showNotification(`Error loading user creation form: ${error.message}`, 'error');
     } else {
-      alert(`Error loading user management: ${error.message}`);
+      alert(`Error loading user creation form: ${error.message}`);
     }
   }
 }
