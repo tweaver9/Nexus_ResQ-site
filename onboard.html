@@ -330,11 +330,45 @@
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+<script>
+// Alternative bcrypt loading
+if (!window.bcrypt && !window.dcodeIO) {
+  // Load bcrypt as a fallback
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js';
+  document.head.appendChild(script);
+}
+</script>
 <script type="module">
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+// Wait for bcrypt to load
+function waitForBcrypt() {
+  return new Promise((resolve) => {
+    const checkBcrypt = () => {
+      if (window.dcodeIO && window.dcodeIO.bcrypt) {
+        resolve(window.dcodeIO.bcrypt);
+      } else if (window.bcrypt) {
+        resolve(window.bcrypt);
+      } else {
+        setTimeout(checkBcrypt, 100);
+      }
+    };
+    checkBcrypt();
+  });
+}
+
+// Initialize bcrypt
+let bcryptLib = null;
+waitForBcrypt().then(bcrypt => {
+  bcryptLib = bcrypt;
+  console.log('Bcrypt loaded successfully:', !!bcryptLib);
+}).catch(err => {
+  console.error('Failed to load bcrypt:', err);
+});
 
 // Role Check - Only allow nexus users
 const userRole = sessionStorage.getItem('role');
@@ -990,6 +1024,16 @@ function showStep8() {
     <button class="next-btn" type="button" style="background:#ececec;color:#23263a;" id="backTo7">Back</button>
   `;
 document.getElementById('finishBtn').onclick = async function() {
+  // Check if bcrypt is loaded
+  if (!bcryptLib) {
+    // Try to load bcrypt one more time
+    try {
+      bcryptLib = await waitForBcrypt();
+    } catch (e) {
+      console.warn('Bcrypt not available, proceeding without password hashing');
+    }
+  }
+  
   document.getElementById('finishBtn').disabled = true;
   document.getElementById('finishBtn').textContent = 'Submitting...';
 
@@ -1039,7 +1083,7 @@ document.getElementById('finishBtn').onclick = async function() {
       firstName: onboardingData.adminFirst,
       lastName: onboardingData.adminLast,
       username: onboardingData.adminUsername,
-      hashedPassword: window.bcrypt.hashSync(onboardingData.adminPassword, 10),
+      hashedPassword: bcryptLib ? bcryptLib.hashSync(onboardingData.adminPassword, 10) : onboardingData.adminPassword, // Fallback to plain text if bcrypt fails
       role: "Admin", // Capitalized role for API compatibility
       active: true,
       soft_deleted: false,
