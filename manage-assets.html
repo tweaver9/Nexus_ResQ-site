@@ -1470,8 +1470,8 @@
 
     // === Helper Functions ===
     function canModifyAssets() {
-      // Nexus has full permissions, admin/manager have standard permissions
-      return ['nexus', 'admin', 'manager'].includes(currentUserRole);
+      // All roles except 'User' can modify assets (Manager, Admin, Nexus, etc.)
+      return currentUserRole && currentUserRole.toLowerCase() !== 'user';
     }
 
     function isNexusUser() {
@@ -1489,28 +1489,54 @@
 
     async function loadAssetTypes() {
       try {
-        const typesSnap = await db.collection(`clients/${clientId}/asset_types`).get();
+        const allAssetTypes = new Set();
         const typeFilter = document.getElementById('asset-type-filter');
         
-        let hasTypes = false;
-        typesSnap.forEach(doc => {
-          hasTypes = true;
+        // Load from asset_types collection
+        try {
+          const typesSnap = await db.collection(`clients/${clientId}/asset_types`).get();
+          typesSnap.forEach(doc => {
+            const typeData = doc.data();
+            const typeName = typeData.name || doc.id;
+            if (typeName && typeName.trim()) {
+              allAssetTypes.add(typeName.trim());
+            }
+          });
+        } catch (error) {
+          console.warn('Could not load from asset_types collection for filter:', error.message);
+        }
+        
+        // Load from existing assets
+        try {
+          const assetsSnap = await db.collection(`clients/${clientId}/assets`).get();
+          assetsSnap.forEach(doc => {
+            const assetData = doc.data();
+            if (assetData.type && assetData.type.trim()) {
+              allAssetTypes.add(assetData.type.trim());
+            }
+          });
+        } catch (error) {
+          console.warn('Could not load asset types from assets for filter:', error.message);
+        }
+        
+        // Add demo types if none found
+        if (allAssetTypes.size === 0) {
+          const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
+          demoTypes.forEach(type => allAssetTypes.add(type));
+        }
+        
+        // Sort and add to filter dropdown
+        const sortedTypes = Array.from(allAssetTypes).sort((a, b) => 
+          a.toLowerCase().localeCompare(b.toLowerCase())
+        );
+        
+        sortedTypes.forEach(type => {
           const opt = document.createElement('option');
-          opt.value = doc.id;
-          opt.textContent = doc.id;
+          opt.value = type;
+          opt.textContent = type;
           typeFilter.appendChild(opt);
         });
         
-        // Add demo types if none found
-        if (!hasTypes) {
-          const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
-          demoTypes.forEach(type => {
-            const opt = document.createElement('option');
-            opt.value = type;
-            opt.textContent = type;
-            typeFilter.appendChild(opt);
-          });
-        }
       } catch (error) {
         console.error('Error loading asset types:', error);
         // Add demo types on error
@@ -2141,36 +2167,112 @@
       typeSelect.innerHTML = '<option value="">Select asset type...</option>';
       
       try {
-        const typesSnap = await db.collection(`clients/${clientId}/asset_types`).get();
+        const allAssetTypes = new Set();
         
-        let hasTypes = false;
-        typesSnap.forEach(doc => {
-          hasTypes = true;
+        // 1. Load asset types from asset_types collection
+        try {
+          const typesSnap = await db.collection(`clients/${clientId}/asset_types`).get();
+          typesSnap.forEach(doc => {
+            const typeData = doc.data();
+            // Add the type name (prefer name field, fallback to doc ID)
+            const typeName = typeData.name || doc.id;
+            if (typeName && typeName.trim()) {
+              allAssetTypes.add(typeName.trim());
+            }
+          });
+          console.log('Loaded asset types from asset_types collection:', Array.from(allAssetTypes));
+        } catch (error) {
+          console.warn('Could not load from asset_types collection:', error.message);
+        }
+        
+        // 2. Load asset types from existing assets
+        try {
+          const assetsSnap = await db.collection(`clients/${clientId}/assets`).get();
+          assetsSnap.forEach(doc => {
+            const assetData = doc.data();
+            if (assetData.type && assetData.type.trim()) {
+              allAssetTypes.add(assetData.type.trim());
+            }
+          });
+          console.log('Added asset types from existing assets. Total types:', Array.from(allAssetTypes));
+        } catch (error) {
+          console.warn('Could not load asset types from assets:', error.message);
+        }
+        
+        // 3. Load asset types from client onboarding data (stored in main client document)
+        try {
+          const clientDoc = await db.collection('clients').doc(clientId).get();
+          if (clientDoc.exists()) {
+            const clientData = clientDoc.data();
+            
+            // Check main onboarding_data field
+            if (clientData.onboarding_data && clientData.onboarding_data.asset_types) {
+              clientData.onboarding_data.asset_types.forEach(type => {
+                if (type && typeof type === 'string' && type.trim()) {
+                  allAssetTypes.add(type.trim());
+                }
+              });
+            }
+            
+            // Also check direct asset_types field (legacy support)
+            if (clientData.asset_types && Array.isArray(clientData.asset_types)) {
+              clientData.asset_types.forEach(type => {
+                if (type && typeof type === 'string' && type.trim()) {
+                  allAssetTypes.add(type.trim());
+                }
+              });
+            }
+          }
+          console.log('Added asset types from client onboarding. Total types:', Array.from(allAssetTypes));
+        } catch (error) {
+          console.warn('Could not load asset types from client onboarding:', error.message);
+        }
+        
+        // 4. Add demo types if no types found at all
+        if (allAssetTypes.size === 0) {
+          console.log('No asset types found, adding demo types');
+          const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant', 'Sprinkler Head', 'Standpipe', 'Fire Pump', 'Alarm Panel'];
+          demoTypes.forEach(type => allAssetTypes.add(type));
+        }
+        
+        // 5. Sort and add all unique types to dropdown
+        const sortedTypes = Array.from(allAssetTypes).sort((a, b) => 
+          a.toLowerCase().localeCompare(b.toLowerCase())
+        );
+        
+        sortedTypes.forEach(type => {
           const option = document.createElement('option');
-          option.value = doc.id;
-          option.textContent = doc.id;
+          option.value = type;
+          option.textContent = type;
           typeSelect.appendChild(option);
         });
         
-        // Add demo types if none found
-        if (!hasTypes) {
-          const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
-          demoTypes.forEach(type => {
-            const option = document.createElement('option');
-            option.value = type;
-            option.textContent = type;
-            typeSelect.appendChild(option);
-          });
-        }
-        
-        // Add custom option at the top
+        // 6. Add "Custom..." option at the end
         const customOption = document.createElement('option');
         customOption.value = 'custom';
-        customOption.textContent = '- Custom -';
-        typeSelect.insertBefore(customOption, typeSelect.children[1]);
+        customOption.textContent = '── Custom... ──';
+        customOption.style.fontStyle = 'italic';
+        customOption.style.color = '#fdd835';
+        typeSelect.appendChild(customOption);
+        
+        console.log(`Loaded ${sortedTypes.length} asset types for dropdown`);
         
       } catch (error) {
         console.error('Error loading asset types for form:', error);
+        // Fallback to demo types on error
+        const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
+        demoTypes.forEach(type => {
+          const option = document.createElement('option');
+          option.value = type;
+          option.textContent = type;
+          typeSelect.appendChild(option);
+        });
+        
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.textContent = '── Custom... ──';
+        customOption.style.fontStyle = 'italic';
+        typeSelect.appendChild(customOption);
       }
     }
     
