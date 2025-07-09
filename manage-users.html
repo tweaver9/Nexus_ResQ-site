@@ -270,8 +270,9 @@
 
     .user-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      /* Debug: Force 4+ cards per row */
     }
 
     .empty-group {
@@ -290,10 +291,12 @@
       background: var(--nexus-card);
       border: 1px solid var(--nexus-border);
       border-radius: var(--radius);
-      padding: 1.25rem;
+      padding: 1rem;
       box-shadow: var(--shadow-card);
       transition: all 0.2s ease;
       cursor: pointer;
+      /* Debug: More compact for 4+ cards */
+      min-width: 0; /* Allow cards to shrink */
     }
 
     .user-card:hover {
@@ -960,8 +963,9 @@
     /* === SKELETON LOADER === */
     .skeleton-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      /* Debug: Match user-grid layout */
     }
 
     .skeleton-card {
