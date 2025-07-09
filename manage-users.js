@@ -1,11 +1,46 @@
-import { db } from './firebase.js';
-import {
-  collection, doc, getDocs, setDoc, updateDoc, deleteDoc, Timestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// Use the same Firebase instance as the HTML file
+const db = firebase.firestore();
 
 // Helper to slugify client name for username
 function slugify(str) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+// Custom notification function that matches the theme
+function showNotification(message, type = 'info') {
+  // Remove any existing notifications
+  const existingNotifications = document.querySelectorAll('.nexus-notification');
+  existingNotifications.forEach(notif => notif.remove());
+
+  const notification = document.createElement('div');
+  notification.className = 'nexus-notification';
+  notification.innerHTML = `
+    <div class="nexus-notification-content ${type}">
+      <div class="nexus-notification-text">${message.replace(/\n/g, '<br>')}</div>
+      <button class="nexus-notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+    </div>
+  `;
+
+  // Add styles
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    max-width: 500px;
+    animation: slideIn 0.3s ease-out;
+  `;
+
+  document.body.appendChild(notification);
+
+  // Auto-remove after 8 seconds for success messages, 12 seconds for others
+  const autoRemoveTime = type === 'success' ? 8000 : 12000;
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.style.animation = 'slideOut 0.3s ease-in';
+      setTimeout(() => notification.remove(), 300);
+    }
+  }, autoRemoveTime);
 }
 
 // Helper to get current subdomain
@@ -24,23 +59,23 @@ function getCurrentUser() {
 }
 
 window.showManageUsersModal = async function(clientName) {
-  // Remove any existing modal
-  let modal = document.getElementById('manage-users-modal');
-  if (modal) modal.remove();
+  // Remove any existing modals to prevent conflicts
+  const existingModals = document.querySelectorAll('.manage-users-modal-bg');
+  existingModals.forEach(modal => modal.remove());
 
   const subdomain = getSubdomain();
 
   // Fetch users directly from Firestore using the flat users collection
   let users = [];
   try {
-    const usersRef = collection(db, 'users');
-    const snapshot = await getDocs(usersRef);
+    const usersRef = db.collection('users');
+    const snapshot = await usersRef.where('clientId', '==', subdomain).get();
     users = snapshot.docs
       .map(doc => ({
         id: doc.id,
         ...doc.data()
       }))
-      .filter(user => user.clientId === subdomain && !user.soft_deleted);
+      .filter(user => !user.soft_deleted);
   } catch (e) {
     console.error('Error fetching users:', e);
     users = [];
@@ -85,7 +120,7 @@ window.showManageUsersModal = async function(clientName) {
           </tbody>
         </table>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="form-section-header">
         <div class="manage-users-section-title">Add New User</div>
         <button type="button" id="bulk-add-users-btn" class="explorer-btn">Bulk Add</button>
       </div>
@@ -93,17 +128,17 @@ window.showManageUsersModal = async function(clientName) {
         <input type="text" id="firstName" placeholder="First Name" required>
         <input type="text" id="lastName" placeholder="Last Name" required>
         <input type="password" id="newPassword" placeholder="Password (leave blank for default)" value="">
-        <div style="font-size:0.85em;color:#ffe066;margin-bottom:8px;">
-          Default password will be the client name (${slugify(getSubdomain())}) if left blank
+        <div class="form-hint">
+          Default password will be the client name (${getSubdomain()}) if left blank
         </div>
         <select id="role" required>
           <option value="">Select Role</option>
-          <option value="User">User</option>
-          <option value="Manager">Manager</option>
-          <option value="Admin">Admin</option>
-          <option value="Nexus">Nexus</option>
+          <option value="user">User</option>
+          <option value="manager">Manager</option>
+          <option value="admin">Admin</option>
+          <option value="nexus">Nexus</option>
         </select>
-        <div style="text-align:right;">
+        <div class="form-actions">
           <button type="button" id="cancel-manage-users" class="explorer-btn danger">Cancel</button>
           <button type="submit" class="explorer-btn">Add User</button>
         </div>
@@ -111,6 +146,13 @@ window.showManageUsersModal = async function(clientName) {
     </div>
   `;
   document.body.appendChild(modal);
+
+  // Click outside to close modal
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
 
   // Remove modal on cancel
   modal.querySelector('#cancel-manage-users').onclick = () => modal.remove();
@@ -134,10 +176,11 @@ window.showManageUsersModal = async function(clientName) {
         
         if (!res.ok) throw new Error(await res.text());
         
+        // Close modal and refresh the main page instead of reopening modal
         modal.remove();
-        window.showManageUsersModal(clientName); // Refresh
+        location.reload(); // This will refresh the main page
       } catch (err) {
-        alert('Error deactivating user: ' + err.message);
+        showNotification('Error deactivating user: ' + err.message, 'error');
       }
     };
   });
@@ -161,10 +204,11 @@ window.showManageUsersModal = async function(clientName) {
         
         if (!res.ok) throw new Error(await res.text());
         
+        // Close modal and refresh the main page instead of reopening modal
         modal.remove();
-        window.showManageUsersModal(clientName); // Refresh
+        location.reload(); // This will refresh the main page
       } catch (err) {
-        alert('Error reactivating user: ' + err.message);
+        showNotification('Error reactivating user: ' + err.message, 'error');
       }
     };
   });
@@ -188,10 +232,11 @@ window.showManageUsersModal = async function(clientName) {
         
         if (!res.ok) throw new Error(await res.text());
         
+        // Close modal and refresh the main page instead of reopening modal
         modal.remove();
-        window.showManageUsersModal(clientName); // Refresh
+        location.reload(); // This will refresh the main page
       } catch (err) {
-        alert('Error deleting user: ' + err.message);
+        showNotification('Error deleting user: ' + err.message, 'error');
       }
     };
   });
@@ -217,11 +262,12 @@ window.showManageUsersModal = async function(clientName) {
         
         if (!res.ok) throw new Error(await res.text());
         
-        alert(`Password reset successfully for ${targetUsername}`);
+        showNotification(`Password reset successfully for ${targetUsername}`, 'success');
+        // Close modal and refresh the main page instead of reopening modal
         modal.remove();
-        window.showManageUsersModal(clientName); // Refresh
+        location.reload(); // This will refresh the main page
       } catch (err) {
-        alert('Error resetting password: ' + err.message);
+        showNotification('Error resetting password: ' + err.message, 'error');
       }
     };
   });
@@ -229,34 +275,43 @@ window.showManageUsersModal = async function(clientName) {
   // Add user
   modal.querySelector('#add-user-form').onsubmit = async (e) => {
     e.preventDefault();
-    const firstName = modal.querySelector('#firstName').value.trim();
-    const lastName = modal.querySelector('#lastName').value.trim();
-    let newPassword = modal.querySelector('#newPassword').value.trim();
-    const role = modal.querySelector('#role').value;
+    const submitBtn = modal.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
     
-    // Validate required fields
-    if (!firstName || !lastName || !role) {
-      alert('Please fill in all required fields');
-      return;
-    }
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding User...';
     
-    // Validate role is one of the allowed values
-    const validRoles = ['User', 'Manager', 'Admin', 'Nexus'];
-    if (!validRoles.includes(role)) {
-      alert('Invalid role selected');
-      return;
-    }
-    
-    // Generate username in correct format
-    const newUsername = `${firstName[0]}${lastName}`.toLowerCase() + '@' + getSubdomain();
-    
-    // Use default password if none provided (slugged client name)
-    if (!newPassword) {
-      newPassword = slugify(getSubdomain());
-    }
-
-    const currentUser = getCurrentUser();
     try {
+      const firstName = modal.querySelector('#firstName').value.trim();
+      const lastName = modal.querySelector('#lastName').value.trim();
+      let newPassword = modal.querySelector('#newPassword').value.trim();
+      const role = modal.querySelector('#role').value;
+      
+      // Validate required fields
+      if (!firstName || !lastName || !role) {
+        showNotification('Please fill in all required fields', 'warning');
+        return;
+      }
+      
+      // Validate role is one of the allowed values
+      const validRoles = ['user', 'manager', 'admin', 'nexus'];
+      if (!validRoles.includes(role)) {
+        showNotification('Invalid role selected', 'warning');
+        return;
+      }
+      
+      // Generate username in correct format: FirstInitialLastName@clientName (no dots/spaces)
+      const cleanFirstName = firstName.replace(/[^a-zA-Z]/g, '');
+      const cleanLastName = lastName.replace(/[^a-zA-Z]/g, '');
+      const newUsername = `${cleanFirstName[0]}${cleanLastName}`.toLowerCase() + '@' + getSubdomain();
+      
+      // Use client name as default password (not slugified)
+      if (!newPassword) {
+        newPassword = getSubdomain(); // Use actual client name as password
+      }
+
+      const currentUser = getCurrentUser();
       const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -265,18 +320,30 @@ window.showManageUsersModal = async function(clientName) {
           password: newPassword,
           firstName,
           lastName,
-          role,
+          role: role, // Role is already lowercase from validation
           clientId: currentUser.subdomain
         })
       });
       
       if (!res.ok) throw new Error(await res.text());
       
-      alert(`User created successfully!\nUsername: ${newUsername}\nPassword: ${newPassword}`);
+      // Show detailed success notification
+      const successMessage = `✅ User Created Successfully!\n\n` +
+        `👤 Name: ${firstName} ${lastName}\n` +
+        `📧 Username: ${newUsername}\n` +
+        `🔑 Default Password: ${newPassword}\n\n` +
+        `⚠️ Important: User should change password on first login`;
+      
+      showNotification(successMessage, 'success');
+      // Close modal and refresh the main page instead of reopening modal
       modal.remove();
-      window.showManageUsersModal(clientName); // Refresh
+      location.reload(); // This will refresh the main page
     } catch (err) {
-      alert('Error creating user: ' + err.message);
+      showNotification('Error creating user: ' + err.message, 'error');
+    } finally {
+      // Reset button state
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
     }
   };
 
@@ -288,39 +355,47 @@ window.showManageUsersModal = async function(clientName) {
 
 // Bulk Add Users Modal
 function showBulkAddUsersModal(clientName) {
-  let modal = document.getElementById('bulk-add-users-modal');
-  if (modal) modal.remove();
+  // Remove any existing modals to prevent conflicts
+  const existingModals = document.querySelectorAll('.manage-users-modal-bg');
+  existingModals.forEach(modal => modal.remove());
 
   const templateUrl = "https://firebasestorage.googleapis.com/v0/b/nexus-res-q.appspot.com/o/Bulk%20Add%20Template%2FBulk%20User%20Add%20CSV%20Template.csv?alt=media";
 
-  modal = document.createElement('div');
+  const modal = document.createElement('div');
   modal.id = 'bulk-add-users-modal';
   modal.className = 'manage-users-modal-bg';
   modal.innerHTML = `
     <div class="manage-users-modal-content">
       <div class="manage-users-modal-title">Bulk Add Users</div>
-      <div style="margin-bottom:10px;">
-        <div style="font-size:0.98em;color:#fdd835;margin-bottom:6px;">
-          <a href="${templateUrl}" download style="color:#fdd835;text-decoration:underline;">Download CSV Template</a>
-          <br>
-          Paste CSV rows below (First Name,Last Name,Role):<br>
-          <span style="font-size:0.93em;color:#ffe066;">Valid roles: User, Manager, Admin. All users will start with the default password (${slugify(getSubdomain())}).</span>
-        </div>
-        <textarea id="bulk-users-textarea" style="width:100%;height:120px;"></textarea>
-        <div style="margin:8px 0 0 0;">
-          <label style="color:#fdd835;cursor:pointer;">
+      <div class="bulk-instructions">
+        <a href="${templateUrl}" download>Download CSV Template</a>
+        <br>
+        📋 Paste CSV rows below (First Name,Last Name,Role):<br>
+        📧 Username format: FirstInitialLastName@${getSubdomain()}<br>
+        <div class="bulk-instructions-detail">Valid roles: user, manager, admin. All users will start with the default password (${getSubdomain()}).</div>
+      </div>
+        <textarea id="bulk-users-textarea"></textarea>
+        <div class="file-upload-section">
+          <label class="file-upload-label">
             Or upload CSV file:
-            <input type="file" id="bulk-users-file" accept=".csv" style="display:inline-block;margin-left:8px;">
+            <input type="file" id="bulk-users-file" accept=".csv" class="file-upload-input">
           </label>
         </div>
       </div>
-      <div style="text-align:right;">
+      <div class="form-actions">
         <button id="bulk-add-cancel" class="explorer-btn danger">Cancel</button>
         <button id="bulk-add-save" class="explorer-btn">Add Users</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
+
+  // Click outside to close modal
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
 
   modal.querySelector('#bulk-add-cancel').onclick = () => modal.remove();
 
@@ -339,52 +414,119 @@ function showBulkAddUsersModal(clientName) {
   });
 
   modal.querySelector('#bulk-add-save').onclick = async () => {
-    const textarea = modal.querySelector('#bulk-users-textarea');
-    const lines = textarea.value.trim().split('\n').filter(Boolean);
-    if (!lines.length) return;
+    const saveBtn = modal.querySelector('#bulk-add-save');
+    const originalText = saveBtn.textContent;
     
-    const currentUser = getCurrentUser();
-    let added = 0, failed = 0;
+    // Show loading state
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Processing...';
     
-    for (const line of lines) {
-      const [firstName, lastName, role] = line.split(',').map(s => s.trim());
-      if (!firstName || !lastName || !role) { failed++; continue; }
-      
-      // Validate role
-      const validRoles = ['User', 'Manager', 'Admin', 'Nexus'];
-      if (!validRoles.includes(role)) { 
-        console.error(`Invalid role "${role}" for user ${firstName} ${lastName}`);
-        failed++; 
-        continue; 
+    try {
+      const textarea = modal.querySelector('#bulk-users-textarea');
+      const lines = textarea.value.trim().split('\n').filter(Boolean);
+      if (!lines.length) {
+        showNotification('Please enter some users to add', 'warning');
+        return;
       }
       
-      const newUsername = `${firstName[0]}${lastName}`.toLowerCase() + '@' + currentUser.subdomain;
-      const defaultPassword = slugify(currentUser.subdomain); // Use slugged subdomain as default password
+      const currentUser = getCurrentUser();
       
-      try {
-        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: newUsername,
-            password: defaultPassword,
-            firstName,
-            lastName,
-            role,
-            clientId: currentUser.subdomain
-          })
-        });
+      // Show preview confirmation before processing
+      const previewMessage = `📋 Bulk Add Preview\n\n` +
+        `📊 Users to add: ${lines.length}\n` +
+        `📧 Username format: FirstInitialLastName@${currentUser.subdomain}\n` +
+        `🔑 Default password: ${currentUser.subdomain}\n\n` +
+        `⚠️ All users will need to change their password on first login.\n\n` +
+        `Continue with bulk user creation?`;
+      
+      if (!confirm(previewMessage)) {
+        return;
+      }
+      
+      let added = 0, failed = 0;
+      const addedUsers = [];
+      const failedUsers = [];
+      
+      for (const line of lines) {
+        const [firstName, lastName, role] = line.split(',').map(s => s.trim());
+        if (!firstName || !lastName || !role) { 
+          failed++; 
+          failedUsers.push(`${firstName || '?'} ${lastName || '?'} - Missing required fields`);
+          continue; 
+        }
         
-        if (!res.ok) throw new Error(await res.text());
-        added++;
-      } catch (e) {
-        console.error('Error adding user:', e);
-        failed++;
+        // Validate role
+        const validRoles = ['user', 'manager', 'admin', 'nexus'];
+        if (!validRoles.includes(role.toLowerCase())) { 
+          console.error(`Invalid role "${role}" for user ${firstName} ${lastName}`);
+          failed++; 
+          failedUsers.push(`${firstName} ${lastName} - Invalid role: ${role}`);
+          continue; 
+        }
+        
+        // Generate username in correct format: FirstInitialLastName@clientName (no dots/spaces)
+        const cleanFirstName = firstName.replace(/[^a-zA-Z]/g, '');
+        const cleanLastName = lastName.replace(/[^a-zA-Z]/g, '');
+        const newUsername = `${cleanFirstName[0]}${cleanLastName}`.toLowerCase() + '@' + currentUser.subdomain;
+        const defaultPassword = currentUser.subdomain; // Use actual client name as password
+        
+        try {
+          const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: newUsername,
+              password: defaultPassword,
+              firstName,
+              lastName,
+              role: role.toLowerCase(), // Ensure role is lowercase
+              clientId: currentUser.subdomain
+            })
+          });
+          
+          if (!res.ok) throw new Error(await res.text());
+          added++;
+          addedUsers.push(`${firstName} ${lastName} (${newUsername})`);
+        } catch (e) {
+          console.error('Error adding user:', e);
+          failed++;
+          failedUsers.push(`${firstName} ${lastName} - ${e.message}`);
+        }
       }
+      // Show detailed results
+      let resultMessage = `📊 Bulk Add Results\n\n`;
+      resultMessage += `✅ Successfully Added: ${added}\n`;
+      if (failed > 0) {
+        resultMessage += `❌ Failed: ${failed}\n\n`;
+      }
+      
+      if (addedUsers.length > 0) {
+        resultMessage += `👥 Added Users:\n`;
+        addedUsers.forEach(user => {
+          resultMessage += `• ${user}\n`;
+        });
+        resultMessage += `\n🔑 Default Password: ${currentUser.subdomain}\n`;
+        resultMessage += `⚠️ All users should change password on first login\n`;
+      }
+      
+      if (failedUsers.length > 0) {
+        resultMessage += `\n❌ Failed Users:\n`;
+        failedUsers.forEach(error => {
+          resultMessage += `• ${error}\n`;
+        });
+      }
+      
+      showNotification(resultMessage, added > 0 ? 'success' : 'warning');
+      // Close modal and refresh the main page instead of reopening modal
+      modal.remove();
+      location.reload(); // This will refresh the main page
+    } catch (err) {
+      showNotification('Error processing bulk add: ' + err.message, 'error');
+    } finally {
+      // Reset button state
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalText;
     }
-    alert(`Bulk add complete!\nAdded: ${added}\nFailed: ${failed}`);
-    modal.remove();
-    window.showManageUsersModal(clientName); // Refresh
   };
 }
 
