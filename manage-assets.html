@@ -905,9 +905,7 @@
   <!-- === STICKY FILTER BAR (NEW) === -->
   <div id="sticky-filters" style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
     <input id="asset-search" type="search" placeholder="Search assets..." style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:200px;">
-    <select id="asset-type-filter" style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:150px;">
-      <option value="">All Types</option>
-    </select>
+    <!-- Dropdown removed as requested -->
     <button class="premium-add-btn" id="add-asset-btn" style="margin-left:auto;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 5v14M5 12h14"/>
@@ -1286,9 +1284,8 @@
         radio.onchange = handlePrecisionOptionChange;
       });
 
-      // Filter event handlers
+      // Filter event handlers (only search now, no dropdown)
       document.getElementById('asset-search').oninput = filterAssets;
-      document.getElementById('asset-type-filter').onchange = filterAssets;
 
       // Action button handlers (role-based access)
       document.getElementById('add-asset-btn').onclick = () => {
@@ -1606,16 +1603,15 @@
     // === Filtering ===
     function filterAssets() {
       let search = document.getElementById('asset-search').value.toLowerCase();
-      let type = document.getElementById('asset-type-filter').value;
       let filtered = allAssets.filter(asset=>{
-        let matchesType = !type || (asset.type===type);
         let matchesSearch = !search || (
           (asset.kind||'').toLowerCase().includes(search) ||
           (asset.asset_id||'').toLowerCase().includes(search) ||
           (asset.serial||'').toLowerCase().includes(search) ||
-          (asset.location||'').toLowerCase().includes(search)
+          (asset.location||'').toLowerCase().includes(search) ||
+          (asset.type||'').toLowerCase().includes(search)
         );
-        return matchesType && matchesSearch;
+        return matchesSearch;
       });
       renderAssets(filtered);
     }

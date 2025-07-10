@@ -903,38 +903,10 @@
             return locations;
         }
 
-        // Create test users
+        // Create test users function removed - no dummy data
         async function createTestUsers() {
-            const users = [
-                { username: "john.doe", name: "John Doe", role: "inspector" },
-                { username: "susan.smith", name: "Susan Smith", role: "supervisor" },
-                { username: "mike.johnson", name: "Mike Johnson", role: "inspector" },
-                { username: "sarah.wilson", name: "Sarah Wilson", role: "admin" },
-                { username: "david.brown", name: "David Brown", role: "inspector" },
-                { username: "lisa.davis", name: "Lisa Davis", role: "supervisor" },
-                { username: "james.miller", name: "James Miller", role: "inspector" },
-                { username: "amy.garcia", name: "Amy Garcia", role: "inspector" }
-            ];
-
-            const batch = db.batch();
-            
-            users.forEach((user, index) => {
-                const userId = `nexustest_user_${index + 1}`;
-                const ref = db.collection('users').doc(userId);
-                batch.set(ref, {
-                    id: userId,
-                    username: user.username,
-                    name: user.name,
-                    role: user.role,
-                    clientId: "nexustest",
-                    isActive: true,
-                    lastLogin: null,
-                    lastInspection: null,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            });
-
-            await batch.commit();
+            console.log('Test user creation disabled - use real user creation only');
+            logMessage('Test user creation disabled - use real user creation only', 'info');
         }
 
         // Create test questions

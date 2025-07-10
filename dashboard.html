@@ -380,6 +380,192 @@
     .submit-btn:active {
       transform: translateY(0);
     }
+
+    /* Panel Styling */
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--nexus-border);
+    }
+
+    .panel-header h2 {
+      color: var(--nexus-light);
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .panel-controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .search-input, .filter-select {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      color: var(--nexus-light);
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    .search-input:focus, .filter-select:focus {
+      outline: none;
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+
+    /* Inspection Records Styling */
+    .inspection-records-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .inspection-record {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .inspection-record:hover {
+      background: var(--nexus-card-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-card);
+    }
+
+    .inspection-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .inspection-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .inspection-user {
+      color: var(--nexus-light);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .inspection-location {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+    }
+
+    .inspection-date {
+      color: var(--nexus-yellow);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .inspection-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-badge.passed {
+      background: var(--nexus-success);
+      color: var(--nexus-light);
+    }
+
+    .status-badge.failed {
+      background: var(--nexus-error);
+      color: var(--nexus-light);
+    }
+
+    .status-badge.pending {
+      background: var(--nexus-warning);
+      color: var(--nexus-bg);
+    }
+
+    .inspection-score {
+      color: var(--nexus-light);
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+
+    /* Logs Styling */
+    .logs-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .log-item {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .log-item:hover {
+      background: var(--nexus-card-hover);
+      border-color: var(--nexus-yellow);
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .log-timestamp {
+      color: var(--nexus-muted);
+      font-size: 0.75rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .log-user {
+      color: var(--nexus-yellow);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .log-action {
+      color: var(--nexus-light);
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .log-details {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    .no-data, .error, .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--nexus-muted);
+      font-style: italic;
+    }
+
+    .error {
+      color: var(--nexus-error);
+    }
   </style>
 </head>
 <body>
@@ -437,7 +623,9 @@
             </select>
           </div>
         </div>
-        <div id="inspection-list" class="inspection-records-container"></div>
+        <div id="inspection-list" class="inspection-records-container">
+          <div class="loading">Loading inspection records...</div>
+        </div>
       </div>
       <div id="panel-logs" class="dashboard-panel" style="display:none;">
         <div class="panel-header">

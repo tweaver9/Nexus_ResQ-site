@@ -164,25 +164,45 @@ window.addEventListener('DOMContentLoaded', async () => {
       const snapshot = await getDocs(q);
       inspectionList.innerHTML = '';
       if (snapshot.empty) {
-        inspectionList.innerHTML = `<div class="dashboard-placeholder">No inspections submitted yet.</div>`;
+        inspectionList.innerHTML = `<div class="no-data">No inspection records found for this client.</div>`;
         return;
       }
       snapshot.forEach(doc => {
-        const inspection = doc.data();
-        const line = document.createElement('div');
-        line.className = "inspection-row";
-        const location = inspection.location || {};
-        const locationText = `${location.sublocation || 'Unknown Location'} - ${location.zone || 'Zone ?'}`;
-        const dateText = inspection.inspectionDate ? new Date(inspection.inspectionDate).toLocaleDateString() : 'Unknown Date';
-        const passedCount = inspection.results ? Object.values(inspection.results).filter(r => r === true).length : 0;
-        const totalCount = inspection.results ? Object.keys(inspection.results).length : 0;
-        const statusText = totalCount > 0 ? `${passedCount}/${totalCount} passed` : 'No results';
-        line.textContent = `${inspection.inspectedBy || 'Unknown'} — ${locationText} — ${dateText} — ${statusText}`;
-        inspectionList.appendChild(line);
+        if (doc.id !== '_placeholder') {
+          const inspection = doc.data();
+          const inspectionItem = document.createElement('div');
+          inspectionItem.className = 'inspection-record';
+
+          // Parse the inspection data
+          const inspector = inspection.inspectedBy || inspection.inspector || 'Unknown Inspector';
+          const location = inspection.location || {};
+          const locationText = `${location.sublocation || location.name || 'Unknown Location'}`;
+          const zone = location.zone ? ` - ${location.zone}` : '';
+          const dateText = inspection.inspectionDate ? new Date(inspection.inspectionDate).toLocaleDateString() : 'Unknown Date';
+          const passedCount = inspection.results ? Object.values(inspection.results).filter(r => r === true).length : 0;
+          const totalCount = inspection.results ? Object.keys(inspection.results).length : 0;
+          const status = totalCount > 0 ? (passedCount === totalCount ? 'passed' : (passedCount === 0 ? 'failed' : 'partial')) : 'pending';
+          const score = totalCount > 0 ? `${passedCount}/${totalCount}` : 'N/A';
+
+          inspectionItem.innerHTML = `
+            <div class="inspection-header">
+              <div class="inspection-info">
+                <div class="inspection-user">${inspector}</div>
+                <div class="inspection-location">${locationText}${zone}</div>
+                <div class="inspection-date">${dateText}</div>
+              </div>
+              <div class="inspection-status">
+                <span class="status-badge ${status}">${status}</span>
+                <div class="inspection-score">${score}</div>
+              </div>
+            </div>
+          `;
+          inspectionList.appendChild(inspectionItem);
+        }
       });
     } catch (e) {
       console.error('Error loading recent inspections:', e);
-      inspectionList.innerHTML = `<div class="dashboard-placeholder">Error loading inspections.</div>`;
+      inspectionList.innerHTML = `<div class="error">Error loading inspection records.</div>`;
     }
   }
 
