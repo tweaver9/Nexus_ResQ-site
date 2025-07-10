@@ -46,6 +46,7 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
 
     // Call your Firebase Cloud Function for authentication
     console.log("Calling backend for authentication..."); // Debug log
+    console.log("Sending to backend:", { username, subdomain, passwordLength: password.length }); // Debug log
 
     const authResponse = await fetch('https://us-central1-nexus-res-q.cloudfunctions.net/api/login', {
       method: 'POST',
@@ -61,7 +62,18 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
 
     if (!authResponse.ok) {
       const errorData = await authResponse.json().catch(() => ({ error: 'Authentication failed' }));
-      showError(errorData.error || "Invalid username or password.");
+      console.log("Backend error response:", authResponse.status, errorData); // Debug log
+
+      // Show specific error messages based on status code
+      if (authResponse.status === 404) {
+        showError("User not found. Please check your username or contact your administrator.");
+      } else if (authResponse.status === 401) {
+        showError("Incorrect password. Please try again.");
+      } else if (authResponse.status === 403) {
+        showError("Account is inactive. Please contact your administrator.");
+      } else {
+        showError(errorData.error || "Login failed. Please try again.");
+      }
       return;
     }
 
