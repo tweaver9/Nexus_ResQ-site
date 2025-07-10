@@ -566,6 +566,153 @@
     .error {
       color: var(--nexus-error);
     }
+
+    /* Date-Grouped Logs Styling */
+    .logs-date-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .logs-date-header {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .logs-date-header:hover {
+      background: var(--nexus-card-hover);
+      border-color: var(--nexus-yellow);
+    }
+
+    .logs-date-title {
+      color: var(--nexus-light);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .logs-date-count {
+      background: var(--nexus-yellow);
+      color: var(--nexus-bg);
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .logs-date-content {
+      display: none;
+      padding-left: 1rem;
+      border-left: 2px solid var(--nexus-border);
+      margin-left: 1rem;
+    }
+
+    .logs-date-content.expanded {
+      display: block;
+    }
+
+    .logs-date-group.today .logs-date-content {
+      display: block;
+    }
+
+    .logs-date-group.today .logs-date-header {
+      background: var(--nexus-card-hover);
+      border-color: var(--nexus-yellow);
+    }
+
+    /* Compact Inspection Records */
+    .inspection-compact {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .inspection-compact:hover {
+      background: var(--nexus-card-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .inspection-compact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .inspection-compact-user {
+      color: var(--nexus-light);
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .inspection-compact-location {
+      color: var(--nexus-muted);
+      font-size: 0.75rem;
+    }
+
+    .inspection-compact-time {
+      color: var(--nexus-yellow);
+      font-size: 0.75rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .inspection-compact-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-badge-compact {
+      padding: 0.125rem 0.5rem;
+      border-radius: 8px;
+      font-size: 0.625rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-badge-compact.passed {
+      background: var(--nexus-success);
+      color: var(--nexus-light);
+    }
+
+    .status-badge-compact.failed {
+      background: var(--nexus-error);
+      color: var(--nexus-light);
+    }
+
+    .status-badge-compact.partial {
+      background: var(--nexus-warning);
+      color: var(--nexus-bg);
+    }
+
+    .inspection-compact-score {
+      color: var(--nexus-light);
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    /* Dashboard placeholder styling */
+    .dashboard-placeholder {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--nexus-muted);
+    }
+
+    .dashboard-placeholder h3 {
+      color: var(--nexus-light);
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -594,20 +741,16 @@
   <div class="dashboard-main">
     <div class="dashboard-center">
       <div id="panel-home" class="dashboard-panel" style="display:block;">
-  <div class="dashboard-section">
-    <div class="section-title">Area Status</div>
-    <div class="area-status-table-container">
-      <table class="area-status-table" id="area-status-table">
-        <tbody>
-          <!-- JS will populate rows here -->
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <!-- ...other sections like dashboard-header-card, dashboard-cards, etc... -->
-  <div id="failed-assets-list"></div>
-  <!-- Inspections moved to dedicated panel -->
-</div>
+        <div class="dashboard-header">
+          <h1 id="dashboard-title">Dashboard</h1>
+          <p id="welcome-message">Welcome Back!</p>
+        </div>
+
+        <div class="dashboard-placeholder">
+          <h3>Dashboard content will be implemented later</h3>
+          <p>Use the sidebar to navigate to different sections.</p>
+        </div>
+      </div>
       <div id="panel-users" class="dashboard-panel" style="display:none;">User management here...</div>
       <div id="panel-assets" class="dashboard-panel" style="display:none;">Asset management here...</div>
       <div id="panel-inspections" class="dashboard-panel" style="display:none;">

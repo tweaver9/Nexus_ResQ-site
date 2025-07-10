@@ -171,7 +171,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (doc.id !== '_placeholder') {
           const inspection = doc.data();
           const inspectionItem = document.createElement('div');
-          inspectionItem.className = 'inspection-record';
+          inspectionItem.className = 'inspection-compact';
 
           // Parse the inspection data
           const inspector = inspection.inspectedBy || inspection.inspector || 'Unknown Inspector';
@@ -179,22 +179,21 @@ window.addEventListener('DOMContentLoaded', async () => {
           const locationText = `${location.sublocation || location.name || 'Unknown Location'}`;
           const zone = location.zone ? ` - ${location.zone}` : '';
           const dateText = inspection.inspectionDate ? new Date(inspection.inspectionDate).toLocaleDateString() : 'Unknown Date';
+          const timeText = inspection.inspectionDate ? new Date(inspection.inspectionDate).toLocaleTimeString() : '';
           const passedCount = inspection.results ? Object.values(inspection.results).filter(r => r === true).length : 0;
           const totalCount = inspection.results ? Object.keys(inspection.results).length : 0;
           const status = totalCount > 0 ? (passedCount === totalCount ? 'passed' : (passedCount === 0 ? 'failed' : 'partial')) : 'pending';
           const score = totalCount > 0 ? `${passedCount}/${totalCount}` : 'N/A';
 
           inspectionItem.innerHTML = `
-            <div class="inspection-header">
-              <div class="inspection-info">
-                <div class="inspection-user">${inspector}</div>
-                <div class="inspection-location">${locationText}${zone}</div>
-                <div class="inspection-date">${dateText}</div>
-              </div>
-              <div class="inspection-status">
-                <span class="status-badge ${status}">${status}</span>
-                <div class="inspection-score">${score}</div>
-              </div>
+            <div class="inspection-compact-info">
+              <div class="inspection-compact-user">${inspector}</div>
+              <div class="inspection-compact-location">${locationText}${zone}</div>
+              <div class="inspection-compact-time">${dateText} ${timeText}</div>
+            </div>
+            <div class="inspection-compact-status">
+              <span class="status-badge-compact ${status}">${status}</span>
+              <div class="inspection-compact-score">${score}</div>
             </div>
           `;
           inspectionList.appendChild(inspectionItem);
@@ -297,7 +296,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       const q = query(
         getClientCollection(currentClientSubdomain, 'logs'),
         orderBy('timestamp', 'desc'),
-        limit(100)
+        limit(200)
       );
 
       const snapshot = await getDocs(q);
@@ -308,29 +307,69 @@ window.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
+      // Group logs by date
+      const logsByDate = {};
       snapshot.forEach(doc => {
         if (doc.id !== '_placeholder') {
           const data = doc.data();
-          const logItem = document.createElement('div');
-          logItem.className = 'log-item';
+          const timestamp = data.timestamp ? new Date(data.timestamp) : new Date();
+          const dateKey = timestamp.toDateString();
 
-          const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleString() : 'Unknown time';
-          const action = data.action || 'Unknown action';
-          const user = data.user || 'Unknown user';
-          const details = data.details || '';
+          if (!logsByDate[dateKey]) {
+            logsByDate[dateKey] = [];
+          }
+          logsByDate[dateKey].push({ id: doc.id, ...data, timestamp });
+        }
+      });
+
+      // Create date groups
+      const today = new Date().toDateString();
+      Object.keys(logsByDate).forEach(dateKey => {
+        const logs = logsByDate[dateKey];
+        const isToday = dateKey === today;
+
+        const dateGroup = document.createElement('div');
+        dateGroup.className = `logs-date-group ${isToday ? 'today' : ''}`;
+
+        const dateHeader = document.createElement('div');
+        dateHeader.className = 'logs-date-header';
+        dateHeader.innerHTML = `
+          <span class="logs-date-title">${isToday ? 'Today' : new Date(dateKey).toLocaleDateString()}</span>
+          <span class="logs-date-count">${logs.length}</span>
+        `;
+
+        const dateContent = document.createElement('div');
+        dateContent.className = `logs-date-content ${isToday ? 'expanded' : ''}`;
+
+        logs.forEach(log => {
+          const logItem = document.createElement('div');
+          logItem.className = "log-item";
+          const timeString = log.timestamp.toLocaleTimeString();
+          const action = log.action || 'Unknown action';
+          const user = log.user || 'Unknown user';
+          const details = log.details || '';
 
           logItem.innerHTML = `
             <div class="log-header">
-              <span class="log-timestamp">${timestamp}</span>
+              <span class="log-timestamp">${timeString}</span>
               <span class="log-user">${user}</span>
             </div>
             <div class="log-action">${action}</div>
             ${details ? `<div class="log-details">${details}</div>` : ''}
           `;
+          dateContent.appendChild(logItem);
+        });
 
-          logsList.appendChild(logItem);
-        }
+        dateHeader.onclick = () => {
+          dateContent.classList.toggle('expanded');
+        };
+
+        dateGroup.appendChild(dateHeader);
+        dateGroup.appendChild(dateContent);
+        logsList.appendChild(dateGroup);
       });
+
+      console.log(`Loaded ${snapshot.size} logs grouped by date for client ${currentClientSubdomain}`);
     } catch (error) {
       console.error('Error loading logs:', error);
       logsList.innerHTML = '<div class="error">Error loading logs.</div>';

@@ -341,20 +341,66 @@ class NexusAdmin {
       return;
     }
 
-    const clientsHTML = this.clients.map(client => `
-      <div class="message-card">
-        <div class="message-header">
-          <div class="message-meta">
-            <div class="message-client">${client.name || client.id}</div>
-            <div class="message-user">Subdomain: ${client.id}</div>
-            <div class="message-timestamp">Created: ${new Date(client.created || Date.now()).toLocaleDateString()}</div>
+    const clientsHTML = this.clients.map(client => {
+      const settings = client.settings || {};
+
+      // Format settings in a readable way
+      const settingsHTML = `
+        <div class="client-settings">
+          <div class="settings-grid">
+            <div class="setting-item">
+              <span class="setting-label">Barcode Delimiter:</span>
+              <span class="setting-value">${settings.barcodeDelimiter || '-'}</span>
+            </div>
+            <div class="setting-item">
+              <span class="setting-label">Barcode Levels:</span>
+              <span class="setting-value">${(settings.barcodeLevels || []).join(', ') || 'None'}</span>
+            </div>
+            <div class="setting-item">
+              <span class="setting-label">Precise Scan:</span>
+              <span class="setting-value ${settings.preciseScanEnabled ? 'enabled' : 'disabled'}">
+                ${settings.preciseScanEnabled ? 'Enabled' : 'Disabled'}
+              </span>
+            </div>
+            <div class="setting-item">
+              <span class="setting-label">Report Format:</span>
+              <span class="setting-value">${settings.reportFormat || 'PDF'}</span>
+            </div>
+            <div class="setting-item">
+              <span class="setting-label">Typing Allowed:</span>
+              <span class="setting-value ${settings.typingAllowed ? 'enabled' : 'disabled'}">
+                ${settings.typingAllowed ? 'Yes' : 'No'}
+              </span>
+            </div>
+            <div class="setting-item">
+              <span class="setting-label">Map Divisions:</span>
+              <span class="setting-value">${(settings.mapDivisions || []).length} divisions</span>
+            </div>
           </div>
         </div>
-        <div class="message-content">
-          <strong>Settings:</strong> ${JSON.stringify(client.settings || {}, null, 2)}
+      `;
+
+      return `
+        <div class="message-card client-overview-card">
+          <div class="message-header">
+            <div class="message-meta">
+              <div class="message-client">${client.name || client.id}</div>
+              <div class="message-user">Subdomain: ${client.id}</div>
+              <div class="message-timestamp">Created: ${new Date(client.created || Date.now()).toLocaleDateString()}</div>
+            </div>
+            <div class="client-status">
+              <span class="status-badge ${client.status === 'active' ? 'active' : 'inactive'}">
+                ${client.status || 'Unknown'}
+              </span>
+            </div>
+          </div>
+          <div class="message-content">
+            <h4>Configuration Settings</h4>
+            ${settingsHTML}
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     container.innerHTML = `<div class="messages-grid">${clientsHTML}</div>`;
   }
