@@ -1,5 +1,5 @@
 import { db, getSubdomainFromHostname } from './firebase.js';
-import { doc, updateDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, getDoc, updateDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // We'll import bcryptjs dynamically to avoid crypto module issues
 
