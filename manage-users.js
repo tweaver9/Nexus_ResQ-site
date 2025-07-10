@@ -1,11 +1,25 @@
 // manage-users.js - User Management Modal Functionality
 
-// Use the same Firebase instance as the HTML file (db is declared in HTML)
-// No need to declare db here as it's already declared in the HTML file
+import {
+  db,
+  getCurrentClientSubdomain,
+  getClientCollection,
+  getClientDoc
+} from './firebase.js';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  where
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Wait for Firebase and db to be available
 function ensureFirebase() {
-  if (typeof firebase !== 'undefined' && firebase.apps.length > 0 && typeof db !== 'undefined') {
+  if (typeof db !== 'undefined') {
     return true;
   }
   return false;
