@@ -127,11 +127,16 @@ async function showManageUsersModal(clientName) {
           </div>
           <select id="role" required>
             <option value="">Select Role</option>
-            <option value="User">User</option>
-            <option value="Manager">Manager</option>
-            <option value="Admin">Admin</option>
-            <option value="Nexus">Nexus</option>
+            <option value="user">User - Basic access to view and create inspections</option>
+            <option value="manager">Manager - Can manage assets and users, create reports</option>
+            <option value="admin">Admin - Full access to all client features and settings</option>
           </select>
+          <div class="form-hint role-hint">
+            <strong>Role Permissions:</strong><br>
+            • <strong>User:</strong> View assets, create inspections, basic reporting<br>
+            • <strong>Manager:</strong> All User permissions + manage assets, locations, and users<br>
+            • <strong>Admin:</strong> All Manager permissions + client settings, billing, and full control
+          </div>
           <div class="form-actions">
             <button type="button" id="cancel-add-user" class="explorer-btn danger">Cancel</button>
             <button type="submit" class="explorer-btn">Add User</button>
@@ -174,41 +179,76 @@ async function showManageUsersModal(clientName) {
           return;
         }
         
-        // Validate role is one of the allowed values (capitalized)
-        const validRoles = ['User', 'Manager', 'Admin', 'Nexus'];
+        // Validate role is one of the allowed values (lowercase for consistency)
+        const validRoles = ['user', 'manager', 'admin'];
         if (!validRoles.includes(role)) {
-          showNotification('Invalid role selected', 'warning');
+          showNotification('Invalid role selected. Only user, manager, and admin roles are allowed for client users.', 'warning');
+          return;
+        }
+
+        // Check if current user has permission to add users
+        const currentUserRole = sessionStorage.getItem('role');
+        if (!currentUserRole || !['admin', 'manager'].includes(currentUserRole.toLowerCase())) {
+          showNotification('You do not have permission to add users. Only admins and managers can add users.', 'error');
           return;
         }
         
-        // Generate username in correct format: FirstInitialLastName@clientName (no dots/spaces)
+        // Generate username in correct format: FirstInitialLastName (no @ symbol for new system)
         const cleanFirstName = firstName.replace(/[^a-zA-Z]/g, '');
         const cleanLastName = lastName.replace(/[^a-zA-Z]/g, '');
-        const newUsername = `${cleanFirstName[0]}${cleanLastName}`.toLowerCase() + '@' + subdomain;
-        
-        // Always use client name as default password
+        const username = `${cleanFirstName.charAt(0)}${cleanLastName}`.toLowerCase();
+
+        // Default password is the subdomain
         const defaultPassword = subdomain;
 
-        const currentUser = getCurrentUser();
-        const res = await fetch("https://api-boh2auh7ta-uc.a.run.app/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: newUsername,
-            password: defaultPassword,
-            firstName,
-            lastName,
-            role: role, // Role is already capitalized from validation
-            clientId: currentUser.subdomain
-          })
-        });
+        // Import bcryptjs for password hashing
+        const bcrypt = await import('https://cdn.skypack.dev/bcryptjs@2.4.3');
+        const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+        // Check if username already exists
+        const usersRef = window.firestoreCompat.collection('clients').doc(subdomain).collection('users');
+        const existingUserQuery = await usersRef.where('username', '==', username).get();
+
+        if (!existingUserQuery.empty) {
+          showNotification(`Username "${username}" already exists. Please try a different name combination.`, 'warning');
+          return;
+        }
+
+        // Create user object with proper structure for new Firebase system
+        const userData = {
+          firstName: firstName,
+          lastName: lastName,
+          username: username,
+          role: role,
+          hashedPassword: hashedPassword,
+          active: true,
+          must_change_password: false,
+          created: new Date().toISOString(),
+          createdBy: sessionStorage.getItem('username') || 'system',
+          login_count: 0,
+          last_login: null
+        };
+
+        // Add user to client-specific users collection
+        await usersRef.add(userData);
         
         if (!res.ok) throw new Error(await res.text());
         
+        // Log user creation
+        await window.firestoreCompat.collection('clients').doc(subdomain).collection('logs').add({
+          action: 'user_created',
+          username: username,
+          createdBy: sessionStorage.getItem('username') || 'system',
+          timestamp: new Date().toISOString(),
+          userRole: role,
+          firstName: firstName,
+          lastName: lastName
+        });
+
         // Show detailed success notification
         const successMessage = `✅ User Created Successfully!\n\n` +
           `👤 Name: ${firstName} ${lastName}\n` +
-          `📧 Username: ${newUsername}\n` +
+          `📧 Username: ${username}\n` +
           `🔑 Default Password: ${defaultPassword}\n\n` +
           `⚠️ Important: User should change password on first login`;
         
@@ -235,6 +275,57 @@ async function showManageUsersModal(clientName) {
   }
 }
 
+// Admin Password Reset Function
+async function resetUserPassword(userId, username) {
+  const currentUserRole = sessionStorage.getItem('role');
+  const subdomain = getSubdomain();
+
+  if (!currentUserRole || !['admin', 'manager'].includes(currentUserRole.toLowerCase())) {
+    showNotification('You do not have permission to reset passwords. Only admins and managers can reset passwords.', 'error');
+    return;
+  }
+
+  if (!confirm(`Are you sure you want to reset the password for user "${username}"?`)) {
+    return;
+  }
+
+  try {
+    // Import bcryptjs for password hashing
+    const bcrypt = await import('https://cdn.skypack.dev/bcryptjs@2.4.3');
+
+    // Default password is the subdomain
+    const defaultPassword = subdomain;
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+    // Update user password
+    await window.firestoreCompat.collection('clients').doc(subdomain).collection('users').doc(userId).update({
+      hashedPassword: hashedPassword,
+      must_change_password: true,
+      password_reset_date: new Date().toISOString(),
+      password_reset_by: sessionStorage.getItem('username') || 'admin'
+    });
+
+    // Log password reset
+    await window.firestoreCompat.collection('clients').doc(subdomain).collection('logs').add({
+      action: 'admin_password_reset',
+      target_username: username,
+      reset_by: sessionStorage.getItem('username') || 'admin',
+      timestamp: new Date().toISOString(),
+      ip_address: 'unknown',
+      user_agent: navigator.userAgent
+    });
+
+    showNotification(`Password reset successfully for user "${username}". New password: "${defaultPassword}". User will be required to change password on next login.`, 'success');
+
+  } catch (error) {
+    console.error('Password reset error:', error);
+    showNotification(`Failed to reset password for user "${username}": ${error.message}`, 'error');
+  }
+}
+
+// Make password reset function globally available
+window.resetUserPassword = resetUserPassword;
+
 // Bulk Add Users Modal
 function showBulkAddUsersModal(clientName) {
   try {
@@ -260,7 +351,7 @@ function showBulkAddUsersModal(clientName) {
         <br>
         📋 Paste CSV rows below (First Name,Last Name,Role):<br>
         📧 Username format: FirstInitialLastName@${getSubdomain()}<br>
-        <div class="bulk-instructions-detail">Valid roles: User, Manager, Admin. All users will start with the default password (${getSubdomain()}).</div>
+        <div class="bulk-instructions-detail">Valid roles: user, manager, admin. All users will start with the default password (${getSubdomain()}).</div>
       </div>
         <textarea id="bulk-users-textarea"></textarea>
         <div class="file-upload-section">

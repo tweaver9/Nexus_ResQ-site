@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getCurrentClientSubdomain } from './firebase.js';
 
 // Import bcryptjs for password validation
 import bcrypt from "https://cdn.skypack.dev/bcryptjs@2.4.3";
@@ -126,7 +127,15 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
     console.log("User logged in successfully:", userSessionData);
     console.log("Client context set:", subdomain);
 
-    window.location.href = "dashboard.html";
+    // Check if password change is required
+    if (userData.must_change_password) {
+      // Delay to allow session storage to be set
+      setTimeout(() => {
+        handlePasswordChange();
+      }, 100);
+    } else {
+      window.location.href = "dashboard.html";
+    }
   } catch (err) {
     console.error("Login error:", err);
     showError("Login failed. Please try again.");
@@ -157,6 +166,223 @@ function showError(message) {
   setTimeout(() => {
     errorDiv.style.display = "none";
   }, 5000);
+}
+
+// Helper function to show success messages
+function showSuccess(message) {
+  const errorDiv = document.getElementById("login-error");
+  errorDiv.textContent = message;
+  errorDiv.style.display = "block";
+  errorDiv.style.background = "rgba(16, 185, 129, 0.1)";
+  errorDiv.style.borderColor = "var(--nexus-success)";
+  errorDiv.style.color = "var(--nexus-success)";
+
+  // Hide success after 5 seconds
+  setTimeout(() => {
+    errorDiv.style.display = "none";
+    errorDiv.style.background = "rgba(239, 68, 68, 0.1)";
+    errorDiv.style.borderColor = "var(--nexus-error)";
+    errorDiv.style.color = "var(--nexus-error)";
+  }, 5000);
+}
+
+// Forgot Password functionality
+document.getElementById('forgot-password-btn').addEventListener('click', async (e) => {
+  e.preventDefault();
+
+  const subdomain = getSubdomain();
+  if (!subdomain) {
+    showError("Invalid access. Use your client subdomain.");
+    return;
+  }
+
+  const username = prompt("Enter your username:");
+  if (!username) {
+    return;
+  }
+
+  try {
+    // Find user by username in client-specific users collection
+    const usersRef = collection(db, 'clients', subdomain, 'users');
+    const userQuery = query(usersRef, where('username', '==', username.trim()));
+    const userSnapshot = await getDocs(userQuery);
+
+    if (userSnapshot.empty) {
+      showError("Username not found. Contact your administrator for help.");
+      return;
+    }
+
+    const userDoc = userSnapshot.docs[0];
+    const userData = userDoc.data();
+
+    // Generate default password (client subdomain)
+    const defaultPassword = subdomain;
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+    // Update user with new password and force password change
+    await updateDoc(userDoc.ref, {
+      hashedPassword: hashedPassword,
+      must_change_password: true,
+      password_reset_date: new Date().toISOString(),
+      password_reset_by: 'self_service'
+    });
+
+    // Log password reset
+    await addDoc(collection(db, 'clients', subdomain, 'logs'), {
+      action: 'password_reset',
+      username: userData.username,
+      timestamp: new Date().toISOString(),
+      reset_method: 'forgot_password',
+      ip_address: 'unknown',
+      user_agent: navigator.userAgent
+    });
+
+    showSuccess(`Password has been reset to default. Your new password is: "${defaultPassword}". You will be required to change it on next login.`);
+
+  } catch (error) {
+    console.error('Password reset error:', error);
+    showError("Failed to reset password. Please try again or contact support.");
+  }
+});
+
+// Password change functionality for users who must change password
+async function handlePasswordChange() {
+  const currentUser = JSON.parse(sessionStorage.getItem('nexusUser'));
+  const subdomain = getCurrentClientSubdomain();
+
+  if (!currentUser || !currentUser.must_change_password) {
+    return;
+  }
+
+  // Show password change modal
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+  `;
+
+  modal.innerHTML = `
+    <div style="
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      padding: 2rem;
+      width: 90%;
+      max-width: 400px;
+      border: 1px solid var(--nexus-border);
+    ">
+      <h3 style="color: var(--nexus-light); margin-bottom: 1rem;">Password Change Required</h3>
+      <p style="color: var(--nexus-muted); margin-bottom: 1.5rem;">You must change your password before continuing.</p>
+
+      <form id="password-change-form">
+        <div style="margin-bottom: 1rem;">
+          <label style="color: var(--nexus-light); font-weight: 600; display: block; margin-bottom: 0.5rem;">New Password</label>
+          <input type="password" id="new-password" required style="
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--nexus-dark);
+            border: 1px solid var(--nexus-border);
+            border-radius: var(--radius-sm);
+            color: var(--nexus-light);
+          ">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="color: var(--nexus-light); font-weight: 600; display: block; margin-bottom: 0.5rem;">Confirm New Password</label>
+          <input type="password" id="confirm-password" required style="
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--nexus-dark);
+            border: 1px solid var(--nexus-border);
+            border-radius: var(--radius-sm);
+            color: var(--nexus-light);
+          ">
+        </div>
+
+        <button type="submit" style="
+          width: 100%;
+          padding: 0.75rem;
+          background: linear-gradient(135deg, var(--nexus-yellow), #f59e0b);
+          color: var(--nexus-dark);
+          border: none;
+          border-radius: var(--radius-sm);
+          font-weight: 600;
+          cursor: pointer;
+        ">Change Password</button>
+      </form>
+
+      <div id="password-change-error" style="
+        color: var(--nexus-error);
+        margin-top: 1rem;
+        display: none;
+      "></div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Handle password change form submission
+  document.getElementById('password-change-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    const errorDiv = document.getElementById('password-change-error');
+
+    if (newPassword !== confirmPassword) {
+      errorDiv.textContent = "Passwords do not match.";
+      errorDiv.style.display = "block";
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      errorDiv.textContent = "Password must be at least 6 characters long.";
+      errorDiv.style.display = "block";
+      return;
+    }
+
+    try {
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update user password
+      const userRef = doc(db, 'clients', subdomain, 'users', currentUser.id);
+      await updateDoc(userRef, {
+        hashedPassword: hashedPassword,
+        must_change_password: false,
+        password_changed_date: new Date().toISOString()
+      });
+
+      // Log password change
+      await addDoc(collection(db, 'clients', subdomain, 'logs'), {
+        action: 'password_changed',
+        username: currentUser.username,
+        timestamp: new Date().toISOString(),
+        change_method: 'required_change'
+      });
+
+      // Update session
+      currentUser.must_change_password = false;
+      sessionStorage.setItem('nexusUser', JSON.stringify(currentUser));
+
+      // Remove modal
+      document.body.removeChild(modal);
+
+      showSuccess("Password changed successfully!");
+
+    } catch (error) {
+      console.error('Password change error:', error);
+      errorDiv.textContent = "Failed to change password. Please try again.";
+      errorDiv.style.display = "block";
+    }
+  });
 }
 
 // --- PASSWORD RESET MODAL LOGIC ---
