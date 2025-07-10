@@ -161,7 +161,7 @@ class MessagingSystem {
   }
 
   // Get messages for current client
-  async getClientMessages(limit = 50) {
+  async getClientMessages(maxMessages = 50) {
     if (!this.currentClient) {
       throw new Error('Client context missing');
     }
@@ -170,7 +170,7 @@ class MessagingSystem {
       const q = query(
         getClientCollection(this.currentClient, 'messages'),
         orderBy('timestamp', 'desc'),
-        limit(limit)
+        limit(maxMessages)
       );
 
       const snapshot = await getDocs(q);
