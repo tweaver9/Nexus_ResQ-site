@@ -1,25 +1,9 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getCurrentClientSubdomain } from './firebase.js';
+import { db, getCurrentClientSubdomain, getSubdomainFromHostname } from './firebase.js';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // We'll import bcryptjs dynamically to avoid crypto module issues
 
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
-  authDomain: "nexus-res-q.firebaseapp.com",
-  projectId: "nexus-res-q",
-};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// --- Extract subdomain ---
-function getSubdomain() {
-  const parts = window.location.hostname.split(".");
-  return parts.length > 2 ? parts[0] : null;
-}
+// Use the centralized getSubdomainFromHostname function from firebase.js
 
 // --- Handle login submission ---
 document.querySelector(".login-form").addEventListener("submit", async (e) => {
@@ -37,7 +21,7 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
     return;
   }
 
-  const subdomain = getSubdomain();
+  const subdomain = getSubdomainFromHostname();
   if (!subdomain) {
     showError("Invalid access. Use your client subdomain.");
     return;
@@ -200,7 +184,7 @@ function showSuccess(message) {
 document.getElementById('forgot-password-btn').addEventListener('click', async (e) => {
   e.preventDefault();
 
-  const subdomain = getSubdomain();
+  const subdomain = getSubdomainFromHostname();
   if (!subdomain) {
     showError("Invalid access. Use your client subdomain.");
     return;
