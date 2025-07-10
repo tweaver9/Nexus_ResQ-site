@@ -1,25 +1,11 @@
 // manage-users.js - User Management Modal Functionality
 
-import {
-  db,
-  getCurrentClientSubdomain,
-  getClientCollection,
-  getClientDoc
-} from './firebase.js';
-import {
-  collection,
-  getDocs,
-  addDoc,
-  deleteDoc,
-  doc,
-  query,
-  orderBy,
-  where
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// Use global Firebase variables from dashboard.html
+// db, firebase, getCurrentClientSubdomain, getClientCollection are available globally
 
 // Wait for Firebase and db to be available
 function ensureFirebase() {
-  if (typeof db !== 'undefined') {
+  if (typeof firebase !== 'undefined' && firebase.apps.length > 0 && typeof db !== 'undefined') {
     return true;
   }
   return false;

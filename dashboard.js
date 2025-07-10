@@ -261,6 +261,10 @@ window.addEventListener('DOMContentLoaded', async () => {
       `;
       table.appendChild(row);
     });
+    } catch (error) {
+      console.error('Error loading area statuses:', error);
+      table.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#666;">Error loading area statuses</td></tr>';
+    }
   }
 
   // --- FIREBASE MANAGER EXPLORER (COMPAT) ---
