@@ -293,92 +293,565 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // --- LOGS LOADING FUNCTIONALITY ---
 
+  // ===== MODERN LOGS SYSTEM =====
+
+  let allLogs = [];
+  let filteredLogs = [];
+  let currentFilters = {
+    search: '',
+    date: '',
+    type: '',
+    user: ''
+  };
+  let currentPageSize = 50;
+  let currentPage = 1;
+
   async function loadLogs() {
-    const logsList = document.getElementById('logs-list');
-    if (!logsList) return;
+    const virtualList = document.getElementById('logs-virtual-list');
+    if (!virtualList) return;
 
     try {
+      // Show loading state
+      virtualList.innerHTML = '<div class="loading">Loading logs...</div>';
+
+      // Load logs from Firestore
       const q = query(
         getClientCollection(currentClientSubdomain, 'logs'),
         orderBy('timestamp', 'desc'),
-        limit(200)
+        limit(1000) // Load more for better filtering
       );
 
       const snapshot = await getDocs(q);
-      logsList.innerHTML = '';
+      allLogs = [];
 
-      if (snapshot.empty) {
-        logsList.innerHTML = '<div class="no-data">No logs found for this client.</div>';
-        return;
-      }
-
-      // Group logs by date
-      const logsByDate = {};
       snapshot.forEach(doc => {
         if (doc.id !== '_placeholder') {
           const data = doc.data();
           const timestamp = data.timestamp ? new Date(data.timestamp) : new Date();
-          const dateKey = timestamp.toDateString();
 
-          if (!logsByDate[dateKey]) {
-            logsByDate[dateKey] = [];
-          }
-          logsByDate[dateKey].push({ id: doc.id, ...data, timestamp });
+          allLogs.push({
+            id: doc.id,
+            timestamp,
+            type: data.type || 'system',
+            action: data.action || 'Unknown action',
+            user: data.user || 'Unknown user',
+            details: data.details || '',
+            assetId: data.assetId || data.asset_id || '',
+            location: data.location || '',
+            status: data.status || '',
+            ...data
+          });
         }
       });
 
-      // Create date groups
-      const today = new Date().toDateString();
-      Object.keys(logsByDate).forEach(dateKey => {
-        const logs = logsByDate[dateKey];
-        const isToday = dateKey === today;
+      // Load users for filter dropdown
+      await loadUsersForLogFilter();
 
-        const dateGroup = document.createElement('div');
-        dateGroup.className = `logs-date-group ${isToday ? 'today' : ''}`;
+      // Initialize filters and render
+      filteredLogs = [...allLogs];
+      setupLogFilters();
+      renderLogs();
+      updateLogStats();
 
-        const dateHeader = document.createElement('div');
-        dateHeader.className = 'logs-date-header';
-        dateHeader.innerHTML = `
-          <span class="logs-date-title">${isToday ? 'Today' : new Date(dateKey).toLocaleDateString()}</span>
-          <span class="logs-date-count">${logs.length}</span>
-        `;
-
-        const dateContent = document.createElement('div');
-        dateContent.className = `logs-date-content ${isToday ? 'expanded' : ''}`;
-
-        logs.forEach(log => {
-          const logItem = document.createElement('div');
-          logItem.className = "log-item";
-          const timeString = log.timestamp.toLocaleTimeString();
-          const action = log.action || 'Unknown action';
-          const user = log.user || 'Unknown user';
-          const details = log.details || '';
-
-          logItem.innerHTML = `
-            <div class="log-header">
-              <span class="log-timestamp">${timeString}</span>
-              <span class="log-user">${user}</span>
-            </div>
-            <div class="log-action">${action}</div>
-            ${details ? `<div class="log-details">${details}</div>` : ''}
-          `;
-          dateContent.appendChild(logItem);
-        });
-
-        dateHeader.onclick = () => {
-          dateContent.classList.toggle('expanded');
-        };
-
-        dateGroup.appendChild(dateHeader);
-        dateGroup.appendChild(dateContent);
-        logsList.appendChild(dateGroup);
-      });
-
-      console.log(`Loaded ${snapshot.size} logs grouped by date for client ${currentClientSubdomain}`);
+      console.log(`Loaded ${allLogs.length} logs for client ${currentClientSubdomain}`);
     } catch (error) {
       console.error('Error loading logs:', error);
-      logsList.innerHTML = '<div class="error">Error loading logs.</div>';
+      virtualList.innerHTML = `
+        <div class="logs-empty-state">
+          <div class="empty-icon">⚠️</div>
+          <h3>Error Loading Logs</h3>
+          <p>Unable to load logs. Please try again.</p>
+          <button class="retry-btn" onclick="loadLogs()">Retry</button>
+        </div>
+      `;
     }
+  }
+
+  async function loadUsersForLogFilter() {
+    try {
+      const userFilter = document.getElementById('logs-user-filter');
+      if (!userFilter) return;
+
+      const snapshot = await getDocs(getClientCollection(currentClientSubdomain, 'users'));
+      const users = new Set();
+
+      snapshot.forEach(doc => {
+        if (doc.id !== '_placeholder') {
+          const userData = doc.data();
+          const username = userData.username || userData.firstName || doc.id;
+          if (username) users.add(username);
+        }
+      });
+
+      // Also add users from logs
+      allLogs.forEach(log => {
+        if (log.user && log.user !== 'Unknown user') {
+          users.add(log.user);
+        }
+      });
+
+      // Clear and populate dropdown
+      userFilter.innerHTML = '<option value="">All Users</option>';
+      Array.from(users).sort().forEach(user => {
+        const option = document.createElement('option');
+        option.value = user;
+        option.textContent = user;
+        userFilter.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Error loading users for log filter:', error);
+    }
+  }
+
+  function setupLogFilters() {
+    const searchInput = document.getElementById('logs-search');
+    const dateFilter = document.getElementById('logs-date-filter');
+    const typeFilter = document.getElementById('logs-type-filter');
+    const userFilter = document.getElementById('logs-user-filter');
+    const clearFiltersBtn = document.getElementById('logs-clear-filters');
+    const pageSizeSelect = document.getElementById('logs-page-size');
+
+    // Search input with debounce
+    let searchTimeout;
+    searchInput?.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        currentFilters.search = e.target.value.toLowerCase();
+        applyFilters();
+      }, 300);
+    });
+
+    // Filter dropdowns
+    dateFilter?.addEventListener('change', (e) => {
+      currentFilters.date = e.target.value;
+      applyFilters();
+    });
+
+    typeFilter?.addEventListener('change', (e) => {
+      currentFilters.type = e.target.value;
+      applyFilters();
+    });
+
+    userFilter?.addEventListener('change', (e) => {
+      currentFilters.user = e.target.value;
+      applyFilters();
+    });
+
+    // Clear filters
+    clearFiltersBtn?.addEventListener('click', () => {
+      currentFilters = { search: '', date: '', type: '', user: '' };
+      searchInput.value = '';
+      dateFilter.value = '';
+      typeFilter.value = '';
+      userFilter.value = '';
+      applyFilters();
+    });
+
+    // Page size
+    pageSizeSelect?.addEventListener('change', (e) => {
+      currentPageSize = parseInt(e.target.value);
+      currentPage = 1;
+      renderLogs();
+      updateLogStats();
+    });
+
+    // Export button
+    const exportBtn = document.getElementById('logs-export-btn');
+    exportBtn?.addEventListener('click', exportLogs);
+  }
+
+  function applyFilters() {
+    filteredLogs = allLogs.filter(log => {
+      // Search filter
+      if (currentFilters.search) {
+        const searchTerm = currentFilters.search;
+        const searchableText = `${log.action} ${log.user} ${log.details} ${log.assetId} ${log.location}`.toLowerCase();
+        if (!searchableText.includes(searchTerm)) return false;
+      }
+
+      // Date filter
+      if (currentFilters.date) {
+        const logDate = new Date(log.timestamp);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        switch (currentFilters.date) {
+          case 'today':
+            if (logDate.toDateString() !== today.toDateString()) return false;
+            break;
+          case 'yesterday':
+            if (logDate.toDateString() !== yesterday.toDateString()) return false;
+            break;
+          case 'week':
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            if (logDate < weekAgo) return false;
+            break;
+          case 'month':
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            if (logDate < monthAgo) return false;
+            break;
+        }
+      }
+
+      // Type filter
+      if (currentFilters.type && log.type !== currentFilters.type) return false;
+
+      // User filter
+      if (currentFilters.user && log.user !== currentFilters.user) return false;
+
+      return true;
+    });
+
+    currentPage = 1;
+    renderLogs();
+    updateLogStats();
+    updateActiveFilters();
+  }
+
+  function updateActiveFilters() {
+    const activeFiltersDiv = document.getElementById('logs-active-filters');
+    const filterTagsDiv = document.getElementById('logs-filter-tags');
+
+    if (!activeFiltersDiv || !filterTagsDiv) return;
+
+    const hasActiveFilters = Object.values(currentFilters).some(filter => filter !== '');
+
+    if (hasActiveFilters) {
+      activeFiltersDiv.style.display = 'flex';
+
+      let tags = [];
+      if (currentFilters.search) tags.push(`Search: "${currentFilters.search}"`);
+      if (currentFilters.date) tags.push(`Date: ${currentFilters.date}`);
+      if (currentFilters.type) tags.push(`Type: ${currentFilters.type}`);
+      if (currentFilters.user) tags.push(`User: ${currentFilters.user}`);
+
+      filterTagsDiv.innerHTML = tags.map(tag => `
+        <span class="filter-tag">
+          ${tag}
+          <span class="remove-tag" onclick="removeFilter('${tag.split(':')[0].toLowerCase()}')">&times;</span>
+        </span>
+      `).join('');
+    } else {
+      activeFiltersDiv.style.display = 'none';
+    }
+  }
+
+  window.removeFilter = function(filterType) {
+    currentFilters[filterType] = '';
+
+    // Update UI elements
+    const searchInput = document.getElementById('logs-search');
+    const dateFilter = document.getElementById('logs-date-filter');
+    const typeFilter = document.getElementById('logs-type-filter');
+    const userFilter = document.getElementById('logs-user-filter');
+
+    switch (filterType) {
+      case 'search':
+        if (searchInput) searchInput.value = '';
+        break;
+      case 'date':
+        if (dateFilter) dateFilter.value = '';
+        break;
+      case 'type':
+        if (typeFilter) typeFilter.value = '';
+        break;
+      case 'user':
+        if (userFilter) userFilter.value = '';
+        break;
+    }
+
+    applyFilters();
+  };
+
+  function renderLogs() {
+    const virtualList = document.getElementById('logs-virtual-list');
+    if (!virtualList) return;
+
+    if (filteredLogs.length === 0) {
+      virtualList.innerHTML = `
+        <div class="logs-empty-state">
+          <div class="empty-icon">📋</div>
+          <h3>No logs found</h3>
+          <p>Try adjusting your filters or search criteria.</p>
+          <button class="retry-btn" onclick="document.getElementById('logs-clear-filters').click()">Clear Filters</button>
+        </div>
+      `;
+      return;
+    }
+
+    // Calculate pagination
+    const startIndex = (currentPage - 1) * currentPageSize;
+    const endIndex = Math.min(startIndex + currentPageSize, filteredLogs.length);
+    const logsToShow = filteredLogs.slice(startIndex, endIndex);
+
+    // Render log entries
+    virtualList.innerHTML = logsToShow.map(log => createLogEntryHTML(log)).join('');
+
+    // Add click handlers for expansion
+    virtualList.querySelectorAll('.log-entry').forEach(entry => {
+      entry.addEventListener('click', (e) => {
+        if (e.target.closest('.log-action-btn')) return; // Don't expand when clicking action buttons
+        entry.classList.toggle('expanded');
+      });
+    });
+  }
+
+  function createLogEntryHTML(log) {
+    const timestamp = log.timestamp.toLocaleString();
+    const timeOnly = log.timestamp.toLocaleTimeString();
+    const dateOnly = log.timestamp.toLocaleDateString();
+
+    // Determine log type and icon
+    const typeInfo = getLogTypeInfo(log.type);
+
+    // Create summary text
+    const summary = createLogSummary(log);
+    const subtext = createLogSubtext(log);
+
+    return `
+      <div class="log-entry" data-log-id="${log.id}">
+        <div class="log-entry-main">
+          <div class="log-type-badge ${log.type}">
+            ${typeInfo.icon}
+          </div>
+
+          <div class="log-content">
+            <div class="log-timestamp">${dateOnly} ${timeOnly}</div>
+            <div class="log-summary">${summary}</div>
+            <div class="log-subtext">${subtext}</div>
+          </div>
+
+          <svg class="log-expand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6,9 12,15 18,9"></polyline>
+          </svg>
+        </div>
+
+        <div class="log-details">
+          <div class="log-details-grid">
+            ${createLogDetailsHTML(log)}
+          </div>
+          <div class="log-actions">
+            ${createLogActionsHTML(log)}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function getLogTypeInfo(type) {
+    const typeMap = {
+      inspection: { icon: '🔍', label: 'Inspection' },
+      move: { icon: '📦', label: 'Move' },
+      failure: { icon: '⚠️', label: 'Failure' },
+      user: { icon: '👤', label: 'User' },
+      system: { icon: '⚙️', label: 'System' }
+    };
+
+    return typeMap[type] || { icon: '📝', label: 'Log' };
+  }
+
+  function createLogSummary(log) {
+    switch (log.type) {
+      case 'inspection':
+        return `${log.action} completed by ${log.user}`;
+      case 'move':
+        return `Asset moved ${log.details || 'to new location'}`;
+      case 'failure':
+        return `Asset failure: ${log.action}`;
+      case 'user':
+        return `User action: ${log.action}`;
+      default:
+        return log.action || 'System event';
+    }
+  }
+
+  function createLogSubtext(log) {
+    const parts = [];
+    if (log.assetId) parts.push(`Asset: ${log.assetId}`);
+    if (log.location) parts.push(`Location: ${log.location}`);
+    if (log.user && log.user !== 'Unknown user') parts.push(`User: ${log.user}`);
+    if (log.status) parts.push(`Status: ${log.status}`);
+
+    return parts.join(' • ') || 'No additional details';
+  }
+
+  function createLogDetailsHTML(log) {
+    const details = [];
+
+    if (log.assetId) details.push(`
+      <div class="log-detail-item">
+        <div class="log-detail-label">Asset ID</div>
+        <div class="log-detail-value">${log.assetId}</div>
+      </div>
+    `);
+
+    if (log.location) details.push(`
+      <div class="log-detail-item">
+        <div class="log-detail-label">Location</div>
+        <div class="log-detail-value">${log.location}</div>
+      </div>
+    `);
+
+    if (log.user) details.push(`
+      <div class="log-detail-item">
+        <div class="log-detail-label">User</div>
+        <div class="log-detail-value">${log.user}</div>
+      </div>
+    `);
+
+    if (log.status) details.push(`
+      <div class="log-detail-item">
+        <div class="log-detail-label">Status</div>
+        <div class="log-detail-value">${log.status}</div>
+      </div>
+    `);
+
+    if (log.details) details.push(`
+      <div class="log-detail-item">
+        <div class="log-detail-label">Details</div>
+        <div class="log-detail-value">${log.details}</div>
+      </div>
+    `);
+
+    details.push(`
+      <div class="log-detail-item">
+        <div class="log-detail-label">Timestamp</div>
+        <div class="log-detail-value">${log.timestamp.toLocaleString()}</div>
+      </div>
+    `);
+
+    return details.join('');
+  }
+
+  function createLogActionsHTML(log) {
+    const actions = [];
+
+    // Copy details action
+    actions.push(`
+      <button class="log-action-btn" onclick="copyLogDetails('${log.id}')">
+        Copy Details
+      </button>
+    `);
+
+    // Download PDF action (if applicable)
+    if (log.type === 'inspection') {
+      actions.push(`
+        <button class="log-action-btn" onclick="downloadLogPDF('${log.id}')">
+          Download PDF
+        </button>
+      `);
+    }
+
+    // Revert action (if applicable and user has permissions)
+    if (log.type === 'move' && canRevertLog(log)) {
+      actions.push(`
+        <button class="log-action-btn danger" onclick="revertLogAction('${log.id}')">
+          Revert
+        </button>
+      `);
+    }
+
+    return actions.join('');
+  }
+
+  function updateLogStats() {
+    const showingText = document.getElementById('logs-showing-text');
+    if (!showingText) return;
+
+    const startIndex = (currentPage - 1) * currentPageSize + 1;
+    const endIndex = Math.min(currentPage * currentPageSize, filteredLogs.length);
+    const total = filteredLogs.length;
+
+    if (total === 0) {
+      showingText.textContent = 'No logs found';
+    } else {
+      showingText.textContent = `Showing ${startIndex}–${endIndex} of ${total} logs`;
+    }
+  }
+
+  function exportLogs() {
+    if (filteredLogs.length === 0) {
+      alert('No logs to export');
+      return;
+    }
+
+    // Create CSV content
+    const headers = ['Timestamp', 'Type', 'Action', 'User', 'Asset ID', 'Location', 'Status', 'Details'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredLogs.map(log => [
+        log.timestamp.toISOString(),
+        log.type,
+        `"${log.action.replace(/"/g, '""')}"`,
+        log.user,
+        log.assetId || '',
+        log.location || '',
+        log.status || '',
+        `"${(log.details || '').replace(/"/g, '""')}"`
+      ].join(','))
+    ].join('\n');
+
+    // Download file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `nexus-logs-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  // Utility functions for log actions
+  window.copyLogDetails = function(logId) {
+    const log = allLogs.find(l => l.id === logId);
+    if (!log) return;
+
+    const details = `
+Log Details:
+Timestamp: ${log.timestamp.toLocaleString()}
+Type: ${log.type}
+Action: ${log.action}
+User: ${log.user}
+Asset ID: ${log.assetId || 'N/A'}
+Location: ${log.location || 'N/A'}
+Status: ${log.status || 'N/A'}
+Details: ${log.details || 'N/A'}
+    `.trim();
+
+    navigator.clipboard.writeText(details).then(() => {
+      // Show success feedback
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.style.background = 'var(--nexus-success)';
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = '';
+      }, 2000);
+    });
+  };
+
+  window.downloadLogPDF = function(logId) {
+    // Placeholder for PDF download functionality
+    alert('PDF download functionality would be implemented here');
+  };
+
+  window.revertLogAction = function(logId) {
+    // Placeholder for revert functionality
+    if (confirm('Are you sure you want to revert this action?')) {
+      alert('Revert functionality would be implemented here');
+    }
+  };
+
+  function canRevertLog(log) {
+    // Check if user has permissions to revert this log
+    const userRole = sessionStorage.getItem('role');
+    return userRole === 'admin' || userRole === 'nexus';
   }
 
   // --- FIREBASE MANAGER EXPLORER (COMPAT) ---
