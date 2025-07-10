@@ -1,5 +1,5 @@
-import { db, getCurrentClientSubdomain, getSubdomainFromHostname } from './firebase.js';
-import { doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { db, getSubdomainFromHostname } from './firebase.js';
+import { doc, updateDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // We'll import bcryptjs dynamically to avoid crypto module issues
 
@@ -42,52 +42,43 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
 
     const clientData = clientDoc.data();
 
-    // Find user by username in client-specific users collection
-    const usersRef = collection(db, 'clients', subdomain, 'users');
-    const userQuery = query(usersRef, where('username', '==', username));
-    const userSnapshot = await getDocs(userQuery);
+    // Backend will handle user lookup and validation
 
-    if (userSnapshot.empty) {
-      showError("Invalid username or password.");
-      return;
-    }
+    // Call your Firebase Cloud Function for authentication
+    console.log("Calling backend for authentication..."); // Debug log
 
-    const userDoc = userSnapshot.docs[0];
-    const userData = userDoc.data();
-
-    // Check if user is active
-    if (!userData.active) {
-      showError("Account is inactive. Please contact your administrator.");
-      return;
-    }
-
-    // Validate password using bcryptjs (dynamic import)
-    console.log("Importing bcryptjs..."); // Debug log
-    const bcrypt = await import('https://cdn.skypack.dev/bcryptjs@2.4.3');
-    console.log("bcryptjs imported successfully"); // Debug log
-    const isPasswordValid = await bcrypt.compare(password, userData.hashedPassword);
-    console.log("Password validation result:", isPasswordValid); // Debug log
-
-    if (!isPasswordValid) {
-      showError("Invalid username or password.");
-      return;
-    }
-
-    // Update last login
-    await updateDoc(userDoc.ref, {
-      last_login: new Date().toISOString(),
-      login_count: (userData.login_count || 0) + 1
+    const authResponse = await fetch('https://us-central1-nexus-res-q.cloudfunctions.net/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+        subdomain: subdomain
+      })
     });
 
-    // Store comprehensive session info
+    if (!authResponse.ok) {
+      const errorData = await authResponse.json().catch(() => ({ error: 'Authentication failed' }));
+      showError(errorData.error || "Invalid username or password.");
+      return;
+    }
+
+    const authData = await authResponse.json();
+    console.log("Backend authentication successful"); // Debug log
+
+    // Use the user data returned from backend
+    const userData = authData.user;
+
+    // Store comprehensive session info from backend response
     const userSessionData = {
-      id: userDoc.id,
       username: userData.username,
       firstName: userData.firstName,
       lastName: userData.lastName,
       role: userData.role,
-      active: userData.active,
-      clientSubdomain: subdomain
+      clientSubdomain: subdomain,
+      must_change_password: userData.must_change_password || false
     };
 
     sessionStorage.setItem("nexusUser", JSON.stringify(userSessionData));
@@ -109,14 +100,7 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
     // Store client name
     sessionStorage.setItem("clientName", clientData.name);
 
-    // Log successful login
-    await addDoc(collection(db, 'clients', subdomain, 'logs'), {
-      action: 'user_login',
-      username: userData.username,
-      timestamp: new Date().toISOString(),
-      ip_address: 'unknown', // Could be enhanced with IP detection
-      user_agent: navigator.userAgent
-    });
+    // Backend will handle login logging
 
     console.log("User logged in successfully:", userSessionData);
     console.log("Client context set:", subdomain);
@@ -196,41 +180,31 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
   }
 
   try {
-    // Find user by username in client-specific users collection
-    const usersRef = collection(db, 'clients', subdomain, 'users');
-    const userQuery = query(usersRef, where('username', '==', username.trim()));
-    const userSnapshot = await getDocs(userQuery);
+    // Call backend to reset password
+    const defaultPassword = subdomain; // Use subdomain as default password
 
-    if (userSnapshot.empty) {
-      showError("Username not found. Contact your administrator for help.");
+    const resetResponse = await fetch('https://us-central1-nexus-res-q.cloudfunctions.net/api/reset-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username.trim(),
+        code: 'forgot_password', // You might want to implement a proper reset code system
+        newPassword: defaultPassword,
+        clientName: subdomain
+      })
+    });
+
+    if (!resetResponse.ok) {
+      const errorData = await resetResponse.json().catch(() => ({ error: 'Password reset failed' }));
+      if (resetResponse.status === 404) {
+        showError("Username not found. Contact your administrator for help.");
+      } else {
+        showError(errorData.error || "Failed to reset password. Please try again.");
+      }
       return;
     }
-
-    const userDoc = userSnapshot.docs[0];
-    const userData = userDoc.data();
-
-    // Generate default password (client subdomain)
-    const defaultPassword = subdomain;
-    const bcrypt = await import('https://cdn.skypack.dev/bcryptjs@2.4.3');
-    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
-
-    // Update user with new password and force password change
-    await updateDoc(userDoc.ref, {
-      hashedPassword: hashedPassword,
-      must_change_password: true,
-      password_reset_date: new Date().toISOString(),
-      password_reset_by: 'self_service'
-    });
-
-    // Log password reset
-    await addDoc(collection(db, 'clients', subdomain, 'logs'), {
-      action: 'password_reset',
-      username: userData.username,
-      timestamp: new Date().toISOString(),
-      reset_method: 'forgot_password',
-      ip_address: 'unknown',
-      user_agent: navigator.userAgent
-    });
 
     showSuccess(`Password has been reset to default. Your new password is: "${defaultPassword}". You will be required to change it on next login.`);
 
