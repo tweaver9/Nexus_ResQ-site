@@ -1136,87 +1136,8 @@
         
         console.log('Total processed assets:', allAssets.length);
         
-        // Always add demo data for showcase (comment out for production)
-        console.log('Adding demo data for showcase');
-        allAssets = [
-          {
-            id: 'demo1',
-            kind: '30# ABC Extinguisher',
-            type: 'Fire Extinguisher',
-            asset_id: 'FE-001-2024',
-            location: 'Building A',
-            sublocation: 'Main Hallway',
-            precision: '1234',
-            annualDue: '03/2025',
-            monthlyDue: '02/2025',
-            serial: 'SE123456789',
-            lastInspection: 'January 15, 2025'
-          },
-          {
-            id: 'demo2',
-            kind: 'Emergency Exit Sign',
-            type: 'Exit Sign',
-            asset_id: 'ES-047-2024',
-            location: 'Building A',
-            sublocation: 'East Wing',
-            precision: '5678',
-            annualDue: '01/2025',
-            monthlyDue: '01/2025',
-            serial: 'EXIT789012',
-            lastInspection: 'December 20, 2024'
-          },
-          {
-            id: 'demo3',
-            kind: 'Fire Hose',
-            type: 'Hose',
-            asset_id: 'FH-023-2024',
-            location: 'Warehouse C',
-            sublocation: 'Loading Dock',
-            precision: '9012',
-            annualDue: '06/2025',
-            monthlyDue: '03/2025',
-            serial: 'HOSE345678',
-            lastInspection: 'November 30, 2024'
-          },
-          {
-            id: 'demo4',
-            kind: 'PIV Valve',
-            type: 'PIV',
-            asset_id: 'PIV-089-2024',
-            location: 'Powerhouse',
-            precision: '3456',
-            annualDue: '11/2024',
-            monthlyDue: '01/2025',
-            serial: 'PIV901234',
-            lastInspection: 'October 10, 2024'
-          },
-          {
-            id: 'demo5',
-            kind: '5# ABC Extinguisher',
-            type: 'Fire Extinguisher',
-            asset_id: 'FE-134-2024',
-            location: 'Building B',
-            sublocation: 'Server Room',
-            precision: '7890',
-            annualDue: '09/2025',
-            monthlyDue: '02/2025',
-            serial: 'SMALL567890',
-            lastInspection: 'January 8, 2025'
-          },
-          {
-            id: 'demo6',
-            kind: 'Emergency Light',
-            type: 'Emergency Equipment',
-            asset_id: 'EL-067-2024',
-            location: 'Manufacturing Wing',
-            sublocation: 'Assembly Line 2',
-            precision: '2345',
-            annualDue: '04/2025',
-            monthlyDue: '02/2025',
-            serial: 'LIGHT123456',
-            lastInspection: 'December 15, 2024'
-          }
-        ];
+        // Demo data removed - now using real Firestore data only
+        console.log('Using real Firestore data only - no demo data');
         
         hideSkeleton();
         renderAssets();
@@ -1246,7 +1167,7 @@
       count.textContent = list.length;
       grid.innerHTML = list.map(asset=>`
         <div class="user-card" data-id="${asset.id}" onclick="viewAssetDetails('${asset.id}')" style="position: relative;">
-          ${canModifyAssets() && !asset.id.startsWith('demo') ? `
+          ${canModifyAssets() ? `
             <button class="delete-btn" onclick="event.stopPropagation(); deleteAsset('${asset.id}')" title="Delete Asset">
               🗑️
             </button>
@@ -1539,11 +1460,7 @@
           console.warn('Could not load asset types from assets for filter:', error.message);
         }
         
-        // Add demo types if none found
-        if (allAssetTypes.size === 0) {
-          const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
-          demoTypes.forEach(type => allAssetTypes.add(type));
-        }
+        // No fallback demo types - use real data only
         
         // Sort and add to filter dropdown
         const sortedTypes = Array.from(allAssetTypes).sort((a, b) => 
@@ -1559,15 +1476,7 @@
         
       } catch (error) {
         console.error('Error loading asset types:', error);
-        // Add demo types on error
-        const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
-        const typeFilter = document.getElementById('asset-type-filter');
-        demoTypes.forEach(type => {
-          const opt = document.createElement('option');
-          opt.value = type;
-          opt.textContent = type;
-          typeFilter.appendChild(opt);
-        });
+        // No fallback demo types on error - show empty dropdown
       }
     }
 
@@ -1598,16 +1507,7 @@
           dropdown.appendChild(option);
         });
         
-        // Add demo clients if none found
-        if (!hasClients) {
-          const demoClients = ['demo', 'spacex', 'tesla', 'boeing', 'lockheed'];
-          demoClients.forEach(client => {
-            const option = document.createElement('option');
-            option.value = client;
-            option.textContent = client.charAt(0).toUpperCase() + client.slice(1);
-            dropdown.appendChild(option);
-          });
-        }
+        // No demo clients fallback - use real data only
 
         dropdown.addEventListener('change', (e) => {
           if (e.target.value) {
@@ -1619,16 +1519,8 @@
         dropdown.value = clientId;
       } catch (error) {
         console.error('Error loading clients:', error);
-        // Add demo clients on error
-        const dropdown = document.getElementById('client-dropdown');
-        const demoClients = ['demo', 'spacex', 'tesla', 'boeing', 'lockheed'];
-        demoClients.forEach(client => {
-          const option = document.createElement('option');
-          option.value = client;
-          option.textContent = client.charAt(0).toUpperCase() + client.slice(1);
-          dropdown.appendChild(option);
-        });
-        dropdown.value = clientId;
+        // No demo clients fallback - show error message
+        console.error('Failed to load clients from Firestore');
       }
     }
 
@@ -2314,12 +2206,7 @@
           console.warn('Could not load asset types from client onboarding:', error.message);
         }
         
-        // 4. Add demo types if no types found at all
-        if (allAssetTypes.size === 0) {
-          console.log('No asset types found, adding demo types');
-          const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant', 'Sprinkler Head', 'Standpipe', 'Fire Pump', 'Alarm Panel'];
-          demoTypes.forEach(type => allAssetTypes.add(type));
-        }
+        // 4. No demo types fallback - use real data only
         
         // 5. Sort and add all unique types to dropdown
         const sortedTypes = Array.from(allAssetTypes).sort((a, b) => 
@@ -2345,14 +2232,8 @@
         
       } catch (error) {
         console.error('Error loading asset types for form:', error);
-        // Fallback to demo types on error
-        const demoTypes = ['Fire Extinguisher', 'Exit Sign', 'Hose', 'PIV', 'Emergency Equipment', 'Hydrant'];
-        demoTypes.forEach(type => {
-          const option = document.createElement('option');
-          option.value = type;
-          option.textContent = type;
-          typeSelect.appendChild(option);
-        });
+        // No demo types fallback - show error message
+        console.error('Failed to load asset types for form');
         
         const customOption = document.createElement('option');
         customOption.value = 'custom';
@@ -2387,16 +2268,7 @@
           kindSelect.appendChild(option);
         });
         
-        // Add demo kinds based on type
-        if (!hasKinds) {
-          const demoKinds = getDemoKindsForType(assetType);
-          demoKinds.forEach(kind => {
-            const option = document.createElement('option');
-            option.value = kind;
-            option.textContent = kind;
-            kindSelect.appendChild(option);
-          });
-        }
+        // No demo kinds fallback - use real data only
         
         // Add custom option
         const customOption = document.createElement('option');
@@ -2409,18 +2281,7 @@
       }
     }
     
-    function getDemoKindsForType(type) {
-      const kindMap = {
-        'Fire Extinguisher': ['5# ABC', '10# ABC', '20# ABC', '30# ABC', '150# Wheeled Unit'],
-        'Exit Sign': ['LED Exit Sign', 'Emergency Exit Sign', 'Illuminated Exit'],
-        'Hose': ['1.5" Fire Hose', '2.5" Fire Hose', 'Standpipe Hose'],
-        'PIV': ['6" PIV Valve', '8" PIV Valve', '10" PIV Valve'],
-        'Emergency Equipment': ['Emergency Light', 'Horn Strobe', 'Pull Station'],
-        'Hydrant': ['Wet Barrel Hydrant', 'Dry Barrel Hydrant']
-      };
-      
-      return kindMap[type] || ['Standard Unit'];
-    }
+    // Demo function removed - using real Firestore data only
     
     async function loadLocationsForForm() {
       const locationSelect = document.getElementById('location-select');
@@ -2438,16 +2299,7 @@
           locationSelect.appendChild(option);
         });
         
-        // Add demo locations if none found
-        if (!hasLocations) {
-          const demoLocations = ['Building A', 'Building B', 'Warehouse C', 'Manufacturing Wing', 'Powerhouse'];
-          demoLocations.forEach(location => {
-            const option = document.createElement('option');
-            option.value = location;
-            option.textContent = location;
-            locationSelect.appendChild(option);
-          });
-        }
+        // No demo locations fallback - use real data only
         
       } catch (error) {
         console.error('Error loading locations for form:', error);
@@ -2463,22 +2315,9 @@
         return;
       }
       
-      // Demo sublocations based on location
-      const sublocationMap = {
-        'Building A': ['Main Hallway', 'East Wing', 'West Wing', 'Lobby'],
-        'Building B': ['Server Room', 'Conference Room', 'Kitchen', 'Storage'],
-        'Warehouse C': ['Loading Dock', 'Storage Area A', 'Storage Area B'],
-        'Manufacturing Wing': ['Assembly Line 1', 'Assembly Line 2', 'Quality Control'],
-        'Powerhouse': ['Main Floor', 'Control Room', 'Equipment Room']
-      };
-      
-      const sublocations = sublocationMap[location] || ['Main Area', 'Secondary Area'];
-      sublocations.forEach(sublocation => {
-        const option = document.createElement('option');
-        option.value = sublocation;
-        option.textContent = sublocation;
-        sublocationSelect.appendChild(option);
-      });
+      // Demo sublocation mapping removed - should load from real Firestore location data
+      // TODO: Implement real sublocation loading from Firestore locations collection
+      console.log('Sublocation loading needs real Firestore implementation');
     }
     
     function loadExistingPrecisionLocations() {
