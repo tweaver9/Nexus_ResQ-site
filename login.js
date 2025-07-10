@@ -10,9 +10,14 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   console.log("Login form submitted"); // Debug log
 
-  const username = e.target.username.value.trim();
+  let username = e.target.username.value.trim();
   const password = e.target.password.value.trim();
   const errorDiv = document.getElementById("login-error");
+
+  // Extract just the username part (remove @domain if present)
+  if (username.includes('@')) {
+    username = username.split('@')[0];
+  }
 
   console.log("Username:", username, "Password length:", password.length); // Debug log
 
