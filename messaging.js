@@ -6,16 +6,17 @@ import {
   getClientCollection, 
   getClientDoc 
 } from './firebase.js';
-import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  query, 
-  orderBy, 
-  where, 
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  where,
   updateDoc,
   doc,
-  serverTimestamp 
+  limit,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /**
