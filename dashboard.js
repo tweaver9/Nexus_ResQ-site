@@ -56,7 +56,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     user:     ['home', 'assets', 'logs', 'analytics', 'inspections', 'help'],
     nexus:    [
       'home', 'assets', 'users', 'logs', 'analytics', 'inspections', 'site-settings', 'help',
-      'firebase', 'onboard'
+      'firebase', 'nexus-admin', 'onboard'
     ]
   };
 
@@ -738,8 +738,20 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.location.href = 'site-settings.html';
   });
 
+  // --- NEXUS ADMIN FUNCTIONALITY ---
+
+  // Initialize nexus admin modal when button is clicked
+  document.getElementById('btn-nexus-admin').addEventListener('click', () => {
+    if (role !== 'nexus') {
+      alert('Access denied. This feature is restricted to Nexus users.');
+      return;
+    }
+    // Open nexus-admin.html in a modal
+    openNexusAdminModal();
+  });
+
   // --- ONBOARD CLIENT FUNCTIONALITY ---
-  
+
   // Initialize onboard form when panel is shown
   document.getElementById('btn-onboard').addEventListener('click', () => {
     if (role !== 'nexus') {
@@ -749,5 +761,96 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Redirect to the standalone onboard page
     window.location.href = 'onboard.html';
   });
+
+  // --- NEXUS ADMIN MODAL FUNCTION ---
+
+  function openNexusAdminModal() {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    `;
+
+    // Create modal content container
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.cssText = `
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      max-width: 95vw;
+      max-height: 95vh;
+      overflow: hidden;
+      box-shadow: var(--shadow-heavy);
+      position: relative;
+    `;
+
+    // Create iframe to load nexus-admin.html
+    const iframe = document.createElement('iframe');
+    iframe.src = 'nexus-admin.html';
+    iframe.style.cssText = `
+      width: 1200px;
+      height: 800px;
+      border: none;
+      border-radius: var(--radius);
+    `;
+
+    // Create close button
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '×';
+    closeButton.style.cssText = `
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: var(--nexus-error);
+      color: var(--nexus-light);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `;
+
+    // Close modal function
+    const closeModal = () => {
+      document.body.removeChild(modalOverlay);
+    };
+
+    // Event listeners
+    closeButton.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+
+    // Escape key to close
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+
+    // Assemble modal
+    modalContent.appendChild(iframe);
+    modalContent.appendChild(closeButton);
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
+  }
 
 });

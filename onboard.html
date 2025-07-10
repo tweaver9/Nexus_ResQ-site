@@ -8,23 +8,39 @@
 <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script>
 <meta charset="UTF-8">
 <title>Nexus Res-Q | Client Onboarding</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --nexus-yellow: #fdd835;
-    --nexus-bg: #12233d;
-    --nexus-card: #1c3050;
-    --nexus-input: #203358;
-    --nexus-light: #e6e6f1;
-    --nexus-shadow: 0 12px 28px 0 rgba(0,0,0,0.16);
-    --radius: 18px;
+    --nexus-bg: #0a0e1a;
+    --nexus-card: #151b2e;
+    --nexus-card-hover: #1a2138;
+    --nexus-dark: #0f1419;
+    --nexus-border: #2a3441;
+    --nexus-light: #ffffff;
+    --nexus-muted: #8792a3;
+    --nexus-success: #10b981;
+    --nexus-warning: #f59e0b;
+    --nexus-error: #ef4444;
+    --nexus-info: #3b82f6;
+    --radius: 16px;
+    --radius-sm: 8px;
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.4);
   }
-  html, body {
-    height: 100%;
-    background: var(--nexus-bg);
-    font-family: 'Oswald', Arial, sans-serif;
+
+  * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
+  }
+
+  html, body {
+    height: 100%;
+    background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--nexus-light);
+    line-height: 1.6;
     min-height: 100vh;
     overflow: hidden;
   }
@@ -40,13 +56,14 @@
     width: 400px;
     height: 540px;
     background: var(--nexus-card);
-    color: #fff;
+    color: var(--nexus-light);
     display: flex;
     flex-direction: column;
     padding: 44px 38px 44px 44px;
     border-radius: var(--radius) 0 0 var(--radius);
     position: relative;
-    box-shadow: 0 0 0 2px #23263a44 inset;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--nexus-border);
     justify-content: flex-start;
     align-items: flex-start;
     margin: 0;
@@ -124,7 +141,9 @@
     background: var(--nexus-card);
     color: var(--nexus-light);
     border-radius: 0 var(--radius) var(--radius) 0;
-    box-shadow: var(--nexus-shadow);
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--nexus-border);
+    border-left: none;
     padding: 46px 38px 38px 38px;
     display: flex;
     flex-direction: column;

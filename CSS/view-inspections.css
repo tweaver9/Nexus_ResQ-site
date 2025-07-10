@@ -1,7 +1,11 @@
+/* Import modern Nexus CSS variables */
+@import url('./nexus-modern.css');
+
 body {
-  background: #0d1b2a;
-  color: #f2f2f2;
-  font-family: 'Oswald', sans-serif;
+  background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%);
+  color: var(--nexus-light);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
   margin: 0;
   padding: 0;
 }
@@ -11,8 +15,9 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 24px 36px 0 36px;
-  background: #142b47;
-  border-bottom: 2px solid #223052;
+  background: linear-gradient(135deg, var(--nexus-dark) 0%, var(--nexus-card) 100%);
+  border-bottom: 1px solid var(--nexus-border);
+  box-shadow: var(--shadow-card);
 }
 .inspections-header h1 {
   color: #fdd835;

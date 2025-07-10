@@ -1,0 +1,276 @@
+/* Nexus Res-Q Modern CSS Variables and Base Styles */
+/* Use this file as the standard for all Nexus Res-Q pages */
+
+:root {
+  /* Core Colors */
+  --nexus-yellow: #fdd835;
+  --nexus-bg: #0a0e1a;
+  --nexus-card: #151b2e;
+  --nexus-card-hover: #1a2138;
+  --nexus-dark: #0f1419;
+  --nexus-border: #2a3441;
+  --nexus-light: #ffffff;
+  --nexus-muted: #8792a3;
+  
+  /* Status Colors */
+  --nexus-success: #10b981;
+  --nexus-warning: #f59e0b;
+  --nexus-error: #ef4444;
+  --nexus-info: #3b82f6;
+  
+  /* Layout */
+  --radius: 16px;
+  --radius-sm: 8px;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.4);
+  
+  /* Glows for notifications */
+  --glow-success: 0 0 16px rgba(16, 185, 129, 0.4);
+  --glow-warning: 0 0 16px rgba(245, 158, 11, 0.4);
+  --glow-error: 0 0 16px rgba(239, 68, 68, 0.4);
+}
+
+/* Reset and Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%);
+  color: var(--nexus-light);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Header Styles */
+.site-header {
+  background: linear-gradient(135deg, var(--nexus-dark) 0%, var(--nexus-card) 100%);
+  border-bottom: 1px solid var(--nexus-border);
+  box-shadow: var(--shadow-card);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.site-logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-img {
+  height: 48px;
+  width: auto;
+  border-radius: var(--radius-sm);
+  background: var(--nexus-light);
+  padding: 0.5rem;
+}
+
+.site-title {
+  color: var(--nexus-yellow);
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  text-shadow: 0 2px 8px rgba(253, 216, 53, 0.3);
+}
+
+/* Navigation */
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.nav-link {
+  color: var(--nexus-muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+  color: var(--nexus-light);
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--nexus-yellow);
+  color: var(--nexus-dark);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary:hover {
+  background: #e6c42d;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+.btn-secondary {
+  background: var(--nexus-card);
+  color: var(--nexus-light);
+  border: 1px solid var(--nexus-border);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--nexus-card-hover);
+  border-color: var(--nexus-yellow);
+}
+
+/* Cards */
+.card {
+  background: var(--nexus-card);
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  background: var(--nexus-card-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-heavy);
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--nexus-light);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--nexus-card);
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--radius-sm);
+  color: var(--nexus-light);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--nexus-yellow);
+  box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--nexus-card);
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--radius-sm);
+  color: var(--nexus-light);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--nexus-card);
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-heavy);
+}
+
+/* Notifications */
+.notification {
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.notification.success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--nexus-success);
+  color: var(--nexus-success);
+}
+
+.notification.warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid var(--nexus-warning);
+  color: var(--nexus-warning);
+}
+
+.notification.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--nexus-error);
+  color: var(--nexus-error);
+}
+
+/* Utilities */
+.text-center { text-align: center; }
+.text-muted { color: var(--nexus-muted); }
+.text-yellow { color: var(--nexus-yellow); }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-container {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .nav-links {
+    gap: 1rem;
+  }
+  
+  .site-title {
+    font-size: 1.75rem;
+  }
+}

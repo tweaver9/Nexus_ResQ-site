@@ -1,22 +1,27 @@
+/* Import modern Nexus CSS variables */
+@import url('./nexus-modern.css');
+
 :root {
-  --primary-dark: #0d1b2a;   /* Nexus blue background */
-  --primary-mid: #142b47;    /* Card background */
-  --primary-light: #fdd835;  /* Nexus yellow accent */
-  --button-bg: #142b47;
-  --button-hover: #fdd835;
-  --button-text: #fff;
-  --button-hover-text: #000;
-  --input-bg: #1e3d63;
-  --input-border: #233c60;
-  --box-shadow: 0 6px 24px rgba(13,27,42,0.21);
+  /* Legacy compatibility - these will be replaced by modern variables */
+  --primary-dark: var(--nexus-bg);
+  --primary-mid: var(--nexus-card);
+  --primary-light: var(--nexus-yellow);
+  --button-bg: var(--nexus-card);
+  --button-hover: var(--nexus-yellow);
+  --button-text: var(--nexus-light);
+  --button-hover-text: var(--nexus-dark);
+  --input-bg: var(--nexus-card);
+  --input-border: var(--nexus-border);
+  --box-shadow: var(--shadow-card);
 }
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Oswald', sans-serif;
-  background-color: var(--primary-dark);
-  color: #f2f2f2;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%);
+  color: var(--nexus-light);
+  line-height: 1.6;
   min-height: 100vh;
   display: block;
   align-items: unset;
