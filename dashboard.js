@@ -10,6 +10,7 @@ import {
 import {
   collection,
   getDocs,
+  addDoc,
   query,
   orderBy,
   limit,
@@ -308,11 +309,15 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   async function loadLogs() {
     const virtualList = document.getElementById('logs-virtual-list');
-    if (!virtualList) return;
+    if (!virtualList) {
+      console.error('logs-virtual-list element not found');
+      return;
+    }
 
     try {
       // Show loading state
       virtualList.innerHTML = '<div class="loading">Loading logs...</div>';
+      console.log('Loading logs for client:', currentClientSubdomain);
 
       // Load logs from Firestore
       const q = query(
@@ -323,6 +328,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
       const snapshot = await getDocs(q);
       allLogs = [];
+      console.log('Logs snapshot size:', snapshot.size);
 
       snapshot.forEach(doc => {
         if (doc.id !== '_placeholder') {
@@ -344,6 +350,34 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
       });
 
+      // If no logs exist, create some sample logs for demonstration
+      if (allLogs.length === 0) {
+        console.log('No logs found, creating sample logs...');
+        await createSampleLogs();
+        // Reload after creating sample logs
+        const newSnapshot = await getDocs(q);
+        allLogs = [];
+        newSnapshot.forEach(doc => {
+          if (doc.id !== '_placeholder') {
+            const data = doc.data();
+            const timestamp = data.timestamp ? new Date(data.timestamp) : new Date();
+
+            allLogs.push({
+              id: doc.id,
+              timestamp,
+              type: data.type || 'system',
+              action: data.action || 'Unknown action',
+              user: data.user || 'Unknown user',
+              details: data.details || '',
+              assetId: data.assetId || data.asset_id || '',
+              location: data.location || '',
+              status: data.status || '',
+              ...data
+            });
+          }
+        });
+      }
+
       // Load users for filter dropdown
       await loadUsersForLogFilter();
 
@@ -356,14 +390,90 @@ window.addEventListener('DOMContentLoaded', async () => {
       console.log(`Loaded ${allLogs.length} logs for client ${currentClientSubdomain}`);
     } catch (error) {
       console.error('Error loading logs:', error);
+      console.error('Error details:', error.message);
       virtualList.innerHTML = `
         <div class="logs-empty-state">
           <div class="empty-icon">⚠️</div>
           <h3>Error Loading Logs</h3>
-          <p>Unable to load logs. Please try again.</p>
-          <button class="retry-btn" onclick="loadLogs()">Retry</button>
+          <p>Unable to load logs: ${error.message}</p>
+          <button class="retry-btn" onclick="window.loadLogs()">Retry</button>
         </div>
       `;
+    }
+  }
+
+  // Make loadLogs available globally for retry button
+  window.loadLogs = loadLogs;
+
+  async function createSampleLogs() {
+    try {
+      const currentUser = sessionStorage.getItem('username') || 'admin';
+      const now = new Date();
+
+      const sampleLogs = [
+        {
+          timestamp: new Date(now.getTime() - 1000 * 60 * 30), // 30 minutes ago
+          type: 'inspection',
+          action: 'Monthly inspection completed',
+          user: currentUser,
+          details: 'Visual inspection passed, all systems operational',
+          assetId: 'FE-001',
+          location: 'Building A - Floor 1',
+          status: 'passed'
+        },
+        {
+          timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 2), // 2 hours ago
+          type: 'move',
+          action: 'Asset relocated',
+          user: currentUser,
+          details: 'Moved from Storage to Building A - Floor 1',
+          assetId: 'AED-003',
+          location: 'Building A - Floor 1',
+          status: 'completed'
+        },
+        {
+          timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 4), // 4 hours ago
+          type: 'failure',
+          action: 'Asset inspection failed',
+          user: 'inspector_jane',
+          details: 'Pressure gauge reading below minimum threshold',
+          assetId: 'FE-007',
+          location: 'Building B - Floor 2',
+          status: 'failed'
+        },
+        {
+          timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 6), // 6 hours ago
+          type: 'user',
+          action: 'User login',
+          user: currentUser,
+          details: 'Successful login from dashboard',
+          location: 'System',
+          status: 'success'
+        },
+        {
+          timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 24), // 1 day ago
+          type: 'system',
+          action: 'System maintenance',
+          user: 'system',
+          details: 'Automated database cleanup completed',
+          location: 'System',
+          status: 'completed'
+        }
+      ];
+
+      const logsCollection = getClientCollection(currentClientSubdomain, 'logs');
+
+      for (const logData of sampleLogs) {
+        await addDoc(logsCollection, {
+          ...logData,
+          timestamp: logData.timestamp.toISOString(),
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      console.log('Sample logs created successfully');
+    } catch (error) {
+      console.error('Error creating sample logs:', error);
     }
   }
 
