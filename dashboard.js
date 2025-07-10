@@ -112,22 +112,39 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (!failedAssetsList) return;
     failedAssetsList.innerHTML = '';
     try {
+      // Load all inspection records and filter for failed ones
       const q = query(
         getClientCollection(currentClientSubdomain, 'inspectionRecords'),
-        where("result", "==", "fail"),
-        orderBy("timestamp", "desc"),
-        limit(10)
+        orderBy("inspectionDate", "desc"),
+        limit(50)
       );
       const snapshot = await getDocs(q);
-      if (snapshot.empty) {
+
+      const failedInspections = [];
+      snapshot.forEach(doc => {
+        const inspection = doc.data();
+        // Check if any result in the results object is false (failed)
+        if (inspection.results && typeof inspection.results === 'object') {
+          const hasFailures = Object.values(inspection.results).some(result => result === false);
+          if (hasFailures) {
+            failedInspections.push(inspection);
+          }
+        }
+      });
+
+      if (failedInspections.length === 0) {
         failedAssetsList.innerHTML = `<div class="dashboard-placeholder">No failed assets reported.</div>`;
         return;
       }
-      snapshot.forEach(doc => {
-        const i = doc.data();
+
+      // Show only the first 10 failed inspections
+      failedInspections.slice(0, 10).forEach(inspection => {
         const line = document.createElement('div');
         line.className = "failed-row";
-        line.textContent = `${i.assetName || i.assetId || 'Unknown Asset'} (${i.zone || 'Zone ?'}) — Tag: ${i.tag || 'N/A'} — ${i.timestamp ? new Date(i.timestamp).toLocaleString() : ''}`;
+        const location = inspection.location || {};
+        const locationText = `${location.sublocation || 'Unknown Location'} - ${location.zone || 'Zone ?'}`;
+        const dateText = inspection.inspectionDate ? new Date(inspection.inspectionDate).toLocaleDateString() : 'Unknown Date';
+        line.textContent = `Asset at ${locationText} — Inspected: ${dateText} — Inspector: ${inspection.inspectedBy || 'Unknown'}`;
         failedAssetsList.appendChild(line);
       });
     } catch (e) {
@@ -141,7 +158,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     try {
       const q = query(
         getClientCollection(currentClientSubdomain, 'inspectionRecords'),
-        orderBy("timestamp", "desc"),
+        orderBy("inspectionDate", "desc"),
         limit(30)
       );
       const snapshot = await getDocs(q);
@@ -151,10 +168,16 @@ window.addEventListener('DOMContentLoaded', async () => {
         return;
       }
       snapshot.forEach(doc => {
-        const i = doc.data();
+        const inspection = doc.data();
         const line = document.createElement('div');
         line.className = "inspection-row";
-        line.textContent = `${i.user || 'Unknown'} — ${i.assetName || i.assetId || 'Unknown Asset'} — ${i.zone || 'Zone ?'} — ${i.timestamp ? new Date(i.timestamp).toLocaleString() : ''}`;
+        const location = inspection.location || {};
+        const locationText = `${location.sublocation || 'Unknown Location'} - ${location.zone || 'Zone ?'}`;
+        const dateText = inspection.inspectionDate ? new Date(inspection.inspectionDate).toLocaleDateString() : 'Unknown Date';
+        const passedCount = inspection.results ? Object.values(inspection.results).filter(r => r === true).length : 0;
+        const totalCount = inspection.results ? Object.keys(inspection.results).length : 0;
+        const statusText = totalCount > 0 ? `${passedCount}/${totalCount} passed` : 'No results';
+        line.textContent = `${inspection.inspectedBy || 'Unknown'} — ${locationText} — ${dateText} — ${statusText}`;
         inspectionList.appendChild(line);
       });
     } catch (e) {
