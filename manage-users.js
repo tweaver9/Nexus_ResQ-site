@@ -507,6 +507,10 @@ function showBulkAddUsersModal(clientName) {
       saveBtn.textContent = originalText;
     }
   };
+
+  // Add modal to DOM
+  document.body.appendChild(modal);
+
   } catch (error) {
     console.error('Error in showBulkAddUsersModal:', error);
     if (typeof showNotification === 'function') {
