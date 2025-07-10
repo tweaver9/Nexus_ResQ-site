@@ -188,8 +188,8 @@ async function showManageUsersModal(clientName) {
 
         // Check if current user has permission to add users
         const currentUserRole = sessionStorage.getItem('role');
-        if (!currentUserRole || !['admin', 'manager'].includes(currentUserRole.toLowerCase())) {
-          showNotification('You do not have permission to add users. Only admins and managers can add users.', 'error');
+        if (!currentUserRole || !['admin', 'manager', 'nexus'].includes(currentUserRole.toLowerCase())) {
+          showNotification('You do not have permission to add users. Only admins, managers, and nexus users can add users.', 'error');
           return;
         }
         
@@ -280,8 +280,8 @@ async function resetUserPassword(userId, username) {
   const currentUserRole = sessionStorage.getItem('role');
   const subdomain = getSubdomain();
 
-  if (!currentUserRole || !['admin', 'manager'].includes(currentUserRole.toLowerCase())) {
-    showNotification('You do not have permission to reset passwords. Only admins and managers can reset passwords.', 'error');
+  if (!currentUserRole || !['admin', 'manager', 'nexus'].includes(currentUserRole.toLowerCase())) {
+    showNotification('You do not have permission to reset passwords. Only admins, managers, and nexus users can reset passwords.', 'error');
     return;
   }
 

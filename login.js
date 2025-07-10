@@ -223,7 +223,7 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
       return;
     }
 
-    showSuccess(`Password has been reset to default. Your new password is: "${defaultPassword}". You will be required to change it on next login.`);
+    showSuccess(`Password has been reset successfully. Your new password is: "${defaultPassword}". You will be required to change it on next login.`);
 
   } catch (error) {
     console.error('Password reset error:', error);
