@@ -391,21 +391,28 @@ class MessagingUI {
   async loadMessages() {
     const messagesList = document.getElementById('messages-list');
     messagesList.innerHTML = '<div class="loading">Loading messages...</div>';
-    
+
     try {
       this.messages = await messagingSystem.getClientMessages();
       this.renderMessages();
+
+      // If no messages, switch to compose tab by default
+      if (this.messages.length === 0) {
+        this.switchTab('compose');
+      }
     } catch (error) {
       console.error('Error loading messages:', error);
-      messagesList.innerHTML = '<div class="loading">Error loading messages</div>';
+      // If error loading messages (like no messages collection exists), switch to compose tab
+      this.switchTab('compose');
+      messagesList.innerHTML = '<div class="loading">Ready to send your first message</div>';
     }
   }
 
   renderMessages() {
     const messagesList = document.getElementById('messages-list');
-    
+
     if (this.messages.length === 0) {
-      messagesList.innerHTML = '<div class="loading">No messages yet</div>';
+      messagesList.innerHTML = '<div class="loading">No messages yet. Use the "New Message" tab to send your first message.</div>';
       return;
     }
     

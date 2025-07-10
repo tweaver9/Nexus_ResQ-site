@@ -420,12 +420,41 @@
   </div>
   <!-- ...other sections like dashboard-header-card, dashboard-cards, etc... -->
   <div id="failed-assets-list"></div>
-  <div id="inspection-list"></div>
+  <!-- Inspections moved to dedicated panel -->
 </div>
       <div id="panel-users" class="dashboard-panel" style="display:none;">User management here...</div>
       <div id="panel-assets" class="dashboard-panel" style="display:none;">Asset management here...</div>
-      <div id="panel-inspections" class="dashboard-panel" style="display:none;">Inspections here...</div>
-      <div id="panel-logs" class="dashboard-panel" style="display:none;">Logs here...</div>
+      <div id="panel-inspections" class="dashboard-panel" style="display:none;">
+        <div class="panel-header">
+          <h2>Inspection Records</h2>
+          <div class="panel-controls">
+            <input type="text" id="inspection-search" placeholder="Search inspections..." class="search-input">
+            <select id="inspection-status-filter" class="filter-select">
+              <option value="">All Statuses</option>
+              <option value="passed">Passed</option>
+              <option value="failed">Failed</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+        </div>
+        <div id="inspection-list" class="inspection-records-container"></div>
+      </div>
+      <div id="panel-logs" class="dashboard-panel" style="display:none;">
+        <div class="panel-header">
+          <h2>System Logs</h2>
+          <div class="panel-controls">
+            <input type="text" id="log-search" placeholder="Search logs..." class="search-input">
+            <select id="log-type-filter" class="filter-select">
+              <option value="">All Types</option>
+              <option value="user">User Actions</option>
+              <option value="asset">Asset Changes</option>
+              <option value="inspection">Inspections</option>
+              <option value="system">System Events</option>
+            </select>
+          </div>
+        </div>
+        <div id="logs-list" class="logs-container"></div>
+      </div>
       <div id="panel-analytics" class="dashboard-panel" style="display:none;">Analytics here...</div>
       <div id="panel-assignments" class="dashboard-panel" style="display:none;">Assignments here...</div>
       <div id="panel-inspections" class="dashboard-panel" style="display:none;">

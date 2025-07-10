@@ -267,6 +267,56 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // --- LOGS LOADING FUNCTIONALITY ---
+
+  async function loadLogs() {
+    const logsList = document.getElementById('logs-list');
+    if (!logsList) return;
+
+    try {
+      const q = query(
+        getClientCollection(currentClientSubdomain, 'logs'),
+        orderBy('timestamp', 'desc'),
+        limit(100)
+      );
+
+      const snapshot = await getDocs(q);
+      logsList.innerHTML = '';
+
+      if (snapshot.empty) {
+        logsList.innerHTML = '<div class="no-data">No logs found for this client.</div>';
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        if (doc.id !== '_placeholder') {
+          const data = doc.data();
+          const logItem = document.createElement('div');
+          logItem.className = 'log-item';
+
+          const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleString() : 'Unknown time';
+          const action = data.action || 'Unknown action';
+          const user = data.user || 'Unknown user';
+          const details = data.details || '';
+
+          logItem.innerHTML = `
+            <div class="log-header">
+              <span class="log-timestamp">${timestamp}</span>
+              <span class="log-user">${user}</span>
+            </div>
+            <div class="log-action">${action}</div>
+            ${details ? `<div class="log-details">${details}</div>` : ''}
+          `;
+
+          logsList.appendChild(logItem);
+        }
+      });
+    } catch (error) {
+      console.error('Error loading logs:', error);
+      logsList.innerHTML = '<div class="error">Error loading logs.</div>';
+    }
+  }
+
   // --- FIREBASE MANAGER EXPLORER (COMPAT) ---
 
   document.getElementById('btn-firebase').addEventListener('click', () => {
@@ -723,6 +773,22 @@ window.addEventListener('DOMContentLoaded', async () => {
       }
     });
   }
+
+  // --- INSPECTIONS FUNCTIONALITY ---
+  document.getElementById('btn-inspections').addEventListener('click', function() {
+    // Show inspections panel and load data
+    document.querySelectorAll('.dashboard-panel').forEach(p => p.style.display = 'none');
+    document.getElementById('panel-inspections').style.display = 'block';
+    loadRecentInspections(); // Reuse existing function but display in panel
+  });
+
+  // --- LOGS FUNCTIONALITY ---
+  document.getElementById('btn-logs').addEventListener('click', function() {
+    // Show logs panel and load data
+    document.querySelectorAll('.dashboard-panel').forEach(p => p.style.display = 'none');
+    document.getElementById('panel-logs').style.display = 'block';
+    loadLogs();
+  });
 
   // --- MANAGE USERS FUNCTIONALITY ---
   document.getElementById('btn-users').addEventListener('click', function() {

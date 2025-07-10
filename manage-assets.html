@@ -636,6 +636,216 @@
       border-color: var(--nexus-yellow);
       box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
     }
+    /* Asset Type Cards */
+    .asset-type-card {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .asset-type-card:hover {
+      background: var(--nexus-card-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-heavy);
+    }
+
+    .asset-type-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .asset-type-header.has-failed {
+      border-left: 4px solid var(--nexus-error);
+      padding-left: 1rem;
+      margin-left: -1rem;
+    }
+
+    .asset-type-name {
+      color: var(--nexus-light);
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .asset-type-counts {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+    }
+
+    .total-count {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+    }
+
+    .failed-count {
+      color: var(--nexus-error);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .asset-type-status {
+      width: 100%;
+    }
+
+    .status-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--nexus-border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .status-fill {
+      height: 100%;
+      background: var(--nexus-success);
+      transition: width 0.3s ease;
+    }
+
+    /* Asset Type Modal */
+    .asset-type-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .asset-type-modal-content {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: hidden;
+      box-shadow: var(--shadow-heavy);
+    }
+
+    .asset-type-modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--nexus-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .asset-type-modal-header h2 {
+      color: var(--nexus-light);
+      margin: 0;
+    }
+
+    .close-btn {
+      background: var(--nexus-error);
+      color: var(--nexus-light);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .asset-type-modal-body {
+      padding: 1.5rem;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .asset-type-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .asset-type-item {
+      background: var(--nexus-bg);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .asset-type-item.failed {
+      border-color: var(--nexus-error);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .asset-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .asset-id {
+      color: var(--nexus-light);
+      font-weight: 600;
+    }
+
+    .asset-location {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+    }
+
+    .asset-kind {
+      color: var(--nexus-yellow);
+      font-size: 0.875rem;
+    }
+
+    .asset-status {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-badge.complete,
+    .status-badge.active {
+      background: var(--nexus-success);
+      color: var(--nexus-light);
+    }
+
+    .status-badge.failed,
+    .status-badge.overdue {
+      background: var(--nexus-error);
+      color: var(--nexus-light);
+    }
+
+    .status-badge.unknown {
+      background: var(--nexus-muted);
+      color: var(--nexus-light);
+    }
+
+    .last-inspection {
+      color: var(--nexus-muted);
+      font-size: 0.75rem;
+    }
+
     @media (max-width: 768px) {
       .header-container { padding: 1rem; flex-direction: column; gap: 1rem; text-align: center;}
       .site-title { font-size: 1.75rem;}
@@ -644,6 +854,21 @@
       .group-header { flex-direction: column; align-items: flex-start; gap: 0.5rem;}
       #sticky-filters { flex-direction:column; gap:0.5rem;}
       #toast-area { right:8px; bottom: 8px;}
+
+      .asset-type-modal-content {
+        max-width: 95vw;
+        max-height: 95vh;
+      }
+
+      .asset-type-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .asset-status {
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
@@ -1157,95 +1382,103 @@
     function renderAssets(list = allAssets) {
       const grid = document.getElementById('all-assets');
       const count = document.getElementById('total-count');
-      
+
       if (!list.length) {
         grid.innerHTML = '<div class="empty-group">No assets found.</div>';
         count.textContent = '0';
         return;
       }
-      
-      count.textContent = list.length;
-      grid.innerHTML = list.map(asset=>`
-        <div class="user-card" data-id="${asset.id}" onclick="viewAssetDetails('${asset.id}')" style="position: relative;">
-          ${canModifyAssets() ? `
-            <button class="delete-btn" onclick="event.stopPropagation(); deleteAsset('${asset.id}')" title="Delete Asset">
-              🗑️
-            </button>
-          ` : ''}
-          <div class="user-header">
-            <div class="user-avatar">${getAssetInitial(asset)}</div>
-            <div class="user-info">
-              <div class="user-name">${asset.kind || asset.type || 'Asset'}</div>
-              <span class="role-badge user">${asset.type || 'Unknown Type'}</span>
+
+      // Group assets by type and count totals/failed
+      const assetTypeGroups = {};
+      list.forEach(asset => {
+        const type = asset.type || 'Unknown';
+        if (!assetTypeGroups[type]) {
+          assetTypeGroups[type] = {
+            total: 0,
+            failed: 0,
+            assets: []
+          };
+        }
+        assetTypeGroups[type].total++;
+        assetTypeGroups[type].assets.push(asset);
+
+        // Count failed inspections (you can adjust this logic based on your status field)
+        if (asset.status === 'failed' || asset.status === 'overdue' || asset.lastInspectionStatus === 'failed') {
+          assetTypeGroups[type].failed++;
+        }
+      });
+
+      // Render asset type cards
+      grid.innerHTML = '';
+      Object.keys(assetTypeGroups).forEach(type => {
+        const group = assetTypeGroups[type];
+        const card = document.createElement('div');
+        card.className = 'asset-type-card';
+        card.onclick = () => showAssetTypeDetails(type, group.assets);
+
+        const failedClass = group.failed > 0 ? 'has-failed' : '';
+        card.innerHTML = `
+          <div class="asset-type-header ${failedClass}">
+            <h3 class="asset-type-name">${type}</h3>
+            <div class="asset-type-counts">
+              <span class="total-count">${group.total} total</span>
+              ${group.failed > 0 ? `<span class="failed-count">${group.failed} failed</span>` : ''}
             </div>
           </div>
-          
-          <div class="assigned-areas">
-            <span class="areas-label">Location:</span>
-            <div class="areas-list">
-              ${canModifyAssets() ? 
-                `<span class="editable-field" data-field="location" onclick="event.stopPropagation()">${asset.location || '--'}</span>` +
-                (asset.sublocation ? ` / <span class="editable-field" data-field="sublocation" onclick="event.stopPropagation()">${asset.sublocation}</span>` : '') :
-                `${asset.location || '--'}${asset.sublocation ? ' / ' + asset.sublocation : ''}`
-              }
+          <div class="asset-type-status">
+            <div class="status-bar">
+              <div class="status-fill" style="width: ${group.failed === 0 ? 100 : ((group.total - group.failed) / group.total) * 100}%"></div>
             </div>
           </div>
-          
-          ${asset.precision ? `
-          <div class="assigned-areas">
-            <span class="areas-label">Precision Loc:</span>
-            ${canModifyAssets() ? 
-              `<span class="editable-field" data-field="precision" onclick="event.stopPropagation()">${asset.precision}</span>` :
-              asset.precision
-            }
+        `;
+
+        grid.appendChild(card);
+      });
+
+      count.textContent = Object.keys(assetTypeGroups).length;
+    }
+
+    // Show detailed list for a specific asset type
+    function showAssetTypeDetails(assetType, assets) {
+      const modal = document.createElement('div');
+      modal.className = 'asset-type-modal';
+      modal.innerHTML = `
+        <div class="asset-type-modal-content">
+          <div class="asset-type-modal-header">
+            <h2>${assetType} Assets (${assets.length})</h2>
+            <button class="close-btn" onclick="this.closest('.asset-type-modal').remove()">×</button>
           </div>
-          ` : ''}
-          
-          <div class="monthly-status status-tooltip" data-tooltip="Monthly Due: ${asset.monthlyDue || 'Not set'} | Annual Due: ${asset.annualDue || 'Not set'}">
-            <div class="status-indicator ${getAssetStatus(asset)}"></div>
-            <span class="status-text">
-              Due: ${canModifyAssets() ? 
-                `<span class="editable-field" data-field="monthlyDue" onclick="event.stopPropagation()">${asset.monthlyDue || '--'}</span>` :
-                (asset.monthlyDue || '--')
-              }
-            </span>
-          </div>
-          
-          <div class="last-activity">
-            <span class="activity-highlight">Asset ID:</span>
-            ${canModifyAssets() ? 
-              `<span class="editable-field" data-field="asset_id" onclick="event.stopPropagation()">${(asset.asset_id || '').slice(0,12) || '--'}</span>` :
-              ((asset.asset_id || '').slice(0,12) || '--')
-            }
-          </div>
-          
-          ${asset.serial ? `
-          <div class="last-activity">
-            <span class="activity-highlight">Serial:</span>
-            ${isNexusUser() ? 
-              `<span class="editable-field" data-field="serial" onclick="event.stopPropagation()">${asset.serial}</span>` :
-              asset.serial
-            }
-          </div>
-          ` : ''}
-          
-          ${isNexusUser() && asset.type ? `
-          <div class="last-activity">
-            <span class="activity-highlight">Type:</span>
-            <span style="color: var(--nexus-muted);">${asset.type}</span>
-          </div>
-          ` : ''}
-          
-          <div class="last-inspection" onclick="event.stopPropagation(); viewLastInspection('${asset.id}', '${asset.kind || asset.type || 'Asset'}')">
-            <div class="inspection-icon"></div>
-            <span class="inspection-label">Last Inspection: ${getLastInspectionDate(asset)}</span>
+          <div class="asset-type-modal-body">
+            <div class="asset-type-list">
+              ${assets.map(asset => `
+                <div class="asset-type-item ${asset.status === 'failed' || asset.status === 'overdue' ? 'failed' : ''}">
+                  <div class="asset-info">
+                    <div class="asset-id">${asset.asset_id || asset.id}</div>
+                    <div class="asset-location">${asset.location || 'Unknown'} ${asset.sublocation ? '- ' + asset.sublocation : ''}</div>
+                    <div class="asset-kind">${asset.kind || 'Standard'}</div>
+                  </div>
+                  <div class="asset-status">
+                    <span class="status-badge ${asset.status || 'unknown'}">${asset.status || 'Unknown'}</span>
+                    <div class="last-inspection">${asset.lastInspection || 'Never'}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
           </div>
         </div>
-      `).join('');
-      
-      if (canModifyAssets()) {
-        attachInlineEdit();
-      }
+      `;
+
+      document.body.appendChild(modal);
+
+      // Close on background click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+
     }
     // === Inline Editing for Asset Fields ===
     function attachInlineEdit() {
