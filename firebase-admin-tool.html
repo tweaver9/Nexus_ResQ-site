@@ -536,6 +536,13 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <script>
+        // Role Check - Only allow nexus users
+        const userRole = sessionStorage.getItem('role');
+        if (userRole !== 'nexus') {
+            document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">Access Denied<br><br>This tool is restricted to Nexus employees only.<br><br><a href="dashboard.html" style="color:#fdd835;">Return to Dashboard</a></div>';
+            throw new Error("Unauthorized Access");
+        }
+
         // Global variables
         let db = null;
         let storage = null;
