@@ -3,8 +3,7 @@ import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebase
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getCurrentClientSubdomain } from './firebase.js';
 
-// Import bcryptjs for password validation
-import bcrypt from "https://cdn.skypack.dev/bcryptjs@2.4.3";
+// We'll import bcryptjs dynamically to avoid crypto module issues
 
 // Firebase Config
 const firebaseConfig = {
@@ -25,9 +24,13 @@ function getSubdomain() {
 // --- Handle login submission ---
 document.querySelector(".login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
+  console.log("Login form submitted"); // Debug log
+
   const username = e.target.username.value.trim();
   const password = e.target.password.value.trim();
   const errorDiv = document.getElementById("login-error");
+
+  console.log("Username:", username, "Password length:", password.length); // Debug log
 
   if (!username || !password) {
     showError("Missing username or password.");
@@ -41,9 +44,12 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
   }
 
   try {
+    console.log("Starting login process for subdomain:", subdomain); // Debug log
+
     // First validate that the client exists
     const clientDocRef = doc(db, 'clients', subdomain);
     const clientDoc = await getDoc(clientDocRef);
+    console.log("Client doc exists:", clientDoc.exists()); // Debug log
 
     if (!clientDoc.exists()) {
       showError("Invalid client subdomain. Please check your URL.");
@@ -71,8 +77,12 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
       return;
     }
 
-    // Validate password using bcryptjs
+    // Validate password using bcryptjs (dynamic import)
+    console.log("Importing bcryptjs..."); // Debug log
+    const bcrypt = await import('https://cdn.skypack.dev/bcryptjs@2.4.3');
+    console.log("bcryptjs imported successfully"); // Debug log
     const isPasswordValid = await bcrypt.compare(password, userData.hashedPassword);
+    console.log("Password validation result:", isPasswordValid); // Debug log
 
     if (!isPasswordValid) {
       showError("Invalid username or password.");
@@ -217,6 +227,7 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
 
     // Generate default password (client subdomain)
     const defaultPassword = subdomain;
+    const bcrypt = await import('https://cdn.skypack.dev/bcryptjs@2.4.3');
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
     // Update user with new password and force password change
@@ -350,6 +361,7 @@ async function handlePasswordChange() {
 
     try {
       // Hash new password
+      const bcrypt = await import('https://cdn.skypack.dev/bcryptjs@2.4.3');
       const hashedPassword = await bcrypt.hash(newPassword, 10);
 
       // Update user password

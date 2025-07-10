@@ -11,10 +11,19 @@ class MessagingUI {
   }
 
   async init() {
+    // Only initialize if user is logged in and has client context
+    const userSession = sessionStorage.getItem('nexusUser');
+    const clientSubdomain = sessionStorage.getItem('clientSubdomain');
+
+    if (!userSession || !clientSubdomain) {
+      console.log('Messaging system not initialized - user not logged in or missing client context');
+      return;
+    }
+
     this.createMessagingButton();
     this.createMessagingModal();
     await this.updateUnreadCount();
-    
+
     // Update unread count every 30 seconds
     setInterval(() => this.updateUnreadCount(), 30000);
   }

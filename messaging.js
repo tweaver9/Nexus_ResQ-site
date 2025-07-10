@@ -52,12 +52,14 @@ class MessagingSystem {
   async init() {
     // Get current user context
     const userSession = sessionStorage.getItem('nexusUser');
-    const clientSubdomain = getCurrentClientSubdomain();
-    
-    if (userSession) {
+    const clientSubdomain = sessionStorage.getItem('clientSubdomain');
+
+    if (userSession && clientSubdomain) {
       this.currentUser = JSON.parse(userSession);
       this.currentClient = clientSubdomain;
       this.isNexusUser = this.currentUser.role === 'nexus';
+    } else {
+      console.log('Messaging system not initialized - missing user session or client context');
     }
   }
 
@@ -264,8 +266,13 @@ class MessagingSystem {
   // Get unread message count
   async getUnreadCount() {
     try {
+      // Check if we have valid context
+      if (!this.currentUser || !this.currentClient) {
+        return 0;
+      }
+
       let q;
-      
+
       if (this.isNexusUser) {
         q = query(
           collection(db, 'nexus_messages'),

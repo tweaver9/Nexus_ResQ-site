@@ -201,7 +201,7 @@ async function showManageUsersModal(clientName) {
         // Default password is the subdomain
         const defaultPassword = subdomain;
 
-        // Import bcryptjs for password hashing
+        // Import bcryptjs for password hashing (dynamic import to avoid crypto issues)
         const bcrypt = await import('https://cdn.skypack.dev/bcryptjs@2.4.3');
         const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
@@ -290,7 +290,7 @@ async function resetUserPassword(userId, username) {
   }
 
   try {
-    // Import bcryptjs for password hashing
+    // Import bcryptjs for password hashing (dynamic import)
     const bcrypt = await import('https://cdn.skypack.dev/bcryptjs@2.4.3');
 
     // Default password is the subdomain
