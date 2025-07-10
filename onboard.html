@@ -454,90 +454,183 @@ function showStep3() {
     <div class="step-label">Step 3: Map & Scanning Setup</div>
     <form id="step3Form" autocomplete="off">
       <div class="form-row">
-        <label for="mapDivide">How is your map divided up?</label>
-        <input type="text" id="mapDivide" required maxlength="60" placeholder="e.g., Zone, Building, Area, or 'Custom' for unique names..." />
-        <div style="font-size:0.95em; color:#555; margin-top:6px;">
-          Type "Custom" if each division has a unique name instead of repeated labels.
+        <label for="mapDivisionType">How is your site map divided?</label>
+        <select id="mapDivisionType" required>
+          <option value="">Select division type...</option>
+          <option value="Zone">Zone</option>
+          <option value="Building">Building</option>
+          <option value="Unit">Unit</option>
+          <option value="Area">Area</option>
+          <option value="Control Room">Control Room</option>
+          <option value="Custom">Custom (unique names)</option>
+        </select>
+      </div>
+
+      <div id="customDivisionsSection" style="display:none;">
+        <div class="form-row">
+          <label>How many custom divisions do you have?</label>
+          <input type="number" id="customDivisionCount" min="1" max="50" placeholder="Enter number..." />
+        </div>
+        <div id="customDivisionInputs" style="display:none;">
+          <div class="form-row">
+            <label>Enter your division names and codes:</label>
+            <div id="customDivisionList"></div>
+          </div>
         </div>
       </div>
-      <div id="customDivisions" style="display:none;">
+
+      <div id="standardDivisionsSection" style="display:none;">
         <div class="form-row">
-          <label>Enter your division names:</label>
-          <div id="customDivisionInputs">
-            <div class="custom-division-row" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-              <input type="text" class="customDivisionInput" placeholder="Division name..." style="flex:1;" />
-              <button type="button" class="add-division-btn" style="background:#28a745;color:#fff;border:none;border-radius:4px;padding:8px 12px;font-size:1.1em;cursor:pointer;">+</button>
+          <label>What do you call this level? <span id="currentDivisionType"></span></label>
+          <input type="text" id="divisionLabel" placeholder="e.g., Area, Zone, Building..." />
+          <div style="font-size:0.9em;color:#555;margin-top:5px;">
+            This is how this level will appear in your system (optional - defaults to the type you selected)
+          </div>
+        </div>
+        <div class="form-row">
+          <label>How many <span id="divisionLabelDisplay"></span> do you have?</label>
+          <input type="number" id="numDivisions" min="1" max="999" placeholder="Enter number..." />
+        </div>
+        <div id="divisionCodesSection" style="display:none;">
+          <div class="form-row">
+            <label>Enter unique codes for each <span id="divisionLabelDisplay2"></span>:</label>
+            <div id="divisionCodesList"></div>
+            <div style="font-size:0.9em;color:#555;margin-top:5px;">
+              These codes will be used for barcode generation and asset location tracking
             </div>
           </div>
         </div>
       </div>
-      <div id="divisionCount" style="display:none;">
-        <div class="form-row">
-          <label for="numDivisions">How many <span id="divisionLabel"></span> do you have?</label>
-          <input type="number" id="numDivisions" min="1" max="999" placeholder="Enter number..." />
-        </div>
-      </div>
+
       <div class="form-row">
-        <label>Are users required to scan a <strong>precise</strong> location? (Unique barcode for each asset location, not just a broad area.)</label>
+        <label>Barcode delimiter (character between location codes):</label>
+        <select id="barcodeDelimiter">
+          <option value="-">Dash (-)</option>
+          <option value="_">Underscore (_)</option>
+          <option value="">None</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>Are users required to scan a <strong>precise</strong> location?</label>
         <div>
-          <label><input type="radio" name="preciseLoc" value="yes" required> Yes</label>
-          <label><input type="radio" name="preciseLoc" value="no" style="margin-left:17px;"> No</label>
+          <label><input type="radio" name="preciseLoc" value="yes" required> Yes - Unique barcode for each asset location</label>
+          <label><input type="radio" name="preciseLoc" value="no" style="margin-left:17px;"> No - Broad area scanning only</label>
         </div>
       </div>
-      <div id="preciseFollowup"></div>
+
       <div class="form-row">
-        <label>Can users type entries or are they forced to scan?</label>
+        <label>Can users type entries or must they scan?</label>
         <div>
           <label><input type="radio" name="scanOnly" value="no" required> Typing allowed</label>
-          <label><input type="radio" name="scanOnly" value="yes" style="margin-left:17px;"> Must scan</label>
+          <label><input type="radio" name="scanOnly" value="yes" style="margin-left:17px;"> Must scan only</label>
         </div>
       </div>
+
+      <div class="form-row">
+        <label>Report format preference:</label>
+        <select id="reportFormat">
+          <option value="pdf">PDF</option>
+          <option value="csv">CSV</option>
+          <option value="both">Both PDF and CSV</option>
+        </select>
+      </div>
+
       <button class="next-btn" type="submit">Continue</button>
       <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo2">Back</button>
     </form>
   `;
 
-  const mapDivideInput = document.getElementById('mapDivide');
-  const customDivisions = document.getElementById('customDivisions');
-  const divisionCount = document.getElementById('divisionCount');
+  // Enhanced map division logic
+  const mapDivisionType = document.getElementById('mapDivisionType');
+  const customDivisionsSection = document.getElementById('customDivisionsSection');
+  const standardDivisionsSection = document.getElementById('standardDivisionsSection');
+  const customDivisionCount = document.getElementById('customDivisionCount');
+  const customDivisionInputs = document.getElementById('customDivisionInputs');
   const divisionLabel = document.getElementById('divisionLabel');
+  const numDivisions = document.getElementById('numDivisions');
+  const divisionCodesSection = document.getElementById('divisionCodesSection');
 
-  // Handle map division input change
-  mapDivideInput.addEventListener('input', function() {
-    const value = this.value.trim().toLowerCase();
-    if (value === 'custom') {
-      customDivisions.style.display = 'block';
-      divisionCount.style.display = 'none';
+  // Handle map division type change
+  mapDivisionType.addEventListener('change', function() {
+    const value = this.value;
+    const currentDivisionType = document.getElementById('currentDivisionType');
+    const divisionLabelDisplay = document.getElementById('divisionLabelDisplay');
+    const divisionLabelDisplay2 = document.getElementById('divisionLabelDisplay2');
+
+    if (value === 'Custom') {
+      customDivisionsSection.style.display = 'block';
+      standardDivisionsSection.style.display = 'none';
     } else if (value) {
-      customDivisions.style.display = 'none';
-      divisionCount.style.display = 'block';
-      divisionLabel.textContent = value + 's';
+      customDivisionsSection.style.display = 'none';
+      standardDivisionsSection.style.display = 'block';
+      currentDivisionType.textContent = value;
+      divisionLabelDisplay.textContent = value.toLowerCase() + 's';
+      divisionLabelDisplay2.textContent = value.toLowerCase();
+      divisionLabel.placeholder = `e.g., ${value}, Area, Zone...`;
     } else {
-      customDivisions.style.display = 'none';
-      divisionCount.style.display = 'none';
+      customDivisionsSection.style.display = 'none';
+      standardDivisionsSection.style.display = 'none';
     }
   });
 
-  // Handle adding new custom division inputs
-  function addDivisionInput() {
-    const container = document.getElementById('customDivisionInputs');
-    const newRow = document.createElement('div');
-    newRow.className = 'custom-division-row';
-    newRow.style = 'display:flex;align-items:center;gap:10px;margin-bottom:10px;';
-    newRow.innerHTML = `
-      <input type="text" class="customDivisionInput" placeholder="Division name..." style="flex:1;" />
-      <button type="button" class="remove-division-btn" style="background:#dc3545;color:#fff;border:none;border-radius:4px;padding:8px 12px;font-size:1.1em;cursor:pointer;">−</button>
-    `;
-    container.appendChild(newRow);
+  // Handle custom division count change
+  customDivisionCount.addEventListener('input', function() {
+    const count = parseInt(this.value);
+    if (count > 0 && count <= 50) {
+      customDivisionInputs.style.display = 'block';
+      generateCustomDivisionInputs(count);
+    } else {
+      customDivisionInputs.style.display = 'none';
+    }
+  });
 
-    // Add event listener to remove button
-    newRow.querySelector('.remove-division-btn').onclick = function() {
-      newRow.remove();
-    };
+  // Generate custom division inputs
+  function generateCustomDivisionInputs(count) {
+    const container = document.getElementById('customDivisionList');
+    container.innerHTML = '';
+
+    for (let i = 0; i < count; i++) {
+      const row = document.createElement('div');
+      row.style = 'display:flex;gap:10px;margin-bottom:10px;align-items:center;';
+      row.innerHTML = `
+        <span style="min-width:30px;font-weight:600;">${i + 1}.</span>
+        <input type="text" class="customDivisionName" placeholder="Division name..." style="flex:1;" />
+        <input type="text" class="customDivisionCode" placeholder="Code (e.g., 001, CR1)" style="width:120px;" />
+      `;
+      container.appendChild(row);
+    }
   }
 
-  // Add event listener to the first + button
-  document.querySelector('.add-division-btn').onclick = addDivisionInput;
+  // Handle standard division count change
+  numDivisions.addEventListener('input', function() {
+    const count = parseInt(this.value);
+    if (count > 0 && count <= 999) {
+      divisionCodesSection.style.display = 'block';
+      generateDivisionCodeInputs(count);
+    } else {
+      divisionCodesSection.style.display = 'none';
+    }
+  });
+
+  // Generate division code inputs
+  function generateDivisionCodeInputs(count) {
+    const container = document.getElementById('divisionCodesList');
+    const divisionType = mapDivisionType.value;
+    const label = divisionLabel.value || divisionType;
+
+    container.innerHTML = '';
+
+    for (let i = 0; i < count; i++) {
+      const row = document.createElement('div');
+      row.style = 'display:flex;gap:10px;margin-bottom:10px;align-items:center;';
+      row.innerHTML = `
+        <span style="min-width:80px;font-weight:600;">${label} ${i + 1}:</span>
+        <input type="text" class="divisionCode" placeholder="Code (e.g., ${String(i + 1).padStart(3, '0')})" style="width:120px;" />
+      `;
+      container.appendChild(row);
+    }
+  }
 
   // Handle precision location followup (simplified - no UUID generation)
   document.querySelectorAll('input[name="preciseLoc"]').forEach(radio => {
@@ -565,53 +658,94 @@ function showStep3() {
 
   document.getElementById('step3Form').onsubmit = function(e) {
     e.preventDefault();
-    const mapDivide = mapDivideInput.value.trim();
-    const isCustom = mapDivide.toLowerCase() === 'custom';
-    
+
+    const mapDivisionType = document.getElementById('mapDivisionType').value;
+    const barcodeDelimiter = document.getElementById('barcodeDelimiter').value;
+    const reportFormat = document.getElementById('reportFormat').value;
+    const preciseLoc = document.querySelector('input[name="preciseLoc"]:checked')?.value;
+    const scanOnly = document.querySelector('input[name="scanOnly"]:checked')?.value;
+
+    if (!mapDivisionType || !preciseLoc || !scanOnly) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
     let divisions = [];
-    let numDivisions = 0;
+    let divisionCodes = [];
+    let divisionLabels = {};
 
-    if (isCustom) {
-      // Collect custom division names
-      const inputs = document.querySelectorAll('.customDivisionInput');
-      inputs.forEach(input => {
-        const name = input.value.trim();
-        if (name) divisions.push(name);
-      });
+    if (mapDivisionType === 'Custom') {
+      // Collect custom divisions
+      const nameInputs = document.querySelectorAll('.customDivisionName');
+      const codeInputs = document.querySelectorAll('.customDivisionCode');
+
+      for (let i = 0; i < nameInputs.length; i++) {
+        const name = nameInputs[i].value.trim();
+        const code = codeInputs[i].value.trim();
+
+        if (name && code) {
+          divisions.push(name);
+          divisionCodes.push(code);
+        }
+      }
+
       if (divisions.length === 0) {
-        alert('Please enter at least one division name.');
+        alert('Please enter at least one division name and code.');
         return;
       }
+
+      divisionLabels[mapDivisionType] = 'Custom Division';
     } else {
-      // Get number of standard divisions
-      numDivisions = parseInt(document.getElementById('numDivisions').value);
-      if (!numDivisions || numDivisions < 1) {
-        alert('Please enter the number of ' + mapDivide + 's.');
+      // Standard divisions
+      const customLabel = document.getElementById('divisionLabel').value.trim();
+      const numDivs = parseInt(document.getElementById('numDivisions').value);
+      const codeInputs = document.querySelectorAll('.divisionCode');
+
+      if (!numDivs || numDivs < 1) {
+        alert('Please enter the number of divisions.');
         return;
       }
-      // Generate standard division names
-      for (let i = 1; i <= numDivisions; i++) {
-        divisions.push(`${mapDivide} ${i}`);
+
+      if (codeInputs.length !== numDivs) {
+        alert('Please enter codes for all divisions.');
+        return;
       }
+
+      // Generate division names and collect codes
+      const label = customLabel || mapDivisionType;
+      for (let i = 0; i < numDivs; i++) {
+        const code = codeInputs[i].value.trim();
+        if (!code) {
+          alert(`Please enter a code for ${label} ${i + 1}.`);
+          return;
+        }
+        divisions.push(`${label} ${i + 1}`);
+        divisionCodes.push(code);
+      }
+
+      divisionLabels[mapDivisionType] = customLabel || mapDivisionType;
     }
 
-    const preciseLoc = document.querySelector('input[name="preciseLoc"]:checked').value;
-    let hasNaming = "";
-    
-    if (preciseLoc === "yes") {
-      hasNaming = document.querySelector('input[name="hasNaming"]:checked') ? document.querySelector('input[name="hasNaming"]:checked').value : "";
-    }
-    
-    const scanOnly = document.querySelector('input[name="scanOnly"]:checked').value;
-
-    // Store all the data (simplified - no UUID generation during onboarding)
-    onboardingData.mapDivide = mapDivide;
-    onboardingData.isCustomDivisions = isCustom;
+    // Store all the enhanced map division data
+    onboardingData.mapDivisionType = mapDivisionType;
+    onboardingData.mapDivisionLabels = divisionLabels;
     onboardingData.divisions = divisions;
-    onboardingData.numDivisions = numDivisions;
+    onboardingData.divisionCodes = divisionCodes;
+    onboardingData.barcodeDelimiter = barcodeDelimiter;
+    onboardingData.barcodeLevels = ["zone", "sublocation", "precisionlocation"]; // Standard levels
+    onboardingData.preciseScanEnabled = preciseLoc === "yes";
+    onboardingData.typingAllowed = scanOnly !== "yes";
+    onboardingData.reportFormat = reportFormat;
     onboardingData.preciseLoc = preciseLoc;
-    onboardingData.hasNaming = hasNaming;
     onboardingData.scanOnly = scanOnly;
+
+    console.log('Map division data collected:', {
+      type: mapDivisionType,
+      labels: divisionLabels,
+      divisions: divisions,
+      codes: divisionCodes,
+      delimiter: barcodeDelimiter
+    });
 
     showStep4();
   };
@@ -1036,63 +1170,60 @@ document.getElementById('finishBtn').onclick = async function() {
       name: onboardingData.clientName,
       logo_url: logoUrl,
       subdomain: subdomain,
-      primary_color: "#fdd835",
-      secondary_color: "#12233d",
-      // Comprehensive onboarding data
-      onboarding_data: {
-        asset_types: onboardingData.assetTypes || [],
-        asset_frequencies: onboardingData.assetFrequencies || {},
-        custom_questions: onboardingData.customQuestions || {},
-        map_configuration: {
-          map_divide: onboardingData.mapDivide || "",
-          is_custom_divisions: onboardingData.isCustomDivisions || false,
-          num_divisions: onboardingData.numDivisions || 0,
-          total_divisions: onboardingData.divisions ? onboardingData.divisions.length : 0,
-          division_names: onboardingData.divisions || [],
-          precise_loc: onboardingData.preciseLoc || "",
-          has_naming: onboardingData.hasNaming || "",
-          scan_only: onboardingData.scanOnly || ""
-        },
-        csv_import: {
-          has_csv: !!onboardingData.assetCsv,
-          csv_data: onboardingData.assetCsv || ""
-        }
+      settings: {
+        barcodeDelimiter: onboardingData.barcodeDelimiter || "-",
+        barcodeLevels: onboardingData.barcodeLevels || ["zone", "sublocation", "precisionlocation"],
+        preciseScanEnabled: onboardingData.preciseScanEnabled || false,
+        reportFormat: onboardingData.reportFormat || "pdf",
+        typingAllowed: onboardingData.typingAllowed !== false,
+        mapDivisions: onboardingData.divisions || [],
+        mapDivisionType: onboardingData.mapDivisionType || "Zone",
+        mapDivisionLabels: onboardingData.mapDivisionLabels || {},
+        mapDivisionCodes: onboardingData.divisionCodes || [],
+        customAssetTypes: onboardingData.wantCustomAssetTypes === "yes",
+        customQuestions: onboardingData.wantCustomQuestions === "yes"
       },
       admin_username: onboardingData.adminUsername,
-      created_at: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       status: "active",
       onboarding_completed: true
     });
 
-    // 4. Create asset types in root-level asset_types collection (NEW STRUCTURE)
-    if (onboardingData.assetTypes && onboardingData.assetTypes.length > 0) {
+    // 4. Create client-specific collections structure
+    const clientRef = doc(db, 'clients', subdomain);
+
+    // Create client-specific asset types (if custom types requested)
+    if (onboardingData.wantCustomAssetTypes === "yes" && onboardingData.assetTypes && onboardingData.assetTypes.length > 0) {
       for (const assetType of onboardingData.assetTypes) {
         const normalizedType = assetType.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-        const assetTypeId = `${subdomain}_${normalizedType}`;
-        
-        await setDoc(doc(db, 'asset_types', assetTypeId), {
-          clientId: subdomain,
+
+        await setDoc(doc(collection(clientRef, 'asset_types'), normalizedType), {
           id: normalizedType,
           name: assetType,
           createdAt: new Date().toISOString(),
           onboardingCreated: true
         });
-        console.log(`Created asset type: ${assetTypeId}`);
+        console.log(`Created client-specific asset type: ${normalizedType}`);
       }
     }
 
-    // 5. Create subcollections with starter/blank docs (for backward compatibility)
-    const clientRef = doc(db, 'clients', subdomain);
+    // Create client-specific question templates (if custom questions requested)
+    if (onboardingData.wantCustomQuestions === "yes" && onboardingData.customQuestions) {
+      await setDoc(doc(collection(clientRef, 'questionTemplates'), 'default'), {
+        questions: onboardingData.customQuestions,
+        createdAt: new Date().toISOString(),
+        onboardingCreated: true
+      });
+      console.log('Created client-specific question templates');
+    }
 
-    // Legacy asset_types subcollection
-    await setDoc(doc(collection(clientRef, 'asset_types'), 'starter'), {
-      types: onboardingData.assetTypes || []
-    });
+    // 5. Create admin user in client-specific users collection
+    const adminUserId = onboardingData.adminUsername.replace('@', '_at_'); // Safe document ID
 
     // Get bcrypt and hash password (with fallback)
     const bcryptLib = getBcrypt();
     let hashedPassword = onboardingData.adminPassword; // fallback to plain text
-    
+
     if (bcryptLib) {
       try {
         hashedPassword = bcryptLib.hashSync(onboardingData.adminPassword, 10);
@@ -1104,8 +1235,7 @@ document.getElementById('finishBtn').onclick = async function() {
       console.warn('Bcrypt not available, using plain text password');
     }
 
-    // 6. Create admin user in flat users collection (CRITICAL: This goes with all other users)
-    await setDoc(doc(db, 'users', onboardingData.adminUsername), {
+    await setDoc(doc(collection(clientRef, 'users'), adminUserId), {
       firstName: onboardingData.adminFirst,
       lastName: onboardingData.adminLast,
       username: onboardingData.adminUsername,
@@ -1114,8 +1244,6 @@ document.getElementById('finishBtn').onclick = async function() {
       active: true,
       soft_deleted: false,
       must_change_password: true,
-      clientId: subdomain, // Key field linking to client - FLAT STRUCTURE
-      client_name: onboardingData.clientName, // Additional reference
       createdAt: new Date().toISOString(),
       onboardingCreated: true,
       user_type: "admin",
@@ -1123,68 +1251,151 @@ document.getElementById('finishBtn').onclick = async function() {
       last_login: null,
       login_count: 0
     });
+    console.log(`Created admin user in client-specific collection: ${adminUserId}`);
 
-    // locations - Create basic location documents (no UUIDs during onboarding)
+    // 6. Create default locations (required for all clients)
+    const defaultLocations = [
+      {
+        id: 'newly_added',
+        name: 'Newly Added',
+        code: '001',
+        level: 0,
+        isDefault: true,
+        description: 'Default location for newly created assets'
+      },
+      {
+        id: 'out_of_service',
+        name: 'Out of Service',
+        code: '002',
+        level: 0,
+        isDefault: true,
+        description: 'Location for assets that are out of service'
+      },
+      {
+        id: 'offsite',
+        name: 'Offsite',
+        code: '000',
+        level: 0,
+        isDefault: true,
+        description: 'Location for assets that are offsite'
+      }
+    ];
+
+    // Create default locations first
+    for (const defaultLoc of defaultLocations) {
+      await setDoc(doc(collection(clientRef, 'locations'), defaultLoc.id), {
+        name: defaultLoc.name,
+        code: defaultLoc.code,
+        level: defaultLoc.level,
+        isDefault: defaultLoc.isDefault,
+        description: defaultLoc.description,
+        divisionType: 'System',
+        preciseScanEnabled: onboardingData.preciseScanEnabled,
+        created: new Date().toISOString(),
+        onboardingCreated: true,
+        hasSubLocations: false
+      });
+
+      // Create sublocation for each default location
+      await setDoc(doc(collection(clientRef, 'locations'), `${defaultLoc.id}_sub`), {
+        name: defaultLoc.name,
+        code: defaultLoc.code,
+        level: 1,
+        parentId: defaultLoc.id,
+        parentCode: defaultLoc.code,
+        isDefault: true,
+        divisionType: 'System',
+        preciseScanEnabled: onboardingData.preciseScanEnabled,
+        created: new Date().toISOString(),
+        onboardingCreated: true,
+        hasSubLocations: false
+      });
+
+      // Create precision location for each default location
+      await setDoc(doc(collection(clientRef, 'locations'), `${defaultLoc.id}_precision`), {
+        name: defaultLoc.name,
+        code: defaultLoc.code,
+        level: 2,
+        parentId: `${defaultLoc.id}_sub`,
+        parentCode: defaultLoc.code,
+        isDefault: true,
+        divisionType: 'System',
+        preciseScanEnabled: onboardingData.preciseScanEnabled,
+        created: new Date().toISOString(),
+        onboardingCreated: true,
+        hasSubLocations: false
+      });
+
+      console.log(`Created default location: ${defaultLoc.name} with full hierarchy`);
+    }
+
+    // 7. Create custom locations from onboarding data
     if (onboardingData.divisions && onboardingData.divisions.length) {
-      for (const divisionName of onboardingData.divisions) {
-        await setDoc(doc(collection(clientRef, 'locations'), divisionName.toLowerCase().replace(/\s+/g, '_')), {
+      for (let i = 0; i < onboardingData.divisions.length; i++) {
+        const divisionName = onboardingData.divisions[i];
+        const divisionCode = onboardingData.divisionCodes ? onboardingData.divisionCodes[i] : String(i + 100).padStart(3, '0');
+        const locationId = divisionName.toLowerCase().replace(/\s+/g, '_');
+
+        await setDoc(doc(collection(clientRef, 'locations'), locationId), {
           name: divisionName,
-          divisionType: onboardingData.mapDivide,
-          isCustom: onboardingData.isCustomDivisions,
-          preciseScanEnabled: onboardingData.preciseLoc === "yes",
-          hasCustomNaming: onboardingData.hasNaming === "yes",
+          code: divisionCode,
+          level: 0, // Top level location
+          divisionType: onboardingData.mapDivisionType || "Zone",
+          divisionLabel: onboardingData.mapDivisionLabels ? onboardingData.mapDivisionLabels[onboardingData.mapDivisionType] : onboardingData.mapDivisionType,
+          isCustom: onboardingData.mapDivisionType === 'Custom',
+          preciseScanEnabled: onboardingData.preciseScanEnabled,
           created: new Date().toISOString(),
-          // Location codes and UUIDs will be configured in location management
-          configurationPending: true
+          onboardingCreated: true,
+          hasSubLocations: false,
+          isDefault: false
         });
+        console.log(`Created custom location: ${divisionName} (${divisionCode})`);
       }
     }
 
-    // location_config - Store the overall configuration (no UUID generation settings)
-    await setDoc(doc(collection(clientRef, 'location_config'), 'settings'), {
-      map_divide: onboardingData.mapDivide || "",
-      is_custom_divisions: onboardingData.isCustomDivisions || false,
-      num_divisions: onboardingData.numDivisions || 0,
-      total_divisions: onboardingData.divisions ? onboardingData.divisions.length : 0,
-      division_names: onboardingData.divisions || [],
-      precise_loc: onboardingData.preciseLoc || "",
-      has_naming: onboardingData.hasNaming || "",
-      scan_only: onboardingData.scanOnly || "",
-      configuration_status: "pending", // Will be completed in location management
-      onboarded_at: new Date().toISOString()
+    // 7. Create required empty collections with initial documents
+
+    // Create assets collection (empty, ready for assets to be added)
+    await setDoc(doc(collection(clientRef, 'assets'), '_placeholder'), {
+      _placeholder: true,
+      created: new Date().toISOString(),
+      note: "This document will be removed when first real asset is added"
     });
 
-    // asset_frequencies
-    await setDoc(doc(collection(clientRef, 'asset_frequencies'), 'starter'), {
-      frequencies: onboardingData.assetFrequencies || {}
+    // Create assignments collection (empty, ready for assignments)
+    await setDoc(doc(collection(clientRef, 'assignments'), '_placeholder'), {
+      _placeholder: true,
+      created: new Date().toISOString(),
+      note: "This document will be removed when first assignment is created"
     });
 
-    // logs
-    await setDoc(doc(collection(clientRef, 'logs'), 'starter'), {
-      message: "Client onboarded",
-      timestamp: new Date().toISOString()
+    // Create inspectionRecords collection (empty, ready for inspection records)
+    await setDoc(doc(collection(clientRef, 'inspectionRecords'), '_placeholder'), {
+      _placeholder: true,
+      created: new Date().toISOString(),
+      note: "This document will be removed when first inspection is recorded"
     });
 
-    // assignments
-    await setDoc(doc(collection(clientRef, 'assignments'), 'starter'), {});
-
-    // billing
-    await setDoc(doc(collection(clientRef, 'billing'), 'starter'), {});
-
-    // assets (imported CSV if present)
-    await setDoc(doc(collection(clientRef, 'assets'), 'starter'), {
-      imported_csv: onboardingData.assetCsv || ""
-    });
-
-    // custom_questions
-    await setDoc(doc(collection(clientRef, 'custom_questions'), 'starter'), {
-      questions: onboardingData.customQuestions || {}
+    // Create logs collection with initial onboarding log
+    await setDoc(doc(collection(clientRef, 'logs'), 'onboarding'), {
+      action: "client_onboarded",
+      message: `Client ${onboardingData.clientName} successfully onboarded`,
+      timestamp: new Date().toISOString(),
+      user: onboardingData.adminUsername,
+      details: {
+        subdomain: subdomain,
+        admin_user: onboardingData.adminUsername,
+        locations_created: onboardingData.divisions ? onboardingData.divisions.length : 0,
+        custom_asset_types: onboardingData.wantCustomAssetTypes === "yes",
+        custom_questions: onboardingData.wantCustomQuestions === "yes"
+      }
     });
 
     // Success! Show completion message
     console.log('✅ Onboarding completed successfully!');
     console.log('✅ Client created in clients collection:', subdomain);
-    console.log('✅ Admin user created in users collection:', onboardingData.adminUsername);
+    console.log('✅ Admin user created in client-specific users collection:', onboardingData.adminUsername);
+    console.log('✅ All required collections created for client:', subdomain);
     showOnboardingSuccess(subdomain);
 
   } catch (err) {

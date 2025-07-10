@@ -396,7 +396,7 @@
       <button class="sidebar-btn" id="btn-users">Users</button>
       <button class="sidebar-btn" id="btn-logs">Logs</button>
       <button class="sidebar-btn" id="btn-analytics">Analytics</button>
-      <button class="sidebar-btn" id="btn-billing">Billing</button>
+      <button class="sidebar-btn" id="btn-inspections">Inspections</button>
       <button class="sidebar-btn" id="btn-site-settings">Site Settings</button>
       <button class="sidebar-btn" id="btn-firebase">Firebase Manager</button>
       <button class="sidebar-btn" id="btn-help">Help</button>
@@ -427,7 +427,9 @@
       <div id="panel-logs" class="dashboard-panel" style="display:none;">Logs here...</div>
       <div id="panel-analytics" class="dashboard-panel" style="display:none;">Analytics here...</div>
       <div id="panel-assignments" class="dashboard-panel" style="display:none;">Assignments here...</div>
-      <div id="panel-billing" class="dashboard-panel" style="display:none;">Billing here...</div>
+      <div id="panel-inspections" class="dashboard-panel" style="display:none;">
+        <iframe src="inspections.html" style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
+      </div>
       <div id="panel-help" class="dashboard-panel" style="display:none;">Help here...</div>
       <div id="panel-firebase" class="dashboard-panel" style="display:none;">
         <div class="firebase-explorer">
@@ -616,5 +618,6 @@ renderSimpleCalendar("simple-calendar");
 </script>
 <script type="module" src="dashboard.js"></script>
 <script type="module" src="manage-users.js"></script>
+<script type="module" src="messaging-ui.js"></script>
 </body>
 </html>

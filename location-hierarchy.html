@@ -421,7 +421,7 @@ async function loadCurrentLocations() {
     
     currentLocations = [];
     locationsSnapshot.forEach((doc) => {
-      if (doc.id !== 'starter') {
+      if (doc.id !== '_placeholder') {
         currentLocations.push({
           id: doc.id,
           ...doc.data()

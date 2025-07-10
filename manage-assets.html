@@ -83,7 +83,7 @@
     .group-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;}
     .group-title { font-size: 1.75rem; font-weight: 700; color: var(--nexus-light);}
     .group-count { background: var(--nexus-yellow); color: var(--nexus-dark); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;}
-    .user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;}
+    .user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;}
     .empty-group {
       background: var(--nexus-card); border: 2px dashed var(--nexus-border); border-radius: var(--radius);
       padding: 3rem; text-align: center; color: var(--nexus-muted); font-size: 1.125rem; font-weight: 500;
@@ -148,7 +148,7 @@
     .modal-close:hover { background: var(--nexus-border); color: var(--nexus-light);}
     .modal-content { color: var(--nexus-muted); line-height: 1.6;}
     /* SHIMMER SKELETON */
-    .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; }
+    .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
     .skeleton-card {
       background: var(--nexus-card); border-radius: var(--radius);
       height: 180px; padding: 1.5rem; position: relative; overflow: hidden;
@@ -689,7 +689,7 @@
       </svg>
       Add Asset
     </button>
-    <button class="reset-password" id="bulk-add-btn">Bulk Add</button>
+
   </div>
   <!-- === SKELETON LOADER (NEW) === -->
   <div class="skeleton-grid" id="asset-skeleton" style="display:none; max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
@@ -1074,13 +1074,7 @@
         showAddAssetModal();
       };
       
-      document.getElementById('bulk-add-btn').onclick = () => {
-        if (!canModifyAssets()) {
-          showToast('Insufficient permissions for bulk operations.', {type: 'error'});
-          return;
-        }
-        showBulkAddModal();
-      };
+
 
       // Load data
       try {
@@ -2549,10 +2543,8 @@
       }
     }
 
-    function showBulkAddModal() {
-      showToast('Bulk Add functionality will be implemented next.', {type: 'error'});
-      // TODO: Implement bulk add modal with CSV upload or batch form
-    }
+
   </script>
+  <script type="module" src="messaging-ui.js"></script>
 </body>
 </html>

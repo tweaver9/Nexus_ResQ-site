@@ -1,37 +1,61 @@
-// --- COMPAT-ONLY FIRESTORE DASHBOARD.JS ---
+// --- MODERN FIREBASE DASHBOARD.JS ---
 
-if (!window.firestoreCompat && window.firebase && window.firebase.firestore) {
-  window.firestoreCompat = window.firebase.firestore();
-}
-const db = window.firestoreCompat;
+import {
+  db,
+  getCurrentClientSubdomain,
+  getClientCollection,
+  getClientDoc,
+  getClientSettings
+} from './firebase.js';
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  where
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-window.addEventListener('DOMContentLoaded', () => {
-  // Session check
-  const clientId = sessionStorage.getItem('tenant_id');
+let currentClientSubdomain = null;
+let clientSettings = {};
+
+window.addEventListener('DOMContentLoaded', async () => {
+  // Initialize client context
+  currentClientSubdomain = getCurrentClientSubdomain();
   const username = sessionStorage.getItem('username');
   const role = sessionStorage.getItem('role');
   const clientLogoUrl = sessionStorage.getItem('clientLogoUrl');
+  const clientName = sessionStorage.getItem('clientName');
 
-  if (!clientId || !username || !role) {
+  if (!currentClientSubdomain || !username || !role) {
     window.location.href = "login.html";
     return;
+  }
+
+  // Load client settings
+  try {
+    clientSettings = await getClientSettings(currentClientSubdomain);
+  } catch (error) {
+    console.error('Error loading client settings:', error);
   }
 
   // Set logo and welcome
   const logoImg = document.getElementById('client-logo');
   if (logoImg && clientLogoUrl) logoImg.src = clientLogoUrl;
-  document.getElementById('dashboard-title').textContent = `${clientId.charAt(0).toUpperCase() + clientId.slice(1)} Dashboard`;
+
+  const displayName = clientName || currentClientSubdomain;
+  document.getElementById('dashboard-title').textContent = `${displayName.charAt(0).toUpperCase() + displayName.slice(1)} Dashboard`;
   document.getElementById('welcome-message').textContent = username
     ? `Welcome Back, ${username.charAt(0).toUpperCase() + username.slice(1)}!`
     : 'Welcome Back!';
 
   // Sidebar role-based visibility
   const roleButtonMap = {
-    admin:    ['home', 'assets', 'users', 'logs', 'analytics', 'billing', 'site-settings', 'help'],
-    manager:  ['home', 'assets', 'users', 'logs', 'analytics', 'site-settings', 'help'],
-    user:     ['home', 'assets', 'logs', 'analytics', 'help'],
+    admin:    ['home', 'assets', 'users', 'logs', 'analytics', 'inspections', 'site-settings', 'help'],
+    manager:  ['home', 'assets', 'users', 'logs', 'analytics', 'inspections', 'site-settings', 'help'],
+    user:     ['home', 'assets', 'logs', 'analytics', 'inspections', 'help'],
     nexus:    [
-      'home', 'assets', 'users', 'logs', 'analytics', 'billing', 'site-settings', 'help',
+      'home', 'assets', 'users', 'logs', 'analytics', 'inspections', 'site-settings', 'help',
       'firebase', 'onboard'
     ]
   };
@@ -88,11 +112,13 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!failedAssetsList) return;
     failedAssetsList.innerHTML = '';
     try {
-      const q = db.collection(`clients/${clientId}/inspections`)
-        .where("result", "==", "fail")
-        .orderBy("timestamp", "desc")
-        .limit(10);
-      const snapshot = await q.get();
+      const q = query(
+        getClientCollection(currentClientSubdomain, 'inspectionRecords'),
+        where("result", "==", "fail"),
+        orderBy("timestamp", "desc"),
+        limit(10)
+      );
+      const snapshot = await getDocs(q);
       if (snapshot.empty) {
         failedAssetsList.innerHTML = `<div class="dashboard-placeholder">No failed assets reported.</div>`;
         return;
@@ -105,6 +131,7 @@ window.addEventListener('DOMContentLoaded', () => {
         failedAssetsList.appendChild(line);
       });
     } catch (e) {
+      console.error('Error loading failed assets:', e);
       failedAssetsList.innerHTML = `<div class="dashboard-placeholder">Error loading failed assets.</div>`;
     }
   }
@@ -112,10 +139,12 @@ window.addEventListener('DOMContentLoaded', () => {
   async function loadRecentInspections() {
     const inspectionList = document.getElementById('inspection-list');
     try {
-      const q = db.collection(`clients/${clientId}/inspections`)
-        .orderBy("timestamp", "desc")
-        .limit(30);
-      const snapshot = await q.get();
+      const q = query(
+        getClientCollection(currentClientSubdomain, 'inspectionRecords'),
+        orderBy("timestamp", "desc"),
+        limit(30)
+      );
+      const snapshot = await getDocs(q);
       inspectionList.innerHTML = '';
       if (snapshot.empty) {
         inspectionList.innerHTML = `<div class="dashboard-placeholder">No inspections submitted yet.</div>`;
@@ -129,6 +158,7 @@ window.addEventListener('DOMContentLoaded', () => {
         inspectionList.appendChild(line);
       });
     } catch (e) {
+      console.error('Error loading recent inspections:', e);
       inspectionList.innerHTML = `<div class="dashboard-placeholder">Error loading inspections.</div>`;
     }
   }
@@ -136,38 +166,62 @@ window.addEventListener('DOMContentLoaded', () => {
   async function loadAreaStatuses() {
     const table = document.getElementById('area-status-table').querySelector('tbody');
     if (!table) return;
-    const locationsSnapshot = await db.collection(`clients/${clientId}/locations`).get();
-    const now = new Date();
-    const locations = [];
-    for (const locDoc of locationsSnapshot.docs) {
-      const locData = locDoc.data();
-      const locationId = locDoc.id;
-      const locationName = locData.name || locationId;
-      const expectedAssets = locData.expectedAssets || 0;
-      const nextInspectionDate = locData.nextInspectionDate ? locData.nextInspectionDate.toDate() : null;
-      const assetsQuery = db.collection(`clients/${clientId}/assets`)
-        .where("locationId", "==", locationId)
-        .where("status", "==", "Active");
-      const assetsSnapshot = await assetsQuery.get();
-      const activeCount = assetsSnapshot.size;
-      let daysToInspection = null;
-      if (nextInspectionDate) {
-        const diffMs = nextInspectionDate - now;
-        daysToInspection = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    try {
+      const locationsSnapshot = await getDocs(getClientCollection(currentClientSubdomain, 'locations'));
+      const now = new Date();
+      const locations = [];
+
+      for (const locDoc of locationsSnapshot.docs) {
+        if (locDoc.id === '_placeholder') continue;
+
+        const locData = locDoc.data();
+        const locationId = locDoc.id;
+        const locationName = locData.name || locationId;
+
+        // Count assets in this location
+        const assetsSnapshot = await getDocs(
+          query(
+            getClientCollection(currentClientSubdomain, 'assets'),
+            where("location", "==", locationName)
+          )
+        );
+
+        let activeCount = 0;
+        let totalCount = 0;
+
+        assetsSnapshot.forEach(assetDoc => {
+          if (assetDoc.id !== '_placeholder') {
+            totalCount++;
+            const assetData = assetDoc.data();
+            if (assetData.status === 'active' || assetData.status === 'Active') {
+              activeCount++;
+            }
+          }
+        });
+
+        // Only show locations that have assets or are not default system locations
+        if (totalCount > 0 || !locData.isDefault) {
+          locations.push({
+            name: locationName,
+            good: activeCount,
+            total: totalCount,
+            daysToInspection: null // Can be enhanced later with inspection scheduling
+          });
+        }
       }
-      locations.push({
-        name: locationName,
-        good: activeCount,
-        total: expectedAssets,
-        daysToInspection: daysToInspection
-      });
-    }
-    table.innerHTML = '';
-    locations.forEach(loc => {
-      let status = "green";
-      if (loc.good < loc.total) status = "red";
-      else if (loc.daysToInspection !== null && loc.daysToInspection < 0) status = "red";
-      else if (loc.daysToInspection !== null && loc.daysToInspection < 7) status = "yellow";
+
+      table.innerHTML = '';
+      if (locations.length === 0) {
+        table.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;">No locations with assets found</td></tr>';
+        return;
+      }
+
+      locations.forEach(loc => {
+        let status = "green";
+        if (loc.good < loc.total) status = "red";
+        else if (loc.daysToInspection !== null && loc.daysToInspection < 0) status = "red";
+        else if (loc.daysToInspection !== null && loc.daysToInspection < 7) status = "yellow";
       const row = document.createElement('tr');
       row.innerHTML = `
         <td class="area-status-location">
@@ -623,18 +677,6 @@ window.addEventListener('DOMContentLoaded', () => {
   loadFailedAssets();
   loadRecentInspections();
   loadAreaStatuses();
-
-  // --- TEST CODE FOR NEW FIRESTORE STRUCTURE ---
-  (async () => {
-    // This writes a document to a root-level collection
-    await db.collection('assetCategories').add({ name: 'New Category', description: 'Test category' });
-
-    // This updates the meta/rootCollections doc at the root
-    await db.collection('meta').doc('rootCollections').set(
-      { collections: ['clients', 'inspections', 'assets', 'users', 'logs', 'analytics', 'billing', 'help', 'firebase', 'onboard', 'assetCategories'] },
-      { merge: true }
-    );
-  })();
 
   async function deleteRootCollection(collectionName) {
     // Delete all docs in the collection

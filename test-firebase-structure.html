@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Structure Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Nexus Res-Q Firebase Structure Test</h1>
+    
+    <div class="test-section info">
+        <h3>Test Instructions</h3>
+        <p>This page tests the new multi-tenant Firebase structure. Make sure you're logged in with a valid client subdomain.</p>
+        <p><strong>Current Session:</strong></p>
+        <pre id="session-info">Loading...</pre>
+    </div>
+
+    <div class="test-section">
+        <h3>1. Test Client Context</h3>
+        <button onclick="testClientContext()">Test Client Context</button>
+        <div id="client-context-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test Asset Types Fallback</h3>
+        <button onclick="testAssetTypesFallback()">Test Asset Types</button>
+        <div id="asset-types-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test Client Collections</h3>
+        <button onclick="testClientCollections()">Test Collections</button>
+        <div id="collections-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Test Data Loading</h3>
+        <button onclick="testDataLoading()">Test Data Loading</button>
+        <div id="data-loading-result"></div>
+    </div>
+
+    <script type="module">
+        import { 
+            db, 
+            getCurrentClientSubdomain, 
+            getClientCollection, 
+            getClientDoc, 
+            getClientSettings,
+            loadAssetTypesWithFallback,
+            loadQuestionTemplatesWithFallback,
+            validateClientExists
+        } from './firebase.js';
+        import { 
+            collection, 
+            getDocs, 
+            doc, 
+            getDoc 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Display session info
+        document.getElementById('session-info').textContent = JSON.stringify({
+            tenant_id: sessionStorage.getItem('tenant_id'),
+            clientSubdomain: sessionStorage.getItem('clientSubdomain'),
+            username: sessionStorage.getItem('username'),
+            role: sessionStorage.getItem('role'),
+            clientName: sessionStorage.getItem('clientName')
+        }, null, 2);
+
+        // Test functions
+        window.testClientContext = async function() {
+            const resultDiv = document.getElementById('client-context-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const subdomain = getCurrentClientSubdomain();
+                const exists = await validateClientExists(subdomain);
+                const settings = await getClientSettings(subdomain);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Client Context Test Passed</h4>
+                        <p><strong>Subdomain:</strong> ${subdomain}</p>
+                        <p><strong>Client Exists:</strong> ${exists}</p>
+                        <p><strong>Settings:</strong></p>
+                        <pre>${JSON.stringify(settings, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Client Context Test Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        };
+
+        window.testAssetTypesFallback = async function() {
+            const resultDiv = document.getElementById('asset-types-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const subdomain = getCurrentClientSubdomain();
+                const assetTypes = await loadAssetTypesWithFallback(subdomain);
+                const questionTemplates = await loadQuestionTemplatesWithFallback(subdomain);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Fallback Logic Test Passed</h4>
+                        <p><strong>Asset Types Found:</strong> ${assetTypes.length}</p>
+                        <p><strong>Question Templates Found:</strong> ${questionTemplates.length}</p>
+                        <details>
+                            <summary>Asset Types Details</summary>
+                            <pre>${JSON.stringify(assetTypes, null, 2)}</pre>
+                        </details>
+                        <details>
+                            <summary>Question Templates Details</summary>
+                            <pre>${JSON.stringify(questionTemplates, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Fallback Logic Test Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        };
+
+        window.testClientCollections = async function() {
+            const resultDiv = document.getElementById('collections-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const subdomain = getCurrentClientSubdomain();
+                const collections = ['assets', 'users', 'locations', 'assignments', 'inspectionRecords', 'logs'];
+                const results = {};
+                
+                for (const collectionName of collections) {
+                    try {
+                        const snap = await getDocs(getClientCollection(subdomain, collectionName));
+                        results[collectionName] = {
+                            exists: true,
+                            count: snap.size,
+                            docs: snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+                        };
+                    } catch (error) {
+                        results[collectionName] = {
+                            exists: false,
+                            error: error.message
+                        };
+                    }
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Client Collections Test Completed</h4>
+                        <pre>${JSON.stringify(results, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Client Collections Test Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        };
+
+        window.testDataLoading = async function() {
+            const resultDiv = document.getElementById('data-loading-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const subdomain = getCurrentClientSubdomain();
+                
+                // Test loading locations
+                const locationsSnap = await getDocs(getClientCollection(subdomain, 'locations'));
+                const locations = [];
+                locationsSnap.forEach(doc => {
+                    if (doc.id !== '_placeholder') {
+                        locations.push({ id: doc.id, ...doc.data() });
+                    }
+                });
+                
+                // Test loading assets
+                const assetsSnap = await getDocs(getClientCollection(subdomain, 'assets'));
+                const assets = [];
+                assetsSnap.forEach(doc => {
+                    if (doc.id !== '_placeholder') {
+                        assets.push({ id: doc.id, ...doc.data() });
+                    }
+                });
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Data Loading Test Completed</h4>
+                        <p><strong>Locations:</strong> ${locations.length} found</p>
+                        <p><strong>Assets:</strong> ${assets.length} found</p>
+                        <details>
+                            <summary>Locations Data</summary>
+                            <pre>${JSON.stringify(locations, null, 2)}</pre>
+                        </details>
+                        <details>
+                            <summary>Assets Data</summary>
+                            <pre>${JSON.stringify(assets, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Data Loading Test Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>

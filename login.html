@@ -4,26 +4,232 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Nexus Res-Q Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="CSS/login.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --nexus-yellow: #fdd835;
+      --nexus-bg: #0a0e1a;
+      --nexus-card: #151b2e;
+      --nexus-card-hover: #1a2138;
+      --nexus-dark: #0f1419;
+      --nexus-border: #2a3441;
+      --nexus-light: #ffffff;
+      --nexus-muted: #8792a3;
+      --nexus-success: #10b981;
+      --nexus-warning: #f59e0b;
+      --nexus-error: #ef4444;
+      --nexus-info: #3b82f6;
+      --radius: 16px;
+      --radius-sm: 8px;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%);
+      color: var(--nexus-light);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .login-container {
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      padding: 3rem;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: var(--shadow-heavy);
+      border: 1px solid var(--nexus-border);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .client-logo {
+      height: 60px;
+      margin-bottom: 1.5rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .login-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--nexus-light);
+      margin-bottom: 0.5rem;
+    }
+
+    .login-subtitle {
+      color: var(--nexus-muted);
+      font-size: 1rem;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: var(--nexus-light);
+      font-size: 0.875rem;
+    }
+
+    .form-input {
+      background: var(--nexus-dark);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      color: var(--nexus-light);
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: var(--nexus-muted);
+    }
+
+    .login-button {
+      background: linear-gradient(135deg, var(--nexus-yellow), #f59e0b);
+      color: var(--nexus-dark);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 0.5rem;
+    }
+
+    .login-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(253, 216, 53, 0.3);
+    }
+
+    .login-button:active {
+      transform: translateY(0);
+    }
+
+    .login-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--nexus-error);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      color: var(--nexus-error);
+      font-size: 0.875rem;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .login-links {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--nexus-border);
+    }
+
+    .login-link {
+      color: var(--nexus-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s ease;
+    }
+
+    .login-link:hover {
+      color: var(--nexus-yellow);
+    }
+
+    .login-divider {
+      color: var(--nexus-border);
+      margin: 0 1rem;
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 2rem;
+        margin: 1rem;
+      }
+
+      .login-title {
+        font-size: 1.75rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="form-container">
-    <img src="logos/nexusresq.jpg" alt="Client Logo" id="client-logo" style="height:48px;margin-bottom:12px">
-    <h1>Sign In</h1>
-    <form class="login-form">
-      <input type="text" name="username" placeholder="Username" required />
-      <input type="password" name="password" placeholder="Password" required />
-      <button type="submit" class="login-btn">Sign In</button>
-    </form>
-    <div class="form-links">
-      <a href="#" id="forgot-password-btn">Forgot Password?</a>
-      <span>&nbsp;|&nbsp;</span>
-      <a href="client-portal.html">Return to Client Portal</a>
+  <div class="login-container">
+    <div class="login-header">
+      <img src="logos/nexusresq.jpg" alt="Client Logo" id="client-logo" class="client-logo">
+      <h1 class="login-title">Welcome Back</h1>
+      <p class="login-subtitle">Sign in to your Nexus Res-Q account</p>
     </div>
-    <div id="login-error" style="color: #ffb300; margin-top: 10px;"></div>
+
+    <form class="login-form">
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          class="form-input"
+          placeholder="Enter your username"
+          required
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-input"
+          placeholder="Enter your password"
+          required
+          autocomplete="current-password"
+        />
+      </div>
+
+      <button type="submit" class="login-button">Sign In</button>
+    </form>
+
+    <div id="login-error" class="login-error"></div>
+
+    <div class="login-links">
+      <a href="#" id="forgot-password-btn" class="login-link">Forgot Password?</a>
+      <span class="login-divider">|</span>
+      <a href="client-portal.html" class="login-link">Return to Client Portal</a>
+    </div>
   </div>
 
   <script type="module" src="login.js"></script>
+  <script type="module" src="messaging-ui.js"></script>
 </body>
 </html>

@@ -1,9 +1,14 @@
 // view-inspections.js (Firebase version)
-import { db } from './firebase.js';
+import {
+  db,
+  getCurrentClientSubdomain,
+  getClientCollection,
+  getClientDoc
+} from './firebase.js';
 import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from "firebase/firestore";
 
-// 1. Get tenant_id from sessionStorage
-const tenantId = sessionStorage.getItem('tenant_id');
+// 1. Get client subdomain from session
+const currentClientSubdomain = getCurrentClientSubdomain();
 
 // 2. DOM references
 const inspectionsTableBody = document.getElementById('inspectionsTableBody');
@@ -19,7 +24,7 @@ let assetTypes = [];
 
 // 4. On load: fetch all data
 window.addEventListener('DOMContentLoaded', async () => {
-  if (!tenantId) {
+  if (!currentClientSubdomain) {
     window.location.href = "login.html";
     return;
   }
@@ -32,10 +37,12 @@ window.addEventListener('DOMContentLoaded', async () => {
 // 5. Fetch areas
 async function loadAreas() {
   areas = [];
-  const areaSnap = await getDocs(collection(db, `clients/${tenantId}/locations`));
+  const areaSnap = await getDocs(getClientCollection(currentClientSubdomain, 'locations'));
   areaSnap.forEach(docSnap => {
-    const area = docSnap.data();
-    areas.push({ id: docSnap.id, name: area.name });
+    if (docSnap.id !== '_placeholder') {
+      const area = docSnap.data();
+      areas.push({ id: docSnap.id, name: area.name });
+    }
   });
   areaFilter.innerHTML = `<option value="all">All Areas</option>` +
     areas.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
@@ -57,18 +64,20 @@ async function loadAssetTypes() {
 async function loadInspections() {
   inspections = [];
   const q = query(
-    collection(db, `clients/${tenantId}/inspections`),
+    getClientCollection(currentClientSubdomain, 'inspectionRecords'),
     orderBy('timestamp', 'desc'),
     limit(100)
   );
   const snap = await getDocs(q);
   snap.forEach(docSnap => {
-    const d = docSnap.data();
-    inspections.push({
-      ...d,
-      id: docSnap.id,
-      timestamp: d.timestamp ? new Date(d.timestamp) : null
-    });
+    if (docSnap.id !== '_placeholder') {
+      const d = docSnap.data();
+      inspections.push({
+        ...d,
+        id: docSnap.id,
+        timestamp: d.timestamp ? new Date(d.timestamp) : null
+      });
+    }
   });
   renderInspections();
 }
@@ -131,7 +140,7 @@ function renderInspections() {
 // 9. Modal/Details popup for Results button
 window.viewInspectionDetails = async function(inspectionId) {
   // Fetch the full inspection details (with answers)
-  const docRef = doc(db, `clients/${tenantId}/inspections`, inspectionId);
+  const docRef = getClientDoc(currentClientSubdomain, 'inspectionRecords', inspectionId);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) {
     alert("Could not load inspection details.");

@@ -708,29 +708,56 @@
             }
         }
 
-        // Create test client
+        // Create test client with new structure
         async function createTestClient() {
             const clientData = {
-                id: "nexustest",
                 name: "NexusTest Corp",
                 subdomain: "nexustest",
-                terminology: {
-                    level0: "Buildings",
-                    level1: "Zones", 
-                    level2: "Points",
-                    asset: "Equipment",
-                    inspection: "Check"
-                },
+                logo_url: "",
                 settings: {
-                    theme: "dark",
-                    autoBackup: true,
-                    reportFormat: "pdf"
+                    barcodeDelimiter: "-",
+                    barcodeLevels: ["zone", "sublocation", "precisionlocation"],
+                    preciseScanEnabled: true,
+                    reportFormat: "pdf",
+                    typingAllowed: true,
+                    mapDivisions: ["Building A", "Building B", "Building C"],
+                    customAssetTypes: true,
+                    customQuestions: false
                 },
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                isActive: true
+                status: "active",
+                onboarding_completed: true
             };
 
+            // Create client root document
             await db.collection('clients').doc('nexustest').set(clientData);
+
+            // Create required collections with placeholder documents
+            const clientRef = db.collection('clients').doc('nexustest');
+
+            await clientRef.collection('assets').doc('_placeholder').set({
+                _placeholder: true,
+                created: new Date().toISOString()
+            });
+
+            await clientRef.collection('assignments').doc('_placeholder').set({
+                _placeholder: true,
+                created: new Date().toISOString()
+            });
+
+            await clientRef.collection('inspectionRecords').doc('_placeholder').set({
+                _placeholder: true,
+                created: new Date().toISOString()
+            });
+
+            await clientRef.collection('logs').doc('admin_created').set({
+                action: "test_client_created",
+                message: "Test client created via admin tool",
+                timestamp: new Date().toISOString(),
+                user: "admin"
+            });
+
+            logMessage("✅ Test client 'nexustest' created with new structure", "success");
         }
 
         // Create test asset types
@@ -995,18 +1022,26 @@
             await batch.commit();
         }
 
-        // Create 225+ test assets
+        // Create test assets in client-specific collection
         async function createTestAssets() {
-            // Get all locations for asset placement
-            const locationsSnapshot = await db.collection('locations')
-                .where('clientId', '==', 'nexustest')
-                .where('level', '==', 2) // Only precision locations
-                .get();
-            
-            const locations = locationsSnapshot.docs.map(doc => doc.data());
-            
+            // Get all locations for asset placement from client-specific collection
+            const locationsSnapshot = await db.collection('clients').doc('nexustest')
+                .collection('locations').get();
+
+            const locations = [];
+            locationsSnapshot.docs.forEach(doc => {
+                if (doc.id !== '_placeholder') {
+                    locations.push({ id: doc.id, ...doc.data() });
+                }
+            });
+
+            if (locations.length === 0) {
+                logMessage("❌ No locations found. Create locations first.", "error");
+                return;
+            }
+
             const assetTypes = [
-                "fire_extinguisher", "hydrant", "sprinkler", "alarm", 
+                "fire_extinguisher", "hydrant", "sprinkler", "alarm",
                 "exit_sign", "aed", "emergency_kit", "hose_reel"
             ];
 

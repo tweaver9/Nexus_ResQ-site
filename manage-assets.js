@@ -1,7 +1,13 @@
 // manage-assets.js
 
 // ========== FIREBASE IMPORTS ==========
-import { db } from './firebase.js';
+import {
+  db,
+  getCurrentClientSubdomain,
+  getClientCollection,
+  getClientDoc,
+  loadAssetTypesWithFallback
+} from './firebase.js';
 import {
   collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -19,10 +25,11 @@ const DEFAULT_CATEGORIES = [
 ];
 
 // ========== STATE ==========
-let allClients = [];
+let currentClientSubdomain = null;
 let allAssets = [];
 let assetCategories = [];
-let locationsCache = {};
+let clientLocations = [];
+let clientSettings = {};
 
 // ========== DOM ==========
 const assetsTableBody = document.getElementById('assetsTableBody');
@@ -38,36 +45,55 @@ const bulkDeleteAssetBtn = document.getElementById('bulkDeleteAssetBtn');
 // ========== CATEGORY LOADING (HYBRID: FIREBASE, LOCALSTORAGE, DEFAULT) ==========
 async function loadAssetCategories(force=false) {
   if (!force) {
-    const cached = localStorage.getItem('nexus_asset_categories');
-    const ts = parseInt(localStorage.getItem('nexus_asset_categories_ts')||'0',10);
+    const cached = localStorage.getItem(`nexus_asset_categories_${currentClientSubdomain}`);
+    const ts = parseInt(localStorage.getItem(`nexus_asset_categories_ts_${currentClientSubdomain}`)||'0',10);
     if (cached && Date.now()-ts < 60*60*1000) {
       assetCategories = JSON.parse(cached);
       return;
     }
   }
+
   try {
-    const snap = await getDocs(collection(db, "assetCategories"));
-    let cats = [];
-    snap.forEach(doc => {
-      if(doc.data().name) cats.push(doc.data().name);
-    });
-    if (cats.length) {
-      assetCategories = cats;
-      localStorage.setItem('nexus_asset_categories', JSON.stringify(assetCategories));
-      localStorage.setItem('nexus_asset_categories_ts', Date.now()+'');
-      return;
+    // Use the new utility function to load asset types with fallback
+    const assetTypes = await loadAssetTypesWithFallback(currentClientSubdomain);
+
+    // Extract names from asset types
+    assetCategories = assetTypes.map(type => type.name || type.id);
+
+    // Add default categories if no asset types found
+    if (assetCategories.length === 0) {
+      assetCategories = [...DEFAULT_CATEGORIES];
     }
-  } catch(e) {}
-  assetCategories = DEFAULT_CATEGORIES;
-  localStorage.setItem('nexus_asset_categories', JSON.stringify(assetCategories));
-  localStorage.setItem('nexus_asset_categories_ts', Date.now()+'');
+
+    // Cache the results
+    localStorage.setItem(`nexus_asset_categories_${currentClientSubdomain}`, JSON.stringify(assetCategories));
+    localStorage.setItem(`nexus_asset_categories_ts_${currentClientSubdomain}`, Date.now().toString());
+
+    console.log(`Loaded ${assetCategories.length} asset categories for client ${currentClientSubdomain}`);
+  } catch (error) {
+    console.warn('Could not load asset categories, using defaults:', error);
+    assetCategories = [...DEFAULT_CATEGORIES];
+  }
 }
 
-// ========== CLIENTS/LOCATIONS/ASSETS ==========
+// ========== INITIALIZATION ==========
 window.addEventListener('DOMContentLoaded', async () => {
-  await loadAllClients();
+  // Initialize client context
+  currentClientSubdomain = getCurrentClientSubdomain();
+
+  if (!currentClientSubdomain) {
+    console.error('No client subdomain found in session');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Load client-specific data
+  await loadClientSettings();
   await loadAssetCategories();
-  await loadAllAssets();
+  await loadClientLocations();
+  await loadClientAssets();
+
+  // Set up event listeners
   assetSearch.addEventListener('input', renderAssets);
   addAssetBtn.onclick = showAddAssetModal;
   bulkAddAssetBtn.onclick = showBulkAddAssetModal;
@@ -76,31 +102,54 @@ window.addEventListener('DOMContentLoaded', async () => {
   bulkDeleteAssetBtn.onclick = showBulkDeleteModal;
 });
 
-async function loadAllClients() {
-  const snap = await getDocs(collection(db, "clients"));
-  allClients = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  for (const c of allClients) {
-    locationsCache[c.id] = await getLocationsForClient(c.id);
+// ========== CLIENT-SPECIFIC DATA LOADING ==========
+async function loadClientSettings() {
+  try {
+    const storedSettings = sessionStorage.getItem('clientSettings');
+    if (storedSettings) {
+      clientSettings = JSON.parse(storedSettings);
+    }
+  } catch (error) {
+    console.error('Error loading client settings:', error);
   }
 }
-async function loadAllAssets() {
-  allAssets = [];
-  for (const client of allClients) {
-    const snap = await getDocs(collection(db, `clients/${client.id}/assets`));
+
+async function loadClientLocations() {
+  try {
+    const snap = await getDocs(getClientCollection(currentClientSubdomain, 'locations'));
+    clientLocations = [];
     snap.forEach(doc => {
-      allAssets.push({
-        ...doc.data(),
-        id: doc.id,
-        clientId: client.id,
-        clientName: client.name || client.id
-      });
+      if (doc.id !== '_placeholder') {
+        clientLocations.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      }
     });
+    console.log(`Loaded ${clientLocations.length} locations for client ${currentClientSubdomain}`);
+  } catch (error) {
+    console.error('Error loading client locations:', error);
   }
-  renderAssets();
 }
-async function getLocationsForClient(clientId) {
-  const snap = await getDocs(collection(db, `clients/${clientId}/locations`));
-  return snap.docs.map(d => d.data().name);
+
+async function loadClientAssets() {
+  try {
+    allAssets = [];
+    const snap = await getDocs(getClientCollection(currentClientSubdomain, 'assets'));
+    snap.forEach(doc => {
+      if (doc.id !== '_placeholder') {
+        allAssets.push({
+          ...doc.data(),
+          id: doc.id,
+          clientId: currentClientSubdomain
+        });
+      }
+    });
+    console.log(`Loaded ${allAssets.length} assets for client ${currentClientSubdomain}`);
+    renderAssets();
+  } catch (error) {
+    console.error('Error loading client assets:', error);
+  }
 }
 
 // ========== RENDER TABLE ==========
@@ -308,7 +357,7 @@ function showAddAssetModal() {
       return;
     }
     try {
-      await addDoc(collection(db, `clients/${clientId}/assets`), {
+      await addDoc(getClientCollection(currentClientSubdomain, 'assets'), {
         asset_id, type: category, location, assigned_user, status,
         last_inspected_by, last_inspection_date,
         created_at: serverTimestamp()
@@ -316,7 +365,7 @@ function showAddAssetModal() {
       msg.textContent = "Added!";
       msg.style.color = "#28e640";
       modalRoot.style.display = "none";
-      await loadAllAssets();
+      await loadClientAssets();
     } catch (error) {
       msg.textContent = "Error: " + (error.message || "Unknown error");
       msg.style.color = "#ff5050";
@@ -326,7 +375,7 @@ function showAddAssetModal() {
 
 // ========== EDIT ASSET MODAL ==========
 window.editAsset = async function(clientId, assetId) {
-  const docRef = doc(db, `clients/${clientId}/assets/${assetId}`);
+  const docRef = getClientDoc(currentClientSubdomain, 'assets', assetId);
   const assetSnap = await getDoc(docRef);
   if (!assetSnap.exists()) {
     alert("Asset not found.");

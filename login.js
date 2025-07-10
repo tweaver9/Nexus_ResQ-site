@@ -1,5 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// Import bcryptjs for password validation
+import bcrypt from "https://cdn.skypack.dev/bcryptjs@2.4.3";
 
 // Firebase Config
 const firebaseConfig = {
@@ -9,6 +13,7 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // --- Extract subdomain ---
 function getSubdomain() {
@@ -24,44 +29,135 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
   const errorDiv = document.getElementById("login-error");
 
   if (!username || !password) {
-    errorDiv.textContent = "Missing username or password.";
+    showError("Missing username or password.");
     return;
   }
 
   const subdomain = getSubdomain();
   if (!subdomain) {
-    errorDiv.textContent = "Invalid access. Use your client subdomain.";
+    showError("Invalid access. Use your client subdomain.");
     return;
   }
 
   try {
-    const res = await fetch("https://us-central1-nexus-res-q.cloudfunctions.net/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, subdomain })
-    });
+    // First validate that the client exists
+    const clientDocRef = doc(db, 'clients', subdomain);
+    const clientDoc = await getDoc(clientDocRef);
 
-    if (!res.ok) {
-      const errorMsg = await res.text();
-      throw new Error(errorMsg);
+    if (!clientDoc.exists()) {
+      showError("Invalid client subdomain. Please check your URL.");
+      return;
     }
 
-    const data = await res.json();
+    const clientData = clientDoc.data();
 
-    // Store session info from backend response
-    sessionStorage.setItem("nexusUser", JSON.stringify(data.user));
-    console.log("User stored in session:", data.user);
-    
+    // Find user by username in client-specific users collection
+    const usersRef = collection(db, 'clients', subdomain, 'users');
+    const userQuery = query(usersRef, where('username', '==', username));
+    const userSnapshot = await getDocs(userQuery);
+
+    if (userSnapshot.empty) {
+      showError("Invalid username or password.");
+      return;
+    }
+
+    const userDoc = userSnapshot.docs[0];
+    const userData = userDoc.data();
+
+    // Check if user is active
+    if (!userData.active) {
+      showError("Account is inactive. Please contact your administrator.");
+      return;
+    }
+
+    // Validate password using bcryptjs
+    const isPasswordValid = await bcrypt.compare(password, userData.hashedPassword);
+
+    if (!isPasswordValid) {
+      showError("Invalid username or password.");
+      return;
+    }
+
+    // Update last login
+    await updateDoc(userDoc.ref, {
+      last_login: new Date().toISOString(),
+      login_count: (userData.login_count || 0) + 1
+    });
+
+    // Store comprehensive session info
+    const userSessionData = {
+      id: userDoc.id,
+      username: userData.username,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      role: userData.role,
+      active: userData.active,
+      clientSubdomain: subdomain
+    };
+
+    sessionStorage.setItem("nexusUser", JSON.stringify(userSessionData));
     sessionStorage.setItem("tenant_id", subdomain);
-    sessionStorage.setItem("username", data.user.username);
-    sessionStorage.setItem("role", data.user.role);
+    sessionStorage.setItem("clientSubdomain", subdomain);
+    sessionStorage.setItem("username", userData.username);
+    sessionStorage.setItem("role", userData.role);
+
+    // Store client settings for easy access
+    if (clientData.settings) {
+      sessionStorage.setItem("clientSettings", JSON.stringify(clientData.settings));
+    }
+
+    // Store client logo URL if available
+    if (clientData.logo_url) {
+      sessionStorage.setItem("clientLogoUrl", clientData.logo_url);
+    }
+
+    // Store client name
+    sessionStorage.setItem("clientName", clientData.name);
+
+    // Log successful login
+    await addDoc(collection(db, 'clients', subdomain, 'logs'), {
+      action: 'user_login',
+      username: userData.username,
+      timestamp: new Date().toISOString(),
+      ip_address: 'unknown', // Could be enhanced with IP detection
+      user_agent: navigator.userAgent
+    });
+
+    console.log("User logged in successfully:", userSessionData);
+    console.log("Client context set:", subdomain);
 
     window.location.href = "dashboard.html";
   } catch (err) {
-    console.error(err);
-    errorDiv.textContent = err.message || "Login failed.";
+    console.error("Login error:", err);
+    showError("Login failed. Please try again.");
+
+    // Log failed login attempt
+    try {
+      await addDoc(collection(db, 'clients', subdomain, 'logs'), {
+        action: 'failed_login_attempt',
+        username: username,
+        timestamp: new Date().toISOString(),
+        error: err.message,
+        ip_address: 'unknown',
+        user_agent: navigator.userAgent
+      });
+    } catch (logError) {
+      console.error("Failed to log login attempt:", logError);
+    }
   }
 });
+
+// Helper function to show error messages
+function showError(message) {
+  const errorDiv = document.getElementById("login-error");
+  errorDiv.textContent = message;
+  errorDiv.style.display = "block";
+
+  // Hide error after 5 seconds
+  setTimeout(() => {
+    errorDiv.style.display = "none";
+  }, 5000);
+}
 
 // --- PASSWORD RESET MODAL LOGIC ---
 function createResetModal() {
