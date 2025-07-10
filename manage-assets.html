@@ -1389,7 +1389,10 @@
       // Group assets by type and count totals/failed
       const assetTypeGroups = {};
       list.forEach(asset => {
-        const type = asset.type || 'Unknown';
+        // Capitalize asset type properly
+        const rawType = asset.type || 'Unknown';
+        const type = capitalizeAssetType(rawType);
+
         if (!assetTypeGroups[type]) {
           assetTypeGroups[type] = {
             total: 0,
@@ -1650,6 +1653,49 @@
 
     function getAssetInitial(asset) {
       return (asset.kind || asset.type || 'A')[0].toUpperCase();
+    }
+
+    // Capitalize asset type properly
+    function capitalizeAssetType(type) {
+      if (!type) return 'Unknown';
+
+      // Handle special cases
+      const specialCases = {
+        'aed': 'AED',
+        'fire extinguisher': 'Fire Extinguisher',
+        'fire alarm': 'Fire Alarm',
+        'smoke detector': 'Smoke Detector',
+        'co detector': 'CO Detector',
+        'co2': 'CO2',
+        'h2o': 'H2O',
+        'abc': 'ABC',
+        'bc': 'BC',
+        'k class': 'K Class',
+        'wet chemical': 'Wet Chemical',
+        'dry chemical': 'Dry Chemical',
+        'foam': 'Foam',
+        'halon': 'Halon',
+        'clean agent': 'Clean Agent'
+      };
+
+      const lowerType = type.toLowerCase().trim();
+
+      // Check for exact matches first
+      if (specialCases[lowerType]) {
+        return specialCases[lowerType];
+      }
+
+      // Check for partial matches
+      for (const [key, value] of Object.entries(specialCases)) {
+        if (lowerType.includes(key)) {
+          return lowerType.replace(key, value);
+        }
+      }
+
+      // Default capitalization: capitalize each word
+      return type.split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
     }
 
     function getLastInspectionDate(asset) {

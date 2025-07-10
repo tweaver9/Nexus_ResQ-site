@@ -1,6 +1,6 @@
 // messaging-ui.js - UI components for messaging system
 
-// Use global messagingSystem from messaging.js loaded in HTML
+import { messagingSystem } from './messaging.js';
 
 class MessagingUI {
   constructor() {

@@ -1506,54 +1506,27 @@
       try {
         showSkeleton();
         console.log('Loading users for client:', clientId);
-        
+
         // Simulate loading delay for better UX
         await new Promise(resolve => setTimeout(resolve, 650));
-        
-        // Load from the flat users collection (new structure)
+
+        // Load EXCLUSIVELY from client-specific path: /clients/{clientId}/users
         let users = [];
-        try {
-          const usersRef = db.collection('users');
-          const snapshot = await usersRef.where('clientId', '==', clientId).get();
-          console.log('Found', snapshot.size, 'users in flat collection');
-          
-          snapshot.forEach(doc => {
-            const userData = doc.data();
-            if (!userData.soft_deleted) {
-              users.push({
-                id: doc.id,
-                name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.username || 'Unknown User',
-                email: userData.email || `${doc.id}@${clientId}.com`,
-                role: userData.role || 'user',
-                assignedAreas: userData.assignedAreas || []
-              });
-            }
-          });
-        } catch (flatError) {
-          console.log('Flat collection failed, trying nested structure:', flatError);
-          
-          // Fallback to nested structure if flat collection fails
-          try {
-            const snapshot = await db.collection(`clients/${clientId}/users`).get();
-            console.log('Found', snapshot.size, 'users in nested collection');
-            
-            snapshot.forEach(doc => {
-              const userData = doc.data();
-              if (!userData.soft_deleted) {
-                users.push({
-                  id: doc.id,
-                  name: userData.name || userData.username || 'Unknown User',
-                  email: userData.email || `${doc.id}@${clientId}.com`,
-                  role: userData.role || 'user',
-                  assignedAreas: userData.assignedAreas || []
-                });
-              }
+        const snapshot = await db.collection(`clients/${clientId}/users`).get();
+        console.log('Found', snapshot.size, 'users in client-specific collection');
+
+        snapshot.forEach(doc => {
+          const userData = doc.data();
+          if (!userData.soft_deleted) {
+            users.push({
+              id: doc.id,
+              name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.username || 'Unknown User',
+              email: userData.email || `${doc.id}@${clientId}.com`,
+              role: userData.role || 'user',
+              assignedAreas: userData.assignedAreas || []
             });
-          } catch (nestedError) {
-            console.error('Both flat and nested collection queries failed:', nestedError);
-            throw new Error('Unable to load users from either collection structure');
           }
-        }
+        });
 
         console.log('Processed users:', users);
         hideSkeleton();

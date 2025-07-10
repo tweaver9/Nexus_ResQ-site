@@ -206,8 +206,13 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function loadAreaStatuses() {
-    const table = document.getElementById('area-status-table').querySelector('tbody');
-    if (!table) return;
+    const table = document.getElementById('area-status-table');
+    if (!table) {
+      console.log('Area status table not found - home panel was cleaned up');
+      return;
+    }
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
 
     try {
       const locationsSnapshot = await getDocs(getClientCollection(currentClientSubdomain, 'locations'));
@@ -278,11 +283,11 @@ window.addEventListener('DOMContentLoaded', async () => {
             `Due in ${loc.daysToInspection}d`}
         </td>
       `;
-      table.appendChild(row);
+      tbody.appendChild(row);
     });
     } catch (error) {
       console.error('Error loading area statuses:', error);
-      table.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#666;">Error loading area statuses</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#666;">Error loading area statuses</td></tr>';
     }
   }
 
