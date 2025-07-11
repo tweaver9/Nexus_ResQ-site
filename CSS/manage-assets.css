@@ -693,53 +693,55 @@ body {
 
 /* === ADD ASSET MODAL (MATCH ADD USER MODAL) === */
 #add-asset-modal .modal {
-  background: var(--primary-mid);
-  border-radius: 22px;
-  box-shadow: var(--box-shadow);
-  padding: 32px 22px 24px 22px;
-  max-width: 250px;
-  width: 100%;
-  margin: 48px auto 0 auto;
+  background: var(--nexus-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-heavy);
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  margin: 0 auto;
   text-align: left;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  display: block;
+  max-height: 80vh;
+  overflow-y: auto;
+  border: 1px solid var(--nexus-border);
 }
 #add-asset-modal .modal-header {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 22px;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 #add-asset-modal .modal-title {
+  font-size: 1.48rem;
+  font-weight: 600;
+  color: var(--nexus-light);
   font-family: 'Oswald', 'Inter', Arial, sans-serif;
-  font-size: 1.32em;
-  font-weight: 700;
-  color: var(--primary-light);
-  letter-spacing: 0.03em;
-  margin-bottom: 0;
 }
 #add-asset-modal .modal-close {
   background: none;
   border: none;
-  color: var(--primary-light);
+  color: var(--nexus-muted);
   font-size: 1.5rem;
   cursor: pointer;
-  border-radius: 50%;
-  width: 34px;
-  height: 34px;
+  padding: 0;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, color 0.2s;
-  margin-left: 10px;
-  margin-top: -6px;
-  margin-bottom: -6px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
 }
 #add-asset-modal .modal-close:hover {
   background: var(--nexus-border);
-  color: #fff176;
+  color: var(--nexus-light);
+}
+#add-asset-modal .modal-content {
+  color: var(--nexus-muted);
+  line-height: 1.6;
+  font-size: 1.08rem;
 }
 #add-asset-modal .modal-content form {
   display: flex;
@@ -823,7 +825,7 @@ body {
 @media (max-width: 600px) {
   #add-asset-modal .modal {
     max-width: 97vw;
-    padding: 12px 2vw 10px 2vw;
+    padding: 1rem;
     border-radius: 12px;
   }
   #add-asset-modal .modal-title {
