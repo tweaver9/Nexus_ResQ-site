@@ -1250,6 +1250,521 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* ===== INSPECTIONS PANEL STYLES ===== */
+    .inspections-panel {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    .inspections-header {
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid var(--nexus-border);
+      box-shadow: var(--shadow-card);
+    }
+
+    .inspections-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--nexus-light);
+      margin-bottom: 1.5rem;
+    }
+
+    .inspections-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .search-container {
+      position: relative;
+      flex: 1;
+      max-width: 500px;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--nexus-dark);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1rem 1rem 3rem;
+      color: var(--nexus-light);
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+
+    .search-input::placeholder {
+      color: var(--nexus-muted);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--nexus-muted);
+      pointer-events: none;
+    }
+
+    .filters-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-pill {
+      background: var(--nexus-dark);
+      border: 1px solid var(--nexus-border);
+      border-radius: 20px;
+      padding: 0.5rem 1rem;
+      color: var(--nexus-light);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 120px;
+    }
+
+    .filter-pill:hover,
+    .filter-pill:focus {
+      border-color: var(--nexus-yellow);
+      background: var(--nexus-card);
+      outline: none;
+    }
+
+    .inspections-content {
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--nexus-border);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+
+    .inspections-list {
+      min-height: 400px;
+      max-height: 600px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--nexus-border) transparent;
+    }
+
+    .inspections-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .inspections-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .inspections-list::-webkit-scrollbar-thumb {
+      background: var(--nexus-border);
+      border-radius: 3px;
+      transition: background 0.2s ease;
+    }
+
+    .inspections-list::-webkit-scrollbar-thumb:hover {
+      background: var(--nexus-yellow);
+    }
+
+    .inspection-entry {
+      background: var(--nexus-bg);
+      border-bottom: 1px solid var(--nexus-border);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .inspection-entry:hover {
+      background: var(--nexus-card-hover);
+      transform: translateX(4px);
+    }
+
+    .inspection-entry.expanded {
+      background: var(--nexus-card-hover);
+      border-left: 4px solid var(--nexus-yellow);
+    }
+
+    .inspection-main {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .pdf-icon-container {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .pdf-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--nexus-yellow), #f59e0b);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(253, 216, 53, 0.6);
+      border: 2px solid var(--nexus-yellow);
+    }
+
+    .pdf-icon:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(253, 216, 53, 0.6), 0 0 30px rgba(253, 216, 53, 0.8);
+      animation: pulse-glow 2s infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(253, 216, 53, 0.6); }
+      50% { box-shadow: 0 0 20px rgba(253, 216, 53, 0.6), 0 0 40px rgba(253, 216, 53, 1); }
+    }
+
+    .pdf-icon svg {
+      width: 24px;
+      height: 24px;
+      color: var(--nexus-dark);
+    }
+
+    .inspection-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .inspection-datetime {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .inspection-summary {
+      color: var(--nexus-light);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .inspection-meta {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .inspection-user {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+    }
+
+    .inspection-status {
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .inspection-status.pass {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--nexus-success);
+      border: 1px solid var(--nexus-success);
+    }
+
+    .inspection-status.fail {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--nexus-error);
+      border: 1px solid var(--nexus-error);
+    }
+
+    .inspection-status.partial {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--nexus-warning);
+      border: 1px solid var(--nexus-warning);
+    }
+
+    .inspection-asset-count {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+    }
+
+    .expand-icon {
+      color: var(--nexus-muted);
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .inspection-entry:hover .expand-icon {
+      color: var(--nexus-yellow);
+    }
+
+    .inspection-entry.expanded .expand-icon {
+      transform: rotate(180deg);
+      color: var(--nexus-yellow);
+    }
+
+    .inspection-details {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--nexus-border);
+      display: none;
+    }
+
+    .inspection-entry.expanded .inspection-details {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .location-group {
+      margin-bottom: 2rem;
+    }
+
+    .location-header {
+      background: var(--nexus-dark);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--nexus-yellow);
+    }
+
+    .location-name {
+      color: var(--nexus-light);
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .location-summary {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+    }
+
+    .assets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .asset-item {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .asset-item:hover {
+      background: var(--nexus-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .asset-item.pass {
+      border-left: 4px solid var(--nexus-success);
+    }
+
+    .asset-item.fail {
+      border-left: 4px solid var(--nexus-error);
+    }
+
+    .asset-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .asset-id {
+      color: var(--nexus-light);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .asset-status {
+      padding: 0.25rem 0.5rem;
+      border-radius: 8px;
+      font-size: 0.625rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .asset-status.pass {
+      background: var(--nexus-success);
+      color: white;
+    }
+
+    .asset-status.fail {
+      background: var(--nexus-error);
+      color: white;
+    }
+
+    .asset-type {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .asset-issues {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--nexus-error);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .asset-issues-title {
+      color: var(--nexus-error);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .asset-issues-list {
+      color: var(--nexus-light);
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    .inspections-footer {
+      background: var(--nexus-card);
+      border-top: 1px solid var(--nexus-border);
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+
+    .footer-stats {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .page-size-select {
+      background: var(--nexus-dark);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 1rem;
+      color: var(--nexus-light);
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    .export-btn {
+      background: var(--nexus-yellow);
+      color: var(--nexus-dark);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .export-btn:hover {
+      background: #f59e0b;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(253, 216, 53, 0.3);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--nexus-muted);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      color: var(--nexus-light);
+      margin-bottom: 0.5rem;
+      font-size: 1.25rem;
+    }
+
+    .empty-state p {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .empty-state .retry-btn {
+      background: var(--nexus-yellow);
+      color: var(--nexus-dark);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 1rem 2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .empty-state .retry-btn:hover {
+      background: #f59e0b;
+      transform: translateY(-1px);
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 4rem 2rem;
+      color: var(--nexus-muted);
+    }
+
+    .loading-spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--nexus-border);
+      border-top: 2px solid var(--nexus-yellow);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -1386,7 +1901,86 @@
       <div id="panel-analytics" class="dashboard-panel" style="display:none;">Analytics here...</div>
       <div id="panel-assignments" class="dashboard-panel" style="display:none;">Assignments here...</div>
       <div id="panel-inspections" class="dashboard-panel" style="display:none;">
-        <iframe src="inspections.html" style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
+        <!-- Modern Inspections Panel -->
+        <div class="inspections-panel">
+          <!-- Header Section -->
+          <div class="inspections-header">
+            <h2 class="inspections-title">Inspections</h2>
+
+            <!-- Search and Filters -->
+            <div class="inspections-controls">
+              <div class="search-container">
+                <input type="text" class="search-input" id="inspections-search"
+                       placeholder="Search by asset, user, zone, or ID…">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+              </div>
+
+              <div class="filters-row">
+                <select class="filter-pill" id="inspections-date-filter">
+                  <option value="">All Dates</option>
+                  <option value="today">Today</option>
+                  <option value="yesterday">Yesterday</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                </select>
+
+                <select class="filter-pill" id="inspections-user-filter">
+                  <option value="">All Users</option>
+                </select>
+
+                <select class="filter-pill" id="inspections-location-filter">
+                  <option value="">All Locations</option>
+                </select>
+
+                <select class="filter-pill" id="inspections-status-filter">
+                  <option value="">All Status</option>
+                  <option value="pass">Pass</option>
+                  <option value="fail">Fail</option>
+                  <option value="partial">Partial</option>
+                </select>
+
+                <select class="filter-pill" id="inspections-asset-type-filter">
+                  <option value="">All Asset Types</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inspections Content -->
+          <div class="inspections-content">
+            <div class="inspections-list" id="inspections-list">
+              <div class="loading">
+                <div class="loading-spinner"></div>
+                <span>Loading inspections...</span>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="inspections-footer">
+              <div class="footer-stats">
+                <span id="inspections-stats">Showing 0 inspections</span>
+              </div>
+              <div class="footer-actions">
+                <select class="page-size-select" id="inspections-page-size-select">
+                  <option value="25">25 per page</option>
+                  <option value="50" selected>50 per page</option>
+                  <option value="100">100 per page</option>
+                </select>
+                <button class="export-btn" id="inspections-export-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7,10 12,15 17,10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Export
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div id="panel-help" class="dashboard-panel" style="display:none;">Help here...</div>
       <div id="panel-firebase" class="dashboard-panel" style="display:none;">

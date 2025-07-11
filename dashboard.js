@@ -964,6 +964,233 @@ Details: ${log.details || 'N/A'}
     return userRole === 'admin' || userRole === 'nexus';
   }
 
+  // ===== MODERN INSPECTIONS PANEL =====
+
+  let allInspections = [];
+  let filteredInspections = [];
+  let inspectionsLocations = [];
+  let inspectionsUsers = [];
+  let inspectionsAssetTypes = [];
+  let currentInspectionsPageSize = 50;
+  let currentInspectionsPage = 1;
+  let currentInspectionsFilters = {
+    search: '',
+    date: '',
+    user: '',
+    location: '',
+    status: '',
+    assetType: ''
+  };
+
+  async function loadInspectionsPanel() {
+    try {
+      showInspectionsLoading();
+
+      // Load inspections, locations, users, and asset types in parallel
+      await Promise.all([
+        loadInspectionsData(),
+        loadInspectionsLocations(),
+        loadInspectionsUsers(),
+        loadInspectionsAssetTypes()
+      ]);
+
+      // Initialize filters and render
+      filteredInspections = [...allInspections];
+      populateInspectionsFilterDropdowns();
+      renderInspectionsPanel();
+      updateInspectionsStats();
+      setupInspectionsEventListeners();
+
+      console.log(`Loaded ${allInspections.length} inspections for client ${currentClientSubdomain}`);
+    } catch (error) {
+      console.error('Error loading inspections panel:', error);
+      showInspectionsError('Failed to load inspections. Please try again.');
+    }
+  }
+
+  async function loadInspectionsData() {
+    try {
+      const q = query(
+        getClientCollection(currentClientSubdomain, 'inspections'),
+        orderBy('timestamp', 'desc'),
+        limit(1000)
+      );
+
+      const snapshot = await getDocs(q);
+      allInspections = [];
+
+      snapshot.forEach(doc => {
+        if (doc.id !== '_placeholder') {
+          const data = doc.data();
+          const timestamp = data.timestamp ? new Date(data.timestamp) : new Date();
+
+          allInspections.push({
+            id: doc.id,
+            timestamp,
+            user: data.user || 'Unknown user',
+            status: determineInspectionStatus(data),
+            assets: data.assets || [],
+            scanOrder: data.scanOrder || [],
+            locations: groupAssetsByLocation(data.assets || []),
+            totalAssets: (data.assets || []).length,
+            passedAssets: (data.assets || []).filter(a => a.result === 'pass').length,
+            failedAssets: (data.assets || []).filter(a => a.result === 'fail').length,
+            ...data
+          });
+        }
+      });
+
+      // If no inspections exist, create sample data
+      if (allInspections.length === 0) {
+        await createSampleInspectionsData();
+        // Reload after creating samples
+        const newSnapshot = await getDocs(q);
+        allInspections = [];
+        newSnapshot.forEach(doc => {
+          if (doc.id !== '_placeholder') {
+            const data = doc.data();
+            const timestamp = data.timestamp ? new Date(data.timestamp) : new Date();
+
+            allInspections.push({
+              id: doc.id,
+              timestamp,
+              user: data.user || 'Unknown user',
+              status: determineInspectionStatus(data),
+              assets: data.assets || [],
+              scanOrder: data.scanOrder || [],
+              locations: groupAssetsByLocation(data.assets || []),
+              totalAssets: (data.assets || []).length,
+              passedAssets: (data.assets || []).filter(a => a.result === 'pass').length,
+              failedAssets: (data.assets || []).filter(a => a.result === 'fail').length,
+              ...data
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error loading inspections data:', error);
+      throw error;
+    }
+  }
+
+  async function loadInspectionsLocations() {
+    try {
+      const snapshot = await getDocs(getClientCollection(currentClientSubdomain, 'locations'));
+      inspectionsLocations = [];
+
+      snapshot.forEach(doc => {
+        if (doc.id !== '_placeholder') {
+          inspectionsLocations.push({
+            id: doc.id,
+            name: doc.data().name || doc.id,
+            ...doc.data()
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error loading inspections locations:', error);
+    }
+  }
+
+  async function loadInspectionsUsers() {
+    try {
+      const snapshot = await getDocs(getClientCollection(currentClientSubdomain, 'users'));
+      inspectionsUsers = [];
+
+      snapshot.forEach(doc => {
+        if (doc.id !== '_placeholder') {
+          const userData = doc.data();
+          inspectionsUsers.push({
+            id: doc.id,
+            username: userData.username || userData.firstName || doc.id,
+            ...userData
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error loading inspections users:', error);
+    }
+  }
+
+  async function loadInspectionsAssetTypes() {
+    try {
+      // Get unique asset types from inspections
+      const assetTypes = new Set();
+
+      allInspections.forEach(inspection => {
+        inspection.assets.forEach(asset => {
+          if (asset.type) {
+            assetTypes.add(asset.type);
+          }
+        });
+      });
+
+      inspectionsAssetTypes = Array.from(assetTypes).sort();
+    } catch (error) {
+      console.error('Error loading inspections asset types:', error);
+    }
+  }
+
+  function determineInspectionStatus(data) {
+    if (!data.assets || data.assets.length === 0) return 'unknown';
+
+    const totalAssets = data.assets.length;
+    const passedAssets = data.assets.filter(a => a.result === 'pass').length;
+    const failedAssets = data.assets.filter(a => a.result === 'fail').length;
+
+    if (failedAssets === 0) return 'pass';
+    if (passedAssets === 0) return 'fail';
+    return 'partial';
+  }
+
+  function groupAssetsByLocation(assets) {
+    const grouped = {};
+
+    assets.forEach(asset => {
+      const location = asset.location || 'Unknown Location';
+      if (!grouped[location]) {
+        grouped[location] = [];
+      }
+      grouped[location].push(asset);
+    });
+
+    // Sort assets within each location
+    Object.keys(grouped).forEach(location => {
+      grouped[location] = sortInspectionAssets(grouped[location]);
+    });
+
+    return grouped;
+  }
+
+  function sortInspectionAssets(assets) {
+    // Check if all IDs are numeric
+    const allNumeric = assets.every(asset =>
+      asset.id && !isNaN(asset.id.replace(/[^0-9]/g, ''))
+    );
+
+    // Check if all IDs are letters only
+    const allLetters = assets.every(asset =>
+      asset.id && /^[A-Za-z]+$/.test(asset.id)
+    );
+
+    if (allNumeric) {
+      return assets.sort((a, b) => {
+        const numA = parseInt(a.id.replace(/[^0-9]/g, '')) || 0;
+        const numB = parseInt(b.id.replace(/[^0-9]/g, '')) || 0;
+        return numA - numB;
+      });
+    } else if (allLetters) {
+      return assets.sort((a, b) => a.id.localeCompare(b.id));
+    } else {
+      // Mixed - use scan order if available
+      return assets.sort((a, b) => {
+        const orderA = a.scanOrder || 999;
+        const orderB = b.scanOrder || 999;
+        return orderA - orderB;
+      });
+    }
+  }
+
   // --- FIREBASE MANAGER EXPLORER (COMPAT) ---
 
   document.getElementById('btn-firebase').addEventListener('click', () => {
@@ -1426,7 +1653,7 @@ Details: ${log.details || 'N/A'}
     // Show inspections panel and load data
     document.querySelectorAll('.dashboard-panel').forEach(p => p.style.display = 'none');
     document.getElementById('panel-inspections').style.display = 'block';
-    loadRecentInspections(); // Reuse existing function but display in panel
+    loadInspectionsPanel();
   });
 
   // --- LOGS FUNCTIONALITY ---
