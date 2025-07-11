@@ -419,91 +419,106 @@ function showAssetDetails(asset) {
 }
 
 // ========== ADD ASSET FUNCTIONALITY ==========
+async function fetchLocations() {
+  const locations = [];
+  try {
+    const snapshot = await db.collection('clients').doc(currentClientId).collection('locations').get();
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.level === 0) {
+        locations.push({ id: doc.id, name: data.name, ...data });
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching locations:', err);
+  }
+  return locations;
+}
+
+async function fetchSublocations(locationId) {
+  const sublocations = [];
+  try {
+    const snapshot = await db.collection('clients').doc(currentClientId).collection('locations').get();
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.level === 1 && data.parentId === locationId) {
+        sublocations.push({ id: doc.id, name: data.name, ...data });
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching sublocations:', err);
+  }
+  return sublocations;
+}
+
 function showAddAssetModal() {
   const content = document.getElementById('add-asset-modal-content');
-  
-  // Get existing asset types for dropdown
-  const existingTypes = Object.keys(assetTypeStats).map(type => formatAssetType(type));
-  
+  renderAddAssetForm(content);
+  document.getElementById('add-asset-modal').classList.add('active');
+  setupAddAssetFormListeners();
+}
+
+async function renderAddAssetForm(content) {
+  // Fetch types and locations
+  const types = await fetchNormalizedAssetTypes();
+  const locations = await fetchLocations();
+  // Build type options
+  let typeOptions = types.map(type => `<option value="${type}">${type}</option>`).join('');
+  typeOptions += '<option value="__custom__">+ Custom</option>';
+  // Build location options
+  let locationOptions = locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
+  locationOptions += '<option value="__custom__">+ Custom</option>';
   content.innerHTML = `
     <form id="add-asset-form">
       <div style="margin-bottom: 1.5rem;">
-        <label style="display: block; color: var(--nexus-light); margin-bottom: 0.5rem; font-weight: 500;">
-          Asset Type:
-        </label>
-        <select id="asset-type-select" style="width: 100%; padding: 0.75rem; background: var(--nexus-card-hover); border: 1px solid var(--nexus-border); border-radius: var(--radius-sm); color: var(--nexus-light); margin-bottom: 1rem;">
-          <option value="">Select existing type or enter custom...</option>
-          ${existingTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
-        </select>
-        <input type="text" id="custom-asset-type" placeholder="Or enter custom asset type..." style="width: 100%; padding: 0.75rem; background: var(--nexus-card-hover); border: 1px solid var(--nexus-border); border-radius: var(--radius-sm); color: var(--nexus-light); display: none;">
+        <label>Asset Type:</label>
+        <select id="asset-type-select">${typeOptions}</select>
+        <input type="text" id="custom-asset-type" placeholder="Enter custom asset type..." style="display:none; margin-top:0.5rem;" />
       </div>
-      
       <div style="margin-bottom: 1.5rem;">
-        <label style="display: block; color: var(--nexus-light); margin-bottom: 0.5rem; font-weight: 500;">
-          Asset ID:
-        </label>
-        <input type="text" id="asset-id" required style="width: 100%; padding: 0.75rem; background: var(--nexus-card-hover); border: 1px solid var(--nexus-border); border-radius: var(--radius-sm); color: var(--nexus-light);">
+        <label>Asset ID:</label>
+        <input type="text" id="asset-id" required />
       </div>
-      
-      <div style="margin-bottom: 1.5rem;" id="hydro-due-field" style="display:none;">
-        <label style="display: block; color: var(--nexus-light); margin-bottom: 0.5rem; font-weight: 500;">
-          Hydro Due Date:
-        </label>
-        <input type="date" id="hydro-due" style="width: 100%; padding: 0.75rem; background: var(--nexus-card-hover); border: 1px solid var(--nexus-border); border-radius: var(--radius-sm); color: var(--nexus-light);">
+      <div style="margin-bottom: 1.5rem; display:none;" id="hydro-due-field">
+        <label>Hydro Due (MM/YY):</label>
+        <input type="month" id="hydro-due" />
       </div>
-      
       <div style="margin-bottom: 1.5rem;">
-        <label style="display: block; color: var(--nexus-light); margin-bottom: 0.5rem; font-weight: 500;">
-          Sublocation:
-        </label>
-        <input type="text" id="sublocation" style="width: 100%; padding: 0.75rem; background: var(--nexus-card-hover); border: 1px solid var(--nexus-border); border-radius: var(--radius-sm); color: var(--nexus-light);">
+        <label>Location:</label>
+        <select id="location-select">${locationOptions}</select>
+        <input type="text" id="custom-location" placeholder="Enter custom location..." style="display:none; margin-top:0.5rem;" />
       </div>
-      
       <div style="margin-bottom: 1.5rem;">
-        <label style="display: block; color: var(--nexus-light); margin-bottom: 0.5rem; font-weight: 500;">
-          Precise Location:
-        </label>
-        <input type="text" id="precise-location" style="width: 100%; padding: 0.75rem; background: var(--nexus-card-hover); border: 1px solid var(--nexus-border); border-radius: var(--radius-sm); color: var(--nexus-light);">
+        <label>SubLocation:</label>
+        <select id="sublocation-select"><option value="">Select Location First</option></select>
+        <input type="text" id="custom-sublocation" placeholder="Enter custom sublocation..." style="display:none; margin-top:0.5rem;" />
       </div>
-      
+      <div style="margin-bottom: 1.5rem;">
+        <label>Serial Number (optional):</label>
+        <input type="text" id="serial-no" />
+      </div>
       <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-        <button type="button" id="cancel-add-asset" style="padding: 0.75rem 1.5rem; background: var(--nexus-card); border: 1px solid var(--nexus-border); border-radius: var(--radius-sm); color: var(--nexus-light); cursor: pointer;">
-          Cancel
-        </button>
-        <button type="submit" style="padding: 0.75rem 1.5rem; background: var(--nexus-success); border: none; border-radius: var(--radius-sm); color: white; cursor: pointer; font-weight: 500;">
-          Add Asset
-        </button>
+        <button type="button" id="cancel-add-asset">Cancel</button>
+        <button type="submit">Add Asset</button>
       </div>
     </form>
   `;
-  
-  // Show modal
-  document.getElementById('add-asset-modal').classList.add('active');
-  
-  // Setup form event listeners
-  setupAddAssetFormListeners();
 }
 
 function setupAddAssetFormListeners() {
   const typeSelect = document.getElementById('asset-type-select');
   const customTypeInput = document.getElementById('custom-asset-type');
+  const hydroDueField = document.getElementById('hydro-due-field');
+  const locationSelect = document.getElementById('location-select');
+  const customLocationInput = document.getElementById('custom-location');
+  const sublocationSelect = document.getElementById('sublocation-select');
+  const customSublocationInput = document.getElementById('custom-sublocation');
   const form = document.getElementById('add-asset-form');
   const cancelBtn = document.getElementById('cancel-add-asset');
-  const hydroDueField = document.getElementById('hydro-due-field');
-  // Show/hide Hydro Due field based on type
-  function updateHydroDueVisibility() {
-    let assetType = typeSelect.value;
-    if (!assetType && customTypeInput.value.trim()) {
-      assetType = customTypeInput.value.trim();
-    }
-    if (shouldShowHydroDue(assetType)) {
-      hydroDueField.style.display = 'block';
-    } else {
-      hydroDueField.style.display = 'none';
-    }
-  }
+
+  // Asset type custom logic
   typeSelect.addEventListener('change', () => {
-    if (typeSelect.value === '') {
+    if (typeSelect.value === '__custom__') {
       customTypeInput.style.display = 'block';
       customTypeInput.focus();
     } else {
@@ -513,13 +528,52 @@ function setupAddAssetFormListeners() {
     updateHydroDueVisibility();
   });
   customTypeInput.addEventListener('input', updateHydroDueVisibility);
+  function updateHydroDueVisibility() {
+    let assetType = typeSelect.value === '__custom__' ? customTypeInput.value : typeSelect.value;
+    if (shouldShowHydroDue(assetType)) {
+      hydroDueField.style.display = 'block';
+      document.getElementById('hydro-due').required = true;
+    } else {
+      hydroDueField.style.display = 'none';
+      document.getElementById('hydro-due').required = false;
+    }
+  }
+  // Location custom logic
+  locationSelect.addEventListener('change', async () => {
+    if (locationSelect.value === '__custom__') {
+      customLocationInput.style.display = 'block';
+      customLocationInput.focus();
+      sublocationSelect.innerHTML = '<option value="">Enter custom location first</option>';
+    } else {
+      customLocationInput.style.display = 'none';
+      customLocationInput.value = '';
+      // Load sublocations for selected location
+      const sublocations = await fetchSublocations(locationSelect.value);
+      let subOptions = sublocations.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
+      subOptions += '<option value="__custom__">+ Custom</option>';
+      sublocationSelect.innerHTML = subOptions || '<option value="">No sublocations found</option>';
+    }
+  });
+  // Sublocation custom logic
+  sublocationSelect.addEventListener('change', () => {
+    if (sublocationSelect.value === '__custom__') {
+      customSublocationInput.style.display = 'block';
+      customSublocationInput.focus();
+    } else {
+      customSublocationInput.style.display = 'none';
+      customSublocationInput.value = '';
+    }
+  });
+  // Cancel button
+  cancelBtn.addEventListener('click', () => {
+    document.getElementById('add-asset-modal').classList.remove('active');
+  });
+  // Form submit
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     await addAsset();
   });
-  cancelBtn.addEventListener('click', () => {
-    document.getElementById('add-asset-modal').classList.remove('active');
-  });
+  // Initial hydro due visibility
   updateHydroDueVisibility();
 }
 
@@ -528,35 +582,85 @@ async function addAsset() {
     const typeSelect = document.getElementById('asset-type-select');
     const customTypeInput = document.getElementById('custom-asset-type');
     const assetId = document.getElementById('asset-id').value.trim();
-    const assetSubtype = document.getElementById('asset-subtype') ? document.getElementById('asset-subtype').value.trim() : '';
-    const hydroDue = document.getElementById('hydro-due') ? document.getElementById('hydro-due').value : '';
-    const sublocation = document.getElementById('sublocation').value.trim();
-    const preciseLocation = document.getElementById('precise-location').value.trim();
-    let assetType = typeSelect.value;
-    if (!assetType && customTypeInput.value.trim()) {
-      assetType = customTypeInput.value.trim();
-    }
+    let assetType = typeSelect.value === '__custom__' ? customTypeInput.value.trim() : typeSelect.value;
     if (!assetType || !assetId) {
       showToast('Asset type and ID are required', { type: 'error' });
       return;
     }
-    // Only include hydro_due if relevant
+    // Update types_in_use if custom type
+    if (typeSelect.value === '__custom__' && assetType) {
+      const typesDocRef = db.collection('clients').doc(currentClientId).collection('asset_types').doc('types_in_use');
+      const typesDoc = await typesDocRef.get();
+      let names = (typesDoc.exists && typesDoc.data().name) ? typesDoc.data().name : [];
+      if (!names.map(n => n.toLowerCase()).includes(assetType.toLowerCase())) {
+        names.push(assetType);
+        await typesDocRef.set({ name: names }, { merge: true });
+      }
+    }
+    // Hydro Due
+    const hydroDue = shouldShowHydroDue(assetType) ? document.getElementById('hydro-due').value : null;
+    // Location
+    const locationSelect = document.getElementById('location-select');
+    const customLocationInput = document.getElementById('custom-location');
+    let locationId = locationSelect.value;
+    let locationName = '';
+    if (locationId === '__custom__') {
+      locationName = customLocationInput.value.trim();
+      if (!locationName) {
+        showToast('Location is required', { type: 'error' });
+        return;
+      }
+      // Add new location to Firestore
+      const newLocRef = db.collection('clients').doc(currentClientId).collection('locations').doc();
+      await newLocRef.set({ name: locationName, level: 0, created: new Date().toISOString() });
+      locationId = newLocRef.id;
+    } else {
+      locationName = locationSelect.options[locationSelect.selectedIndex].text;
+    }
+    // Sublocation
+    const sublocationSelect = document.getElementById('sublocation-select');
+    const customSublocationInput = document.getElementById('custom-sublocation');
+    let sublocationId = sublocationSelect.value;
+    let sublocationName = '';
+    if (sublocationId === '__custom__') {
+      sublocationName = customSublocationInput.value.trim();
+      if (!sublocationName) {
+        showToast('Sublocation is required', { type: 'error' });
+        return;
+      }
+      // Add new sublocation to Firestore
+      const newSubRef = db.collection('clients').doc(currentClientId).collection('locations').doc();
+      await newSubRef.set({ name: sublocationName, level: 1, parentId: locationId, created: new Date().toISOString() });
+      sublocationId = newSubRef.id;
+    } else {
+      sublocationName = sublocationSelect.options[sublocationSelect.selectedIndex] ? sublocationSelect.options[sublocationSelect.selectedIndex].text : '';
+    }
+    // Serial number
+    const serialNo = document.getElementById('serial-no').value.trim();
+    // Created by
+    const createdBy = sessionStorage.getItem('username') || 'unknown'; // TODO: Use SessionData() if available
+    // Build asset data
     const assetData = {
       type: assetType,
       id: assetId,
-      subType: assetSubtype || null,
-      sublocation_name: sublocation || null,
-      precise_location_name: preciseLocation || null,
+      location_id: locationId,
+      location_name: locationName,
+      sublocation_id: sublocationId,
+      sublocation_name: sublocationName,
       status: true,
       last_monthly_inspection: null,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      created_by: createdBy
     };
     if (shouldShowHydroDue(assetType)) {
       assetData.hydro_due = hydroDue || null;
     }
+    if (serialNo) {
+      assetData.serial_no = serialNo;
+    }
     // Add to Firestore with provided assetId as doc ID
     await db.collection('clients').doc(currentClientId).collection('assets').doc(assetId).set(assetData);
-    // Update local state
+    // Update local state and UI
     assetData.id = assetId;
     allAssets.push(assetData);
     if (!assetTypeStats[assetType]) {
@@ -564,13 +668,7 @@ async function addAsset() {
     }
     assetTypeStats[assetType].total++;
     document.getElementById('add-asset-modal').classList.remove('active');
-    if (currentAssetType === assetType) {
-      filteredAssets = allAssets.filter(asset => asset.type === assetType);
-      renderAssetCards();
-      document.getElementById('total-count').textContent = filteredAssets.length;
-    } else {
-      renderAssetTypeCards();
-    }
+    renderAssetTypeCards();
     updateStats();
     showToast('Asset added successfully', { type: 'success' });
   } catch (error) {
