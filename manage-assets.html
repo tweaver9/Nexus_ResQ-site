@@ -131,167 +131,327 @@
     .reset-password { color: var(--nexus-yellow); text-decoration: underline; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; margin-bottom: 0.75rem; display: inline-block;}
     .reset-password:hover { color: var(--nexus-light); text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);}
 
-    /* === EXACT ASSET CARD STYLING AS REQUESTED === */
-    .user-card,
-    .asset-type-card,
-    .asset-card {
-      background: #151b2e;
-      color: #fff;
-      border-radius: 18px;
-      box-shadow: 0 3px 14px 0 #000a, 0 0 0 2px #2227;
-      margin: 16px 0;
-      padding: 0;
-      display: block;
-      max-width: 410px;
-      min-width: 260px;
-      width: 98%;
-      transition: box-shadow 0.18s, border-color 0.18s, transform 0.16s;
+    /* === ASSET TYPE GRID (4-across layout) === */
+    .asset-type-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    /* === ASSET GRID (4-across layout) === */
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    /* === ASSET TYPE CARDS === */
+    .asset-type-card {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-card);
+      transition: all 0.2s ease;
       cursor: pointer;
-      position: relative;
     }
 
-    .user-card:hover,
-    .asset-type-card:hover,
-    .asset-card:hover {
-      box-shadow: 0 6px 22px 0 #000e, 0 0 0 3px #fdd83599;
-      border-color: #fdd835;
-      transform: translateY(-3px) scale(1.02);
+    .asset-type-card:hover {
+      background: var(--nexus-card-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-heavy);
     }
 
-    .user-card-header,
-    .asset-type-header,
-    .asset-header {
-      font-family: 'Oswald', 'Inter', sans-serif;
-      font-size: 1.33rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      padding: 20px 22px 9px 22px;
-      border-bottom: 1.5px solid #232b39;
+    .asset-type-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
     }
 
-    .user-card-body {
-      font-family: 'Inter', Arial, sans-serif;
-      font-size: 1.03rem;
-      font-weight: 400;
-      padding: 13px 22px 17px 22px;
+    .asset-type-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
       display: flex;
-      flex-wrap: wrap;
-      gap: 16px 24px;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1.125rem;
+      color: var(--nexus-dark);
+      flex-shrink: 0;
+      background: var(--nexus-yellow);
     }
 
-    .asset-type-card .user-card-body span {
-      display: inline-block;
-      min-width: 120px;
-      font-size: 1.02rem;
+    .asset-type-info {
+      flex: 1;
+    }
+
+    .asset-type-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--nexus-light);
+      margin-bottom: 0.25rem;
+    }
+
+    .asset-type-stats {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    .total-count {
+      color: var(--nexus-light);
+      font-weight: 500;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .failed-count {
+      color: var(--nexus-error);
       font-weight: 500;
     }
 
-    .asset-header .status-badge,
-    .asset-card .status-badge {
-      margin-left: 13px;
-      padding: 2.5px 12px;
-      font-size: 1rem;
-      border-radius: 12px;
-      font-weight: 600;
-      box-shadow: 0 0 8px 1px #2a3441aa;
-      vertical-align: middle;
-    }
-
-    .status-badge.fail {
-      background: #ef4444;
-      color: #fff;
-      text-shadow: 0 0 2px #900;
-      box-shadow: 0 0 6px 0 #ef444477;
-    }
-
-    .status-badge.pass {
-      background: #10b981;
-      color: #fff;
-      text-shadow: 0 0 2px #026145;
-      box-shadow: 0 0 6px 0 #10b98177;
-    }
-
-    .asset-notes {
-      display: block;
-      margin-top: 6px;
-      color: #ffe388;
-      font-size: 0.99rem;
-      padding-left: 2px;
-    }
-
-    .empty-card {
-      background: #1a2138;
-      color: #b1b8c8;
-      border: 1.5px dashed #46567788;
-      box-shadow: none;
-      text-align: center;
-      padding: 30px 16px;
-      font-size: 1.11rem;
-    }
-
-    .back-btn {
-      font-family: 'Oswald', Arial, sans-serif;
-      font-weight: 600;
-      color: #fff;
-      background: #101828;
-      border: 1.5px solid #283147;
-      border-radius: 8px;
-      padding: 8px 22px;
-      margin-bottom: 10px;
+    /* === ASSET CARDS === */
+    .asset-card {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-card);
+      transition: all 0.2s ease;
       cursor: pointer;
-      box-shadow: 0 0 0 1.5px #2225;
-      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .asset-card:hover {
+      background: var(--nexus-card-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-heavy);
+    }
+
+    .asset-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .asset-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1.125rem;
+      color: var(--nexus-dark);
+      flex-shrink: 0;
+      background: var(--nexus-yellow);
+    }
+
+    .asset-info {
+      flex: 1;
+    }
+
+    .asset-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--nexus-light);
+      margin-bottom: 0.25rem;
+    }
+
+    .asset-subtype {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* === ASSET DETAILS === */
+    .asset-details {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      line-height: 1.4;
+    }
+
+    .detail-label {
+      color: var(--nexus-light);
+      font-weight: 500;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+      color: var(--nexus-yellow);
+      font-weight: 500;
+    }
+
+    /* === MONTHLY STATUS === */
+    .monthly-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--nexus-border);
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .status-indicator.complete {
+      background: var(--nexus-success);
+      box-shadow: var(--glow-success);
+    }
+
+    .status-indicator.due-soon {
+      background: var(--nexus-warning);
+      box-shadow: var(--glow-warning);
+    }
+
+    .status-indicator.overdue {
+      background: var(--nexus-error);
+      box-shadow: var(--glow-error);
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0.3; }
+    }
+
+    .status-text {
+      font-weight: 500;
+      color: var(--nexus-light);
+    }
+
+    .monthly-check {
+      color: var(--nexus-success);
+      font-size: 1.2rem;
+      margin-left: 0.5rem;
+    }
+
+    /* === BACK BUTTON === */
+    .back-btn {
+      background: var(--nexus-card);
+      color: var(--nexus-light);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 1.5rem;
     }
 
     .back-btn:hover {
-      border-color: #fdd835;
-      box-shadow: 0 0 0 2.5px #fdd83599;
+      background: var(--nexus-card-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card);
     }
 
-    /* Search/Sort bar */
-    #assetSearchSortBar {
+    /* === SEARCH AND SORT === */
+    .search-sort-bar {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--nexus-border);
     }
 
-    #assetSearchInput,
-    #assetSortSelect {
-      background: #232b39;
-      border: 1.5px solid #36405a;
-      color: #fff;
-      font-size: 1.01rem;
-      border-radius: 8px;
-      padding: 8px 14px;
+    .search-input {
+      background: var(--nexus-card-hover);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      color: var(--nexus-light);
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      flex: 1;
+      max-width: 300px;
+    }
+
+    .search-input:focus {
       outline: none;
-      transition: border-color 0.12s;
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
     }
 
-    #assetSearchInput:focus,
-    #assetSortSelect:focus {
-      border-color: #fdd835;
+    .sort-select {
+      background: var(--nexus-card-hover);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      color: var(--nexus-light);
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
     }
 
-    /* Responsive tweaks */
-    @media (max-width: 640px) {
-      .user-card,
-      .asset-type-card,
-      .asset-card {
-        max-width: 99vw;
-        min-width: 0;
-        margin: 11px 0;
-        padding: 0;
+    .sort-select:focus {
+      outline: none;
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+
+    /* === ADD ASSET BUTTON === */
+    .add-asset-btn {
+      background: var(--nexus-success);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .add-asset-btn:hover {
+      background: #059669;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card);
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1200px) {
+      .asset-type-grid,
+      .asset-grid {
+        grid-template-columns: repeat(3, 1fr);
       }
-      .user-card-header,
-      .asset-type-header,
-      .asset-header,
-      .user-card-body {
-        padding-left: 10px;
-        padding-right: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .asset-type-grid,
+      .asset-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .asset-type-grid,
+      .asset-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .search-sort-bar {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .search-input {
+        max-width: none;
       }
     }
     /* MODALS & SKELETON LOADER (NEW) */
@@ -1066,67 +1226,51 @@
       <div class="stat-label">Assets Complete</div>
     </div>
   </section>
-  <!-- === STICKY FILTER BAR (NEW) === -->
-  <div id="sticky-filters" style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
-    <input id="asset-search" type="search" placeholder="Search assets..." style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:200px;">
-    <!-- Dropdown removed as requested -->
-    <button class="premium-add-btn" id="add-asset-btn" style="margin-left:auto;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 5v14M5 12h14"/>
-      </svg>
-      Add Asset
-    </button>
 
-  </div>
-  <!-- === SKELETON LOADER (NEW) === -->
-  <div class="skeleton-grid" id="asset-skeleton" style="display:none; max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
-    <div class="skeleton-card">
-      <div class="skeleton-anim skel-avatar"></div>
-      <div class="skeleton-anim skel-bar"></div>
-      <div class="skeleton-anim skel-bar short"></div>
-      <div class="skeleton-anim skel-bar"></div>
-      <div class="skeleton-anim skel-bar short"></div>
-    </div>
-    <div class="skeleton-card">
-      <div class="skeleton-anim skel-avatar"></div>
-      <div class="skeleton-anim skel-bar"></div>
-      <div class="skeleton-anim skel-bar short"></div>
-      <div class="skeleton-anim skel-bar"></div>
-      <div class="skeleton-anim skel-bar short"></div>
-    </div>
-    <div class="skeleton-card">
-      <div class="skeleton-anim skel-avatar"></div>
-      <div class="skeleton-anim skel-bar"></div>
-      <div class="skeleton-anim skel-bar short"></div>
-      <div class="skeleton-anim skel-bar"></div>
-      <div class="skeleton-anim skel-bar short"></div>
-    </div>
-  </div>
-  <!-- === MAIN GRID === -->
+
+  <!-- Main Container -->
   <main class="main-container">
     <section class="user-group">
       <div class="group-header">
-        <h2 class="group-title">Asset Management</h2>
+        <h2 class="group-title" id="section-title">Asset Types</h2>
         <span class="group-count" id="total-count">0</span>
       </div>
 
-      <div id="loadingSpinner" style="display:none;">Loading...</div>
+      <!-- Asset Type Grid (Landing View) -->
+      <div id="asset-type-grid" class="asset-type-grid"></div>
 
-      <div id="assetTypesContainer"></div>
+      <!-- Back Button (Hidden initially) -->
+      <button id="back-to-types-btn" class="back-btn" style="display: none;">← Back to Asset Types</button>
 
-      <!-- Hidden until a type is selected -->
-      <div id="assetSearchSortBar" style="display:none; margin:1em 0;">
-        <input id="assetSearchInput" class="input search" type="search" placeholder="Search assets..." style="width:60%;max-width:320px;">
-        <select id="assetSortSelect" class="input sort">
-          <option value="assetId_asc">Asset ID (A-Z)</option>
-          <option value="assetId_desc">Asset ID (Z-A)</option>
+      <!-- Search and Sort Bar (Hidden initially) -->
+      <div id="search-sort-bar" class="search-sort-bar" style="display: none;">
+        <input type="search" class="search-input" id="asset-search" placeholder="Search assets...">
+        <select class="sort-select" id="asset-sort">
+          <option value="id-asc">Asset ID (A-Z)</option>
+          <option value="id-desc">Asset ID (Z-A)</option>
           <option value="status">Status</option>
-          <option value="lastInspected">Last Inspected</option>
+          <option value="last-inspected">Last Inspected</option>
         </select>
+        <button class="add-asset-btn" id="add-asset-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Add Asset
+        </button>
       </div>
 
-      <div id="assetListContainer"></div>
-      <div id="noAssetsMsg" style="display:none;">No assets to show.</div>
+      <!-- Asset Grid (Hidden initially) -->
+      <div id="asset-grid" class="asset-grid" style="display: none;"></div>
+
+      <!-- Loading Spinner -->
+      <div id="loading-spinner" style="display: none; text-align: center; padding: 2rem; color: var(--nexus-muted);">
+        Loading assets...
+      </div>
+
+      <!-- No Assets Message -->
+      <div id="no-assets-msg" class="empty-group" style="display: none;">
+        No assets found for this client.
+      </div>
     </section>
   </main>
   <!-- === TOASTS (NEW) === -->
@@ -1142,204 +1286,7 @@
     </div>
   </div>
   
-  <!-- === ADD ASSET MODAL === -->
-  <div class="modal-overlay" id="add-asset-modal">
-    <div class="modal add-asset-modal">
-      <div class="modal-header">
-        <h3 class="modal-title">Add New Asset</h3>
-        <button class="modal-close" id="add-asset-close">×</button>
-      </div>
-      
-      <!-- Stepper -->
-      <div class="asset-stepper">
-        <div class="step active" id="step-1">
-          <div class="step-circle">1</div>
-          <div class="step-label">Asset Type</div>
-        </div>
-        <div class="step" id="step-2">
-          <div class="step-circle">2</div>
-          <div class="step-label">Details</div>
-        </div>
-        <div class="step" id="step-3">
-          <div class="step-circle">3</div>
-          <div class="step-label">Inspections</div>
-        </div>
-        <div class="step" id="step-4">
-          <div class="step-circle">4</div>
-          <div class="step-label">Location</div>
-        </div>
-        <div class="step" id="step-5">
-          <div class="step-circle">5</div>
-          <div class="step-label">Review</div>
-        </div>
-      </div>
-      
-      <!-- Step Content -->
-      <div class="step-content">
-        <!-- Step 1: Asset Type -->
-        <div class="step-panel" id="panel-1">
-          <h4 style="color: var(--nexus-yellow); margin-bottom: 1.2rem; font-size: 1.1rem;">What type of asset are you adding?</h4>
-          
-          <div class="form-group">
-            <label class="form-label">Asset Type</label>
-            <select class="form-select" id="asset-type-select">
-              <option value="">Loading types...</option>
-            </select>
-            <div class="error-message" id="type-error">Please select an asset type</div>
-          </div>
-          
-          <div class="form-group" id="custom-type-group" style="display: none;">
-            <label class="form-label">Custom Asset Type</label>
-            <input type="text" class="form-input" id="custom-type-input" placeholder="Enter new asset type">
-            <div class="error-message" id="custom-type-error">Custom type cannot be empty</div>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Asset Kind/Subtype</label>
-            <select class="form-select" id="asset-kind-select">
-              <option value="">First select a type...</option>
-            </select>
-            <div class="error-message" id="kind-error">Please select or enter an asset kind</div>
-          </div>
-          
-          <div class="form-group" id="custom-kind-group" style="display: none;">
-            <label class="form-label">Custom Asset Kind</label>
-            <input type="text" class="form-input" id="custom-kind-input" placeholder="Enter asset kind/subtype">
-            <div class="error-message" id="custom-kind-error">Custom kind cannot be empty</div>
-          </div>
-        </div>
-        
-        <!-- Step 2: Details -->
-        <div class="step-panel" id="panel-2" style="display: none;">
-          <h4 style="color: var(--nexus-yellow); margin-bottom: 1.2rem; font-size: 1.1rem;">Asset Details</h4>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Asset ID</label>
-              <input type="text" class="form-input" id="asset-id-input" placeholder="e.g., FE-001-2025">
-              <div class="error-message" id="asset-id-error">Asset ID is required</div>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Serial Number</label>
-              <input type="text" class="form-input" id="serial-input" placeholder="Manufacturer serial number">
-              <div class="error-message" id="serial-error">Serial number is required</div>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Hydro Due Date</label>
-            <div class="date-picker-group">
-              <input type="month" class="form-input date-input" id="hydro-due-input">
-              <span class="calendar-icon">📅</span>
-            </div>
-            <div class="error-message" id="hydro-due-error">Please select a valid hydro due date</div>
-          </div>
-        </div>
-        
-        <!-- Step 3: Inspections -->
-        <div class="step-panel" id="panel-3" style="display: none;">
-          <h4 style="color: var(--nexus-yellow); margin-bottom: 1.2rem; font-size: 1.1rem;">Inspection Dates</h4>
-          
-          <div class="form-group">
-            <label class="form-label">Last Monthly Inspection</label>
-            <div class="date-picker-group">
-              <input type="date" class="form-input" id="monthly-inspection-input">
-              <div class="calendar-icon">📅</div>
-            </div>
-            <div class="error-message" id="monthly-error">Please select the last monthly inspection date</div>
-          </div>
-          
-          <div class="checkbox-group">
-            <input type="checkbox" class="checkbox-input" id="same-date-checkbox">
-            <label class="checkbox-label">Annual inspection is the same date</label>
-          </div>
-          
-          <div class="form-group" id="annual-inspection-group">
-            <label class="form-label">Last Annual Inspection</label>
-            <div class="date-picker-group">
-              <input type="date" class="form-input" id="annual-inspection-input">
-              <div class="calendar-icon">📅</div>
-            </div>
-            <div class="error-message" id="annual-error">Please select the last annual inspection date</div>
-          </div>
-        </div>
-        
-        <!-- Step 4: Location -->
-        <div class="step-panel" id="panel-4" style="display: none;">
-          <h4 style="color: var(--nexus-yellow); margin-bottom: 1.2rem; font-size: 1.1rem;">Asset Location</h4>
-          
-          <div class="form-group">
-            <label class="form-label">Primary Location</label>
-            <select class="form-select" id="location-select">
-              <option value="">Select location...</option>
-            </select>
-            <div class="error-message" id="location-error">Please select a location</div>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Sub-location</label>
-            <select class="form-select" id="sublocation-select">
-              <option value="">First select a location...</option>
-            </select>
-            <div class="error-message" id="sublocation-error">Please select a sub-location</div>
-          </div>
-          
-          <div class="location-selection" id="precision-section" style="display: none;">
-            <div class="location-title">Precision Location Setup</div>
-            
-            <div style="margin-bottom: 1rem;">
-              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="radio" name="precision-option" value="replace" style="accent-color: var(--nexus-yellow);">
-                <span style="color: var(--nexus-light);">Replacing an existing asset</span>
-              </label>
-            </div>
-            
-            <div style="margin-bottom: 1rem;">
-              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="radio" name="precision-option" value="new" style="accent-color: var(--nexus-yellow);">
-                <span style="color: var(--nexus-light);">Adding new asset (create new precision location)</span>
-              </label>
-            </div>
-            
-            <div class="form-group" id="existing-precision-group" style="display: none;">
-              <label class="form-label">Existing Precision Location</label>
-              <select class="form-select" id="existing-precision-select">
-                <option value="">Select existing precision location...</option>
-              </select>
-            </div>
-            
-            <div class="precision-info" id="new-precision-info" style="display: none;">
-              <div style="text-align: center; color: var(--nexus-light);">
-                <strong>New Precision Location Code:</strong>
-                <div class="precision-code" id="generated-precision">####</div>
-                <small style="color: var(--nexus-muted);">This unique code will be generated automatically</small>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Step 5: Review -->
-        <div class="step-panel" id="panel-5" style="display: none;">
-          <h4 style="color: var(--nexus-yellow); margin-bottom: 1.2rem; font-size: 1.1rem;">Review Asset Information</h4>
-          
-          <div id="review-content" style="background: var(--nexus-card); padding: 1.5rem; border-radius: var(--radius-sm); border: 1px solid var(--nexus-border);">
-            <!-- Review content will be populated here -->
-          </div>
-        </div>
-      </div>
-      
-      <!-- Modal Actions -->
-      <div class="modal-actions">
-        <button class="btn btn-secondary" id="asset-prev-btn" style="display: none;">Previous</button>
-        <button class="btn btn-primary" id="asset-next-btn">Next</button>
-        <button class="btn btn-success" id="asset-submit-btn" style="display: none;">
-          <span class="loading-spinner" style="display: none;"></span>
-          Create Asset
-        </button>
-      </div>
-    </div>
-  </div>
+
   <!-- === FIREBASE === -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -1401,216 +1348,423 @@
     //  ASSET LOGIC - EXACT IMPLEMENTATION AS REQUESTED
     // =========================
 
-    // ========== DOM ==========
-    const assetTypesContainer = document.getElementById('assetTypesContainer'); // Container for asset type cards
-    const assetListContainer = document.getElementById('assetListContainer');   // Where assets for selected type show up
-    const assetSearchInput = document.getElementById('assetSearchInput');
-    const assetSortSelect = document.getElementById('assetSortSelect');
-    const noAssetsMsg = document.getElementById('noAssetsMsg');
-    const loadingSpinner = document.getElementById('loadingSpinner');
-
     // ========== STATE ==========
-    let currentClientSubdomain = sessionStorage.getItem('tenant_id') || "demo";
-    let allAssets = [];       // All assets for client
-    let typeStats = {};       // { [type]: { total, failed } }
-    let currentType = null;   // Currently selected asset type
-    let filteredAssets = [];  // Assets after search/sort
+    let currentClientId = sessionStorage.getItem('tenant_id') || "demo";
+    let allAssets = [];
+    let assetTypeStats = {};
+    let currentAssetType = null;
+    let filteredAssets = [];
 
-    // ========== INIT ==========
+    // ========== INITIALIZATION ==========
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         showLoading(true);
         await loadAllAssets();
         renderAssetTypeCards();
-        setupSearchAndSort();
-      } catch (err) {
-        alert('Error loading assets: ' + (err.message || err));
+        setupEventListeners();
+        updateStats();
+      } catch (error) {
+        console.error('Error initializing:', error);
+        showToast('Error loading assets', { type: 'error' });
+      } finally {
         showLoading(false);
       }
     });
 
-    // ========== LOADING ALL ASSETS AND BUILDING TYPE STATS ==========
+    // ========== LOAD ASSETS ==========
     async function loadAllAssets() {
       allAssets = [];
-      typeStats = {};
-      const assetsRef = db.collection('clients').doc(currentClientSubdomain).collection('assets');
-      const snapshot = await assetsRef.get();
-      snapshot.forEach(docSnap => {
-        const asset = { id: docSnap.id, ...docSnap.data() };
-        allAssets.push(asset);
+      assetTypeStats = {};
 
-        // Build type stats on the fly - handle your actual data structure
-        const type = (asset.type || "Unknown").trim();
-        if (!typeStats[type]) typeStats[type] = { total: 0, failed: 0 };
-        typeStats[type].total++;
+      try {
+        const assetsRef = db.collection('clients').doc(currentClientId).collection('assets');
+        const snapshot = await assetsRef.get();
+        
+        snapshot.forEach(doc => {
+          const asset = { id: doc.id, ...doc.data() };
+          allAssets.push(asset);
 
-        // Handle boolean status field - false means failed
-        if (asset.status === false) {
-          typeStats[type].failed++;
-        }
-      });
+          // Build asset type statistics
+          const assetType = asset.type || 'Unknown';
+          if (!assetTypeStats[assetType]) {
+            assetTypeStats[assetType] = { total: 0, failed: 0 };
+          }
+          assetTypeStats[assetType].total++;
 
-      console.log('Loaded assets:', allAssets);
-      console.log('Type stats:', typeStats);
+          // Count failed assets (status = false or 'failed')
+          if (asset.status === false || asset.status === 'failed') {
+            assetTypeStats[assetType].failed++;
+          }
+        });
+
+        console.log('Loaded assets:', allAssets);
+        console.log('Asset type stats:', assetTypeStats);
+      } catch (error) {
+        console.error('Error loading assets:', error);
+        throw error;
+      }
     }
+
     // ========== RENDER ASSET TYPE CARDS ==========
     function renderAssetTypeCards() {
-      assetTypesContainer.innerHTML = ''; // Clear
+      const grid = document.getElementById('asset-type-grid');
+      grid.innerHTML = '';
 
-      // Show only types that actually exist (skip types with total=0)
-      const typeEntries = Object.entries(typeStats).filter(([type, stats]) => stats.total > 0);
-      if (typeEntries.length === 0) {
-        assetTypesContainer.innerHTML = `<div class="card empty-card">No asset types found for this client.</div>`;
-        assetListContainer.innerHTML = '';
-        noAssetsMsg.style.display = '';
+      const assetTypes = Object.keys(assetTypeStats).filter(type => assetTypeStats[type].total > 0);
+      
+      if (assetTypes.length === 0) {
+        document.getElementById('no-assets-msg').style.display = 'block';
         return;
       }
-      noAssetsMsg.style.display = 'none';
 
-      // For each type, render a card
-      for (const [type, stats] of typeEntries) {
-        const card = document.createElement('div');
-        card.className = 'user-card asset-type-card clickable-card';
-        card.innerHTML = `
-          <div class="user-card-header asset-type-header">${type}</div>
-          <div class="user-card-body">
-            <span>Total: <b>${stats.total}</b></span>
-            <span style="margin-left:1.5em;">Failed: <b style="color:#ef4444">${stats.failed}</b></span>
+      document.getElementById('no-assets-msg').style.display = 'none';
+
+      assetTypes.forEach(assetType => {
+        const stats = assetTypeStats[assetType];
+        const card = createAssetTypeCard(assetType, stats);
+        grid.appendChild(card);
+      });
+
+      document.getElementById('total-count').textContent = allAssets.length;
+    }
+
+    function createAssetTypeCard(assetType, stats) {
+      const card = document.createElement('div');
+      card.className = 'asset-type-card';
+      
+      const initial = assetType.charAt(0).toUpperCase();
+      
+      card.innerHTML = `
+        <div class="asset-type-header">
+          <div class="asset-type-avatar">${initial}</div>
+          <div class="asset-type-info">
+            <div class="asset-type-name">${assetType}</div>
+            <div class="asset-type-stats">
+              <span class="total-count">Total: ${stats.total}</span>
+              <span class="failed-count">Failed: ${stats.failed}</span>
+            </div>
           </div>
-        `;
-        card.addEventListener('click', () => {
-          currentType = type;
-          renderAssetsOfType(type);
-        });
-        assetTypesContainer.appendChild(card);
+        </div>
+      `;
+
+      card.addEventListener('click', () => {
+        showAssetsOfType(assetType);
+      });
+
+      return card;
+    }
+
+    // ========== SHOW ASSETS OF TYPE ==========
+    function showAssetsOfType(assetType) {
+      currentAssetType = assetType;
+      
+      // Update UI state
+      document.getElementById('section-title').textContent = `${assetType} Assets`;
+      document.getElementById('asset-type-grid').style.display = 'none';
+      document.getElementById('back-to-types-btn').style.display = 'block';
+      document.getElementById('search-sort-bar').style.display = 'flex';
+      document.getElementById('asset-grid').style.display = 'grid';
+
+      // Filter assets for this type
+      filteredAssets = allAssets.filter(asset => asset.type === assetType);
+      
+      // Update count
+      document.getElementById('total-count').textContent = filteredAssets.length;
+      
+      // Render assets
+      renderAssetCards();
+    }
+
+    // ========== RENDER ASSET CARDS ==========
+    function renderAssetCards() {
+      const grid = document.getElementById('asset-grid');
+      grid.innerHTML = '';
+
+      if (filteredAssets.length === 0) {
+        grid.innerHTML = '<div class="empty-group">No assets found for this type.</div>';
+        return;
       }
-      assetListContainer.innerHTML = '';
+
+      filteredAssets.forEach(asset => {
+        const card = createAssetCard(asset);
+        grid.appendChild(card);
+      });
     }
 
-    // ========== RENDER ASSETS OF SELECTED TYPE ==========
-    function renderAssetsOfType(type) {
-      // Set up search and sort if not present (in case user navigates back)
-      setupSearchAndSort();
+    function createAssetCard(asset) {
+      const card = document.createElement('div');
+      card.className = 'asset-card';
+      
+      const initial = (asset.subType || asset.type || 'A').charAt(0).toUpperCase();
+      const assetId = asset.id || 'No ID';
+      const subType = asset.subType || 'N/A';
+      const hydroDue = asset.hydro_due || 'N/A';
+      const sublocation = asset.sublocation_name || 'N/A';
+      const preciseLocation = asset.precise_location_name || 'N/A';
+      const status = asset.status === false || asset.status === 'failed' ? 'Failed' : 'Active';
+      
+      // Monthly inspection status
+      const monthlyStatus = getMonthlyInspectionStatus(asset.last_monthly_inspection);
+      
+      card.innerHTML = `
+        <div class="asset-header">
+          <div class="asset-avatar">${initial}</div>
+          <div class="asset-info">
+            <div class="asset-name">${assetId}</div>
+            <div class="asset-subtype">${subType}</div>
+          </div>
+        </div>
+        
+        <div class="asset-details">
+          <div class="detail-label">Hydro Due:</div>
+          <div class="detail-value">${hydroDue}</div>
+          
+          <div class="detail-label">Sublocation:</div>
+          <div class="detail-value">${sublocation}</div>
+          
+          <div class="detail-label">Precise Location:</div>
+          <div class="detail-value">${preciseLocation}</div>
+          
+          <div class="detail-label">Status:</div>
+          <div class="detail-value">${status}</div>
+        </div>
+        
+        <div class="monthly-status">
+          <div class="status-indicator ${monthlyStatus.indicator}"></div>
+          <div class="status-text">
+            Monthly: ${monthlyStatus.checkMark}
+          </div>
+        </div>
+      `;
 
-      // Filter assets of selected type
-      const assets = allAssets.filter(a => (a.type || "Unknown").trim() === type);
+      card.addEventListener('click', () => {
+        showAssetDetails(asset);
+      });
 
-      // Show search/sort UI
-      document.getElementById('assetSearchSortBar').style.display = '';
-      assetListContainer.innerHTML = ''; // Clear old
-
-      // Store for search/sort
-      filteredAssets = assets.slice();
-      applySearchAndSort();
-
-      // Show "Back to types" button if needed
-      renderBackToTypesButton();
+      return card;
     }
 
-    function renderBackToTypesButton() {
-      let btn = document.getElementById('backToTypesBtn');
-      if (!btn) {
-        btn = document.createElement('button');
-        btn.id = 'backToTypesBtn';
-        btn.innerText = '← Back to Asset Types';
-        btn.className = 'btn back-btn';
-        btn.style.marginBottom = '1em';
-        btn.onclick = () => {
-          currentType = null;
-          assetListContainer.innerHTML = '';
-          document.getElementById('assetSearchSortBar').style.display = 'none';
-          renderAssetTypeCards();
-        };
-        assetListContainer.parentNode.insertBefore(btn, assetListContainer);
+    // ========== MONTHLY INSPECTION STATUS ==========
+    function getMonthlyInspectionStatus(lastInspection) {
+      if (!lastInspection) {
+        return { indicator: 'overdue', checkMark: '' };
+      }
+
+      try {
+        // Parse the timestamp format: "YYYY-MM-DDTHH:mm:ss.ssssss"
+        const inspectionDate = new Date(lastInspection);
+        const now = new Date();
+        
+        // Check if inspection was done in current month and year
+        const isCurrentMonth = inspectionDate.getMonth() === now.getMonth() && 
+                              inspectionDate.getFullYear() === now.getFullYear();
+        
+        if (isCurrentMonth) {
+          return { indicator: 'complete', checkMark: '✔️' };
+        } else {
+          return { indicator: 'due-soon', checkMark: '' };
+        }
+      } catch (error) {
+        console.error('Error parsing inspection date:', error);
+        return { indicator: 'overdue', checkMark: '' };
       }
     }
+
+    // ========== BACK TO TYPES ==========
+    function backToTypes() {
+      currentAssetType = null;
+      
+      // Update UI state
+      document.getElementById('section-title').textContent = 'Asset Types';
+      document.getElementById('asset-type-grid').style.display = 'grid';
+      document.getElementById('back-to-types-btn').style.display = 'none';
+      document.getElementById('search-sort-bar').style.display = 'none';
+      document.getElementById('asset-grid').style.display = 'none';
+      
+      // Update count
+      document.getElementById('total-count').textContent = allAssets.length;
+    }
+
     // ========== SEARCH AND SORT ==========
     function setupSearchAndSort() {
-      if (!assetSearchInput || !assetSortSelect) return;
-      assetSearchInput.value = '';
-      assetSortSelect.value = 'assetId_asc';
+      const searchInput = document.getElementById('asset-search');
+      const sortSelect = document.getElementById('asset-sort');
 
-      assetSearchInput.oninput = applySearchAndSort;
-      assetSortSelect.onchange = applySearchAndSort;
-      document.getElementById('assetSearchSortBar').style.display = 'none';
+      searchInput.addEventListener('input', applySearchAndSort);
+      sortSelect.addEventListener('change', applySearchAndSort);
     }
 
     function applySearchAndSort() {
-      if (!filteredAssets) return;
-      let results = filteredAssets.slice();
-      // Search - updated for your data structure
-      const q = assetSearchInput.value.trim().toLowerCase();
-      if (q) {
-        results = results.filter(asset =>
-          (asset.id || '').toLowerCase().includes(q) ||
-          (asset.serial_no || '').toLowerCase().includes(q) ||
-          (asset.location_name || '').toLowerCase().includes(q) ||
-          (asset.sublocation_name || '').toLowerCase().includes(q) ||
-          (asset.subType || '').toLowerCase().includes(q) ||
-          (asset.type || '').toLowerCase().includes(q)
+      if (!currentAssetType) return;
+
+      const searchTerm = document.getElementById('asset-search').value.toLowerCase();
+      const sortBy = document.getElementById('asset-sort').value;
+
+      // Filter assets
+      let results = allAssets.filter(asset => asset.type === currentAssetType);
+
+      // Apply search
+      if (searchTerm) {
+        results = results.filter(asset => 
+          (asset.id || '').toLowerCase().includes(searchTerm) ||
+          (asset.subType || '').toLowerCase().includes(searchTerm) ||
+          (asset.sublocation_name || '').toLowerCase().includes(searchTerm) ||
+          (asset.precise_location_name || '').toLowerCase().includes(searchTerm)
         );
       }
-      // Sort - updated for your data structure
-      const sortVal = assetSortSelect.value;
-      if (sortVal === 'assetId_asc') results.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
-      if (sortVal === 'assetId_desc') results.sort((a, b) => (b.id || '').localeCompare(a.id || ''));
-      if (sortVal === 'status') results.sort((a, b) => (a.status === b.status ? 0 : a.status ? -1 : 1));
-      if (sortVal === 'lastInspected') {
-        results.sort((a, b) => {
-          const aDate = new Date(a.last_monthly_inspection || a.last_annual_inspection || 0);
-          const bDate = new Date(b.last_monthly_inspection || b.last_annual_inspection || 0);
-          return bDate - aDate;
-        });
+
+      // Apply sorting
+      switch (sortBy) {
+        case 'id-asc':
+          results.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
+          break;
+        case 'id-desc':
+          results.sort((a, b) => (b.id || '').localeCompare(a.id || ''));
+          break;
+        case 'status':
+          results.sort((a, b) => {
+            const aStatus = a.status === false || a.status === 'failed' ? 0 : 1;
+            const bStatus = b.status === false || b.status === 'failed' ? 0 : 1;
+            return aStatus - bStatus;
+          });
+          break;
+        case 'last-inspected':
+          results.sort((a, b) => {
+            const aDate = new Date(a.last_monthly_inspection || 0);
+            const bDate = new Date(b.last_monthly_inspection || 0);
+            return bDate - aDate;
+          });
+          break;
       }
 
-      renderAssetList(results);
+      filteredAssets = results;
+      renderAssetCards();
+      document.getElementById('total-count').textContent = results.length;
     }
-    // ========== RENDER INDIVIDUAL ASSET CARDS ==========
-    function renderAssetList(assets) {
-      assetListContainer.innerHTML = '';
-      if (!assets.length) {
-        assetListContainer.innerHTML = `<div class="card empty-card">No assets found for this type.</div>`;
-        return;
-      }
-      for (const asset of assets) {
-        const card = document.createElement('div');
-        card.className = 'user-card asset-card'; // Reuse user-card for style
 
-        // Handle your actual data structure
-        const assetId = asset.id || asset.serial_no || '[No ID]';
-        const statusBadge = asset.status === false ? '<span class="status-badge fail">FAIL</span>' :
-                           asset.status === true ? '<span class="status-badge pass">PASS</span>' : '';
-        const location = `${asset.location_name || ''} ${asset.sublocation_name ? '- ' + asset.sublocation_name : ''}`.trim() || '-';
-        const lastInspected = formatTimestamp(asset.last_monthly_inspection || asset.last_annual_inspection);
-
-        card.innerHTML = `
-          <div class="user-card-header asset-header">
-            ${assetId}
-            ${statusBadge}
+    // ========== ASSET DETAILS MODAL ==========
+    function showAssetDetails(asset) {
+      const content = document.getElementById('asset-detail-content');
+      
+      content.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+          <h4 style="color: var(--nexus-yellow); margin-bottom: 0.5rem;">${asset.subType || asset.type || 'Asset'}</h4>
+          <p style="color: var(--nexus-muted);">${asset.type || 'Unknown Type'}</p>
+        </div>
+        
+        <div style="display: grid; gap: 1rem;">
+          <div>
+            <strong style="color: var(--nexus-light);">Asset ID:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.id || 'Not set'}</span>
           </div>
-          <div class="user-card-body">
-            <span><b>Location:</b> ${location}</span>
-            <span><b>Last Inspected:</b> ${lastInspected}</span>
-            <span><b>Type:</b> ${asset.subType || asset.type || '-'}</span>
-            ${asset.notes ? `<div class="asset-notes"><b>Notes:</b> ${asset.notes}</div>` : ''}
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Subtype:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.subType || 'Not set'}</span>
           </div>
-        `;
-        assetListContainer.appendChild(card);
-      }
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Hydro Due:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.hydro_due || 'Not set'}</span>
+          </div>
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Sublocation:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.sublocation_name || 'Not set'}</span>
+          </div>
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Precise Location:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.precise_location_name || 'Not set'}</span>
+          </div>
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Status:</strong>
+            <span style="color: var(--nexus-${asset.status === false || asset.status === 'failed' ? 'error' : 'success'}); margin-left: 0.5rem;">
+              ${asset.status === false || asset.status === 'failed' ? 'Failed' : 'Active'}
+            </span>
+          </div>
+          
+          <div>
+            <strong style="color: var(--nexus-light);">Last Monthly Inspection:</strong>
+            <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.last_monthly_inspection || 'Not inspected'}</span>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('asset-detail-modal').classList.add('active');
     }
 
-    function formatTimestamp(ts) {
-      if (!ts) return '-';
-      if (typeof ts === "string" && !isNaN(Date.parse(ts))) return ts.split('T')[0];
-      if (typeof ts === "number") return new Date(ts).toLocaleDateString();
-      if (ts.seconds) return new Date(ts.seconds * 1000).toLocaleDateString();
-      return '-';
+    // ========== UPDATE STATS ==========
+    function updateStats() {
+      let overdue = 0;
+      let dueSoon = 0;
+      let complete = 0;
+
+      allAssets.forEach(asset => {
+        const status = getAssetStatus(asset);
+        if (status === 'overdue') overdue++;
+        else if (status === 'due-soon') dueSoon++;
+        else complete++;
+      });
+
+      document.getElementById('overdue-count').textContent = overdue;
+      document.getElementById('due-soon-count').textContent = dueSoon;
+      document.getElementById('complete-count').textContent = complete;
     }
 
-    // ========== LOADING SPINNER ==========
+    function getAssetStatus(asset) {
+      // Simple status logic based on monthly inspection
+      const monthlyStatus = getMonthlyInspectionStatus(asset.last_monthly_inspection);
+      return monthlyStatus.indicator;
+    }
+
+    // ========== EVENT LISTENERS ==========
+    function setupEventListeners() {
+      // Back button
+      document.getElementById('back-to-types-btn').addEventListener('click', backToTypes);
+      
+      // Modal close
+      document.getElementById('asset-detail-close').addEventListener('click', () => {
+        document.getElementById('asset-detail-modal').classList.remove('active');
+      });
+      
+      // Search and sort
+      setupSearchAndSort();
+      
+      // Add asset button
+      document.getElementById('add-asset-btn').addEventListener('click', () => {
+        // TODO: Implement add asset functionality
+        alert('Add asset functionality to be implemented');
+      });
+    }
+
+    // ========== UTILITY FUNCTIONS ==========
     function showLoading(show) {
-      if (!loadingSpinner) return;
-      loadingSpinner.style.display = show ? '' : 'none';
+      document.getElementById('loading-spinner').style.display = show ? 'block' : 'none';
+    }
+
+    function showToast(message, options = {}) {
+      // Simple toast implementation
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--nexus-card);
+        color: var(--nexus-light);
+        padding: 1rem;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--nexus-border);
+        z-index: 1000;
+        box-shadow: var(--shadow-card);
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
     }
 
 
@@ -1935,7 +2089,7 @@
           
           <div>
             <strong style="color: var(--nexus-light);">Status:</strong>
-            <span style="color: var(--nexus-${getAssetStatus(asset) === 'complete' ? 'success' : getAssetStatus(asset) === 'due-soon' ? 'warning' : 'error'}); margin-left: 0.5rem;">
+            <span style="color: var(--nexus-success); margin-left: 0.5rem;">
               ${getAssetStatus(asset) === 'complete' ? 'Up to Date' : getAssetStatus(asset) === 'due-soon' ? 'Due Soon' : 'Overdue'}
             </span>
           </div>
