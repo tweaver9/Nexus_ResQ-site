@@ -130,6 +130,170 @@
     .inspection-label { font-weight: 500;}
     .reset-password { color: var(--nexus-yellow); text-decoration: underline; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; margin-bottom: 0.75rem; display: inline-block;}
     .reset-password:hover { color: var(--nexus-light); text-shadow: 0 0 8px rgba(253, 216, 53, 0.6);}
+
+    /* === EXACT ASSET CARD STYLING AS REQUESTED === */
+    .user-card,
+    .asset-type-card,
+    .asset-card {
+      background: #151b2e;
+      color: #fff;
+      border-radius: 18px;
+      box-shadow: 0 3px 14px 0 #000a, 0 0 0 2px #2227;
+      margin: 16px 0;
+      padding: 0;
+      display: block;
+      max-width: 410px;
+      min-width: 260px;
+      width: 98%;
+      transition: box-shadow 0.18s, border-color 0.18s, transform 0.16s;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .user-card:hover,
+    .asset-type-card:hover,
+    .asset-card:hover {
+      box-shadow: 0 6px 22px 0 #000e, 0 0 0 3px #fdd83599;
+      border-color: #fdd835;
+      transform: translateY(-3px) scale(1.02);
+    }
+
+    .user-card-header,
+    .asset-type-header,
+    .asset-header {
+      font-family: 'Oswald', 'Inter', sans-serif;
+      font-size: 1.33rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 20px 22px 9px 22px;
+      border-bottom: 1.5px solid #232b39;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .user-card-body {
+      font-family: 'Inter', Arial, sans-serif;
+      font-size: 1.03rem;
+      font-weight: 400;
+      padding: 13px 22px 17px 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 24px;
+    }
+
+    .asset-type-card .user-card-body span {
+      display: inline-block;
+      min-width: 120px;
+      font-size: 1.02rem;
+      font-weight: 500;
+    }
+
+    .asset-header .status-badge,
+    .asset-card .status-badge {
+      margin-left: 13px;
+      padding: 2.5px 12px;
+      font-size: 1rem;
+      border-radius: 12px;
+      font-weight: 600;
+      box-shadow: 0 0 8px 1px #2a3441aa;
+      vertical-align: middle;
+    }
+
+    .status-badge.fail {
+      background: #ef4444;
+      color: #fff;
+      text-shadow: 0 0 2px #900;
+      box-shadow: 0 0 6px 0 #ef444477;
+    }
+
+    .status-badge.pass {
+      background: #10b981;
+      color: #fff;
+      text-shadow: 0 0 2px #026145;
+      box-shadow: 0 0 6px 0 #10b98177;
+    }
+
+    .asset-notes {
+      display: block;
+      margin-top: 6px;
+      color: #ffe388;
+      font-size: 0.99rem;
+      padding-left: 2px;
+    }
+
+    .empty-card {
+      background: #1a2138;
+      color: #b1b8c8;
+      border: 1.5px dashed #46567788;
+      box-shadow: none;
+      text-align: center;
+      padding: 30px 16px;
+      font-size: 1.11rem;
+    }
+
+    .back-btn {
+      font-family: 'Oswald', Arial, sans-serif;
+      font-weight: 600;
+      color: #fff;
+      background: #101828;
+      border: 1.5px solid #283147;
+      border-radius: 8px;
+      padding: 8px 22px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 0 1.5px #2225;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .back-btn:hover {
+      border-color: #fdd835;
+      box-shadow: 0 0 0 2.5px #fdd83599;
+    }
+
+    /* Search/Sort bar */
+    #assetSearchSortBar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    #assetSearchInput,
+    #assetSortSelect {
+      background: #232b39;
+      border: 1.5px solid #36405a;
+      color: #fff;
+      font-size: 1.01rem;
+      border-radius: 8px;
+      padding: 8px 14px;
+      outline: none;
+      transition: border-color 0.12s;
+    }
+
+    #assetSearchInput:focus,
+    #assetSortSelect:focus {
+      border-color: #fdd835;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 640px) {
+      .user-card,
+      .asset-type-card,
+      .asset-card {
+        max-width: 99vw;
+        min-width: 0;
+        margin: 11px 0;
+        padding: 0;
+      }
+      .user-card-header,
+      .asset-type-header,
+      .asset-header,
+      .user-card-body {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    }
     /* MODALS & SKELETON LOADER (NEW) */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8);
@@ -942,12 +1106,27 @@
   <main class="main-container">
     <section class="user-group">
       <div class="group-header">
-        <h2 class="group-title">Assets</h2>
+        <h2 class="group-title">Asset Management</h2>
         <span class="group-count" id="total-count">0</span>
       </div>
-      <div class="user-grid" id="all-assets">
-        <div class="empty-group">Loading assets...</div>
+
+      <div id="loadingSpinner" style="display:none;">Loading...</div>
+
+      <div id="assetTypesContainer"></div>
+
+      <!-- Hidden until a type is selected -->
+      <div id="assetSearchSortBar" style="display:none; margin:1em 0;">
+        <input id="assetSearchInput" class="input search" type="search" placeholder="Search assets..." style="width:60%;max-width:320px;">
+        <select id="assetSortSelect" class="input sort">
+          <option value="assetId_asc">Asset ID (A-Z)</option>
+          <option value="assetId_desc">Asset ID (Z-A)</option>
+          <option value="status">Status</option>
+          <option value="lastInspected">Last Inspected</option>
+        </select>
       </div>
+
+      <div id="assetListContainer"></div>
+      <div id="noAssetsMsg" style="display:none;">No assets to show.</div>
     </section>
   </main>
   <!-- === TOASTS (NEW) === -->
@@ -1181,12 +1360,14 @@
     //  SHIMMER LOADER / SKELETON
     // =========================
     function showSkeleton() {
-      document.getElementById('all-assets').style.display = 'none';
+      document.getElementById('asset-type-cards').style.display = 'none';
+      document.getElementById('asset-grid').style.display = 'none';
       document.getElementById('asset-skeleton').style.display = 'grid';
     }
     function hideSkeleton() {
       document.getElementById('asset-skeleton').style.display = 'none';
-      document.getElementById('all-assets').style.display = '';
+      document.getElementById('asset-type-cards').style.display = 'grid';
+      document.getElementById('asset-grid').style.display = 'none';
     }
     // =========================
     //  TOAST + UNDO
@@ -1217,270 +1398,226 @@
       else filters.classList.remove('stuck');
     });
     // =========================
-    //  ASSET LOGIC
+    //  ASSET LOGIC - EXACT IMPLEMENTATION AS REQUESTED
     // =========================
-    let clientId = sessionStorage.getItem('tenant_id') || "demo";
-    let currentUserRole = sessionStorage.getItem('user_role') || 'nexus'; // Changed to nexus for demo
-    let allAssets = [];
-    let allLocations = [];
-    
-    document.addEventListener('DOMContentLoaded', async function() {
-      console.log('Asset Management page loading for client:', clientId);
-      
-      // Session validation with proper redirects
-      if (!clientId) {
-        console.warn('No client ID found, redirecting to login');
-        window.location.href = "login.html";
-        return;
-      }
 
-      // Show client selector for Nexus role
-      if (currentUserRole === 'nexus') {
-        document.getElementById('client-selector').style.display = 'block';
-        await loadClients();
-      }
+    // ========== DOM ==========
+    const assetTypesContainer = document.getElementById('assetTypesContainer'); // Container for asset type cards
+    const assetListContainer = document.getElementById('assetListContainer');   // Where assets for selected type show up
+    const assetSearchInput = document.getElementById('assetSearchInput');
+    const assetSortSelect = document.getElementById('assetSortSelect');
+    const noAssetsMsg = document.getElementById('noAssetsMsg');
+    const loadingSpinner = document.getElementById('loadingSpinner');
 
-      // Modal event handlers
-      document.getElementById('asset-detail-close').onclick = () => document.getElementById('asset-detail-modal').classList.remove('active');
-      document.getElementById('asset-detail-modal').onclick = e => { 
-        if (e.target.id === 'asset-detail-modal') e.target.classList.remove('active'); 
-      };
+    // ========== STATE ==========
+    let currentClientSubdomain = sessionStorage.getItem('tenant_id') || "demo";
+    let allAssets = [];       // All assets for client
+    let typeStats = {};       // { [type]: { total, failed } }
+    let currentType = null;   // Currently selected asset type
+    let filteredAssets = [];  // Assets after search/sort
 
-      // Add Asset Modal handlers
-      document.getElementById('add-asset-close').onclick = () => closeAddAssetModal();
-      document.getElementById('add-asset-modal').onclick = e => { 
-        if (e.target.id === 'add-asset-modal') closeAddAssetModal(); 
-      };
-      document.getElementById('asset-next-btn').onclick = () => nextAssetStep();
-      document.getElementById('asset-prev-btn').onclick = () => prevAssetStep();
-      document.getElementById('asset-submit-btn').onclick = () => submitNewAsset();
-
-      // Add Asset form handlers
-      document.getElementById('asset-type-select').onchange = handleTypeChange;
-      document.getElementById('asset-kind-select').onchange = handleKindChange;
-      document.getElementById('same-date-checkbox').onchange = handleSameDateChange;
-      document.getElementById('location-select').onchange = handleLocationChange;
-      document.getElementById('sublocation-select').onchange = handleSublocationChange;
-      
-      // Custom type input handler for enabling kind field
-      document.getElementById('custom-type-input').oninput = function() {
-        const kindSelect = document.getElementById('asset-kind-select');
-        const customKindGroup = document.getElementById('custom-kind-group');
-        
-        if (this.value.trim()) {
-          kindSelect.disabled = false;
-          kindSelect.innerHTML = '<option value="">Not applicable</option>';
-          // For custom types, we always show the custom kind input
-          customKindGroup.style.display = 'block';
-        } else {
-          kindSelect.disabled = true;
-          kindSelect.innerHTML = '<option value="">Enter custom type first...</option>';
-          customKindGroup.style.display = 'none';
-        }
-      };
-      
-      // Precision location handlers
-      document.querySelectorAll('input[name="precision-option"]').forEach(radio => {
-        radio.onchange = handlePrecisionOptionChange;
-      });
-
-      // Filter event handlers (only search now, no dropdown)
-      document.getElementById('asset-search').oninput = filterAssets;
-
-      // Action button handlers (role-based access)
-      document.getElementById('add-asset-btn').onclick = () => {
-        if (!canModifyAssets()) {
-          showToast('Insufficient permissions to add assets.', {type: 'error'});
-          return;
-        }
-        showAddAssetModal();
-      };
-      
-
-
-      // Load data
+    // ========== INIT ==========
+    window.addEventListener('DOMContentLoaded', async () => {
       try {
-        await Promise.all([
-          loadAssetTypes(),
-          loadLocations(),
-          loadAssets()
-        ]);
-      } catch (error) {
-        console.error('Error during initial load:', error);
-        showToast('Error loading data. Please refresh the page.', {type: 'error'});
+        showLoading(true);
+        await loadAllAssets();
+        renderAssetTypeCards();
+        setupSearchAndSort();
+      } catch (err) {
+        alert('Error loading assets: ' + (err.message || err));
+        showLoading(false);
       }
     });
-    // Show shimmer loader during async load
-    async function loadAssets() {
-      showSkeleton();
-      try {
-        console.log('Loading assets for client:', clientId);
-        await new Promise(r=>setTimeout(r, 650)); // Simulate loading
-        
-        allAssets = [];
-        
-        // Load assets from root collection (NEW STRUCTURE)
-        try {
-          const rootSnap = await db.collection('assets').where('clientId', '==', clientId).get();
-          console.log('Found', rootSnap.size, 'assets in root collection');
-          
-          rootSnap.forEach(doc => {
-            const assetData = doc.data();
-            console.log('Root asset data:', doc.id, assetData);
-            allAssets.push({
-              id: doc.id,
-              ...assetData
-            });
-          });
-        } catch (error) {
-          console.warn('Could not load from root assets collection:', error);
-        }
-        
-        // Fallback to legacy client subcollection
-        try {
-          const clientSnap = await db.collection(`clients/${clientId}/assets`).get();
-          console.log('Found', clientSnap.size, 'assets in client subcollection');
-          
-          clientSnap.forEach(doc => {
-            const assetData = doc.data();
-            // Only add if not already loaded from root collection
-            if (!allAssets.find(a => a.id === doc.id)) {
-              console.log('Legacy asset data:', doc.id, assetData);
-              allAssets.push({
-                id: doc.id,
-                ...assetData
-              });
-            }
-          });
-        } catch (error) {
-          console.warn('Could not load from client assets subcollection:', error);
-        }
-        
-        console.log('Total processed assets:', allAssets.length);
-        
-        // Demo data removed - now using real Firestore data only
-        console.log('Using real Firestore data only - no demo data');
-        
-        hideSkeleton();
-        renderAssets();
-        updateStats();
-      } catch (error) {
-        console.error('Error loading assets:', error);
-        hideSkeleton();
-        document.getElementById('all-assets').innerHTML = `
-          <div class="empty-group">
-            Error loading assets: ${error.message}<br>
-            Please check console for details.
-          </div>
-        `;
-        showToast('Failed to load assets. Please try again.', {type: 'error'});
-      }
-    }
-    function renderAssets(list = allAssets) {
-      const grid = document.getElementById('all-assets');
-      const count = document.getElementById('total-count');
 
-      if (!list.length) {
-        grid.innerHTML = '<div class="empty-group">No assets found.</div>';
-        count.textContent = '0';
+    // ========== LOADING ALL ASSETS AND BUILDING TYPE STATS ==========
+    async function loadAllAssets() {
+      allAssets = [];
+      typeStats = {};
+      const assetsRef = db.collection('clients').doc(currentClientSubdomain).collection('assets');
+      const snapshot = await assetsRef.get();
+      snapshot.forEach(docSnap => {
+        const asset = { id: docSnap.id, ...docSnap.data() };
+        allAssets.push(asset);
+
+        // Build type stats on the fly - handle your actual data structure
+        const type = (asset.type || "Unknown").trim();
+        if (!typeStats[type]) typeStats[type] = { total: 0, failed: 0 };
+        typeStats[type].total++;
+
+        // Handle boolean status field - false means failed
+        if (asset.status === false) {
+          typeStats[type].failed++;
+        }
+      });
+
+      console.log('Loaded assets:', allAssets);
+      console.log('Type stats:', typeStats);
+    }
+    // ========== RENDER ASSET TYPE CARDS ==========
+    function renderAssetTypeCards() {
+      assetTypesContainer.innerHTML = ''; // Clear
+
+      // Show only types that actually exist (skip types with total=0)
+      const typeEntries = Object.entries(typeStats).filter(([type, stats]) => stats.total > 0);
+      if (typeEntries.length === 0) {
+        assetTypesContainer.innerHTML = `<div class="card empty-card">No asset types found for this client.</div>`;
+        assetListContainer.innerHTML = '';
+        noAssetsMsg.style.display = '';
         return;
       }
+      noAssetsMsg.style.display = 'none';
 
-      // Group assets by type and count totals/failed
-      const assetTypeGroups = {};
-      list.forEach(asset => {
-        // Capitalize asset type properly
-        const rawType = asset.type || 'Unknown';
-        const type = capitalizeAssetType(rawType);
-
-        if (!assetTypeGroups[type]) {
-          assetTypeGroups[type] = {
-            total: 0,
-            failed: 0,
-            assets: []
-          };
-        }
-        assetTypeGroups[type].total++;
-        assetTypeGroups[type].assets.push(asset);
-
-        // Count failed inspections (you can adjust this logic based on your status field)
-        if (asset.status === 'failed' || asset.status === 'overdue' || asset.lastInspectionStatus === 'failed') {
-          assetTypeGroups[type].failed++;
-        }
-      });
-
-      // Render asset type cards
-      grid.innerHTML = '';
-      Object.keys(assetTypeGroups).forEach(type => {
-        const group = assetTypeGroups[type];
+      // For each type, render a card
+      for (const [type, stats] of typeEntries) {
         const card = document.createElement('div');
-        card.className = 'asset-type-card';
-        card.onclick = () => showAssetTypeDetails(type, group.assets);
-
-        const failedClass = group.failed > 0 ? 'has-failed' : '';
+        card.className = 'user-card asset-type-card clickable-card';
         card.innerHTML = `
-          <div class="asset-type-header ${failedClass}">
-            <h3 class="asset-type-name">${type}</h3>
-            <div class="asset-type-counts">
-              <span class="total-count">${group.total} total</span>
-              ${group.failed > 0 ? `<span class="failed-count">${group.failed} failed</span>` : ''}
-            </div>
-          </div>
-          <div class="asset-type-status">
-            <div class="status-bar">
-              <div class="status-fill" style="width: ${group.failed === 0 ? 100 : ((group.total - group.failed) / group.total) * 100}%"></div>
-            </div>
+          <div class="user-card-header asset-type-header">${type}</div>
+          <div class="user-card-body">
+            <span>Total: <b>${stats.total}</b></span>
+            <span style="margin-left:1.5em;">Failed: <b style="color:#ef4444">${stats.failed}</b></span>
           </div>
         `;
-
-        grid.appendChild(card);
-      });
-
-      count.textContent = Object.keys(assetTypeGroups).length;
+        card.addEventListener('click', () => {
+          currentType = type;
+          renderAssetsOfType(type);
+        });
+        assetTypesContainer.appendChild(card);
+      }
+      assetListContainer.innerHTML = '';
     }
 
-    // Show detailed list for a specific asset type
-    function showAssetTypeDetails(assetType, assets) {
-      const modal = document.createElement('div');
-      modal.className = 'asset-type-modal';
-      modal.innerHTML = `
-        <div class="asset-type-modal-content">
-          <div class="asset-type-modal-header">
-            <h2>${assetType} Assets (${assets.length})</h2>
-            <button class="close-btn" onclick="this.closest('.asset-type-modal').remove()">×</button>
+    // ========== RENDER ASSETS OF SELECTED TYPE ==========
+    function renderAssetsOfType(type) {
+      // Set up search and sort if not present (in case user navigates back)
+      setupSearchAndSort();
+
+      // Filter assets of selected type
+      const assets = allAssets.filter(a => (a.type || "Unknown").trim() === type);
+
+      // Show search/sort UI
+      document.getElementById('assetSearchSortBar').style.display = '';
+      assetListContainer.innerHTML = ''; // Clear old
+
+      // Store for search/sort
+      filteredAssets = assets.slice();
+      applySearchAndSort();
+
+      // Show "Back to types" button if needed
+      renderBackToTypesButton();
+    }
+
+    function renderBackToTypesButton() {
+      let btn = document.getElementById('backToTypesBtn');
+      if (!btn) {
+        btn = document.createElement('button');
+        btn.id = 'backToTypesBtn';
+        btn.innerText = '← Back to Asset Types';
+        btn.className = 'btn back-btn';
+        btn.style.marginBottom = '1em';
+        btn.onclick = () => {
+          currentType = null;
+          assetListContainer.innerHTML = '';
+          document.getElementById('assetSearchSortBar').style.display = 'none';
+          renderAssetTypeCards();
+        };
+        assetListContainer.parentNode.insertBefore(btn, assetListContainer);
+      }
+    }
+    // ========== SEARCH AND SORT ==========
+    function setupSearchAndSort() {
+      if (!assetSearchInput || !assetSortSelect) return;
+      assetSearchInput.value = '';
+      assetSortSelect.value = 'assetId_asc';
+
+      assetSearchInput.oninput = applySearchAndSort;
+      assetSortSelect.onchange = applySearchAndSort;
+      document.getElementById('assetSearchSortBar').style.display = 'none';
+    }
+
+    function applySearchAndSort() {
+      if (!filteredAssets) return;
+      let results = filteredAssets.slice();
+      // Search - updated for your data structure
+      const q = assetSearchInput.value.trim().toLowerCase();
+      if (q) {
+        results = results.filter(asset =>
+          (asset.id || '').toLowerCase().includes(q) ||
+          (asset.serial_no || '').toLowerCase().includes(q) ||
+          (asset.location_name || '').toLowerCase().includes(q) ||
+          (asset.sublocation_name || '').toLowerCase().includes(q) ||
+          (asset.subType || '').toLowerCase().includes(q) ||
+          (asset.type || '').toLowerCase().includes(q)
+        );
+      }
+      // Sort - updated for your data structure
+      const sortVal = assetSortSelect.value;
+      if (sortVal === 'assetId_asc') results.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
+      if (sortVal === 'assetId_desc') results.sort((a, b) => (b.id || '').localeCompare(a.id || ''));
+      if (sortVal === 'status') results.sort((a, b) => (a.status === b.status ? 0 : a.status ? -1 : 1));
+      if (sortVal === 'lastInspected') {
+        results.sort((a, b) => {
+          const aDate = new Date(a.last_monthly_inspection || a.last_annual_inspection || 0);
+          const bDate = new Date(b.last_monthly_inspection || b.last_annual_inspection || 0);
+          return bDate - aDate;
+        });
+      }
+
+      renderAssetList(results);
+    }
+    // ========== RENDER INDIVIDUAL ASSET CARDS ==========
+    function renderAssetList(assets) {
+      assetListContainer.innerHTML = '';
+      if (!assets.length) {
+        assetListContainer.innerHTML = `<div class="card empty-card">No assets found for this type.</div>`;
+        return;
+      }
+      for (const asset of assets) {
+        const card = document.createElement('div');
+        card.className = 'user-card asset-card'; // Reuse user-card for style
+
+        // Handle your actual data structure
+        const assetId = asset.id || asset.serial_no || '[No ID]';
+        const statusBadge = asset.status === false ? '<span class="status-badge fail">FAIL</span>' :
+                           asset.status === true ? '<span class="status-badge pass">PASS</span>' : '';
+        const location = `${asset.location_name || ''} ${asset.sublocation_name ? '- ' + asset.sublocation_name : ''}`.trim() || '-';
+        const lastInspected = formatTimestamp(asset.last_monthly_inspection || asset.last_annual_inspection);
+
+        card.innerHTML = `
+          <div class="user-card-header asset-header">
+            ${assetId}
+            ${statusBadge}
           </div>
-          <div class="asset-type-modal-body">
-            <div class="asset-type-list">
-              ${assets.map(asset => `
-                <div class="asset-type-item ${asset.status === 'failed' || asset.status === 'overdue' ? 'failed' : ''}">
-                  <div class="asset-info">
-                    <div class="asset-id">${asset.asset_id || asset.id}</div>
-                    <div class="asset-location">${asset.location || 'Unknown'} ${asset.sublocation ? '- ' + asset.sublocation : ''}</div>
-                    <div class="asset-kind">${asset.kind || 'Standard'}</div>
-                  </div>
-                  <div class="asset-status">
-                    <span class="status-badge ${asset.status || 'unknown'}">${asset.status || 'Unknown'}</span>
-                    <div class="last-inspection">${asset.lastInspection || 'Never'}</div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
+          <div class="user-card-body">
+            <span><b>Location:</b> ${location}</span>
+            <span><b>Last Inspected:</b> ${lastInspected}</span>
+            <span><b>Type:</b> ${asset.subType || asset.type || '-'}</span>
+            ${asset.notes ? `<div class="asset-notes"><b>Notes:</b> ${asset.notes}</div>` : ''}
           </div>
-        </div>
-      `;
-
-      document.body.appendChild(modal);
-
-      // Close on background click
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.remove();
-        }
-      });
+        `;
+        assetListContainer.appendChild(card);
+      }
     }
 
+    function formatTimestamp(ts) {
+      if (!ts) return '-';
+      if (typeof ts === "string" && !isNaN(Date.parse(ts))) return ts.split('T')[0];
+      if (typeof ts === "number") return new Date(ts).toLocaleDateString();
+      if (ts.seconds) return new Date(ts.seconds * 1000).toLocaleDateString();
+      return '-';
     }
-    // === Inline Editing for Asset Fields ===
+
+    // ========== LOADING SPINNER ==========
+    function showLoading(show) {
+      if (!loadingSpinner) return;
+      loadingSpinner.style.display = show ? '' : 'none';
+    }
+
+
+  </script>
+  <script type="module" src="messaging-ui.js"></script>
+</body>
+</html>
     function attachInlineEdit() {
       document.querySelectorAll('.editable-field').forEach(el=>{
         el.onclick = async function(e) {
@@ -1703,57 +1840,7 @@
       return asset.lastInspection || 'Not yet inspected';
     }
 
-    async function loadAssetTypes() {
-      try {
-        const allAssetTypes = new Set();
-        const typeFilter = document.getElementById('asset-type-filter');
-        
-        // Load from asset_types collection
-        try {
-          const typesSnap = await db.collection(`clients/${clientId}/asset_types`).get();
-          typesSnap.forEach(doc => {
-            const typeData = doc.data();
-            const typeName = typeData.name || doc.id;
-            if (typeName && typeName.trim()) {
-              allAssetTypes.add(typeName.trim());
-            }
-          });
-        } catch (error) {
-          console.warn('Could not load from asset_types collection for filter:', error.message);
-        }
-        
-        // Load from existing assets
-        try {
-          const assetsSnap = await db.collection(`clients/${clientId}/assets`).get();
-          assetsSnap.forEach(doc => {
-            const assetData = doc.data();
-            if (assetData.type && assetData.type.trim()) {
-              allAssetTypes.add(assetData.type.trim());
-            }
-          });
-        } catch (error) {
-          console.warn('Could not load asset types from assets for filter:', error.message);
-        }
-        
-        // No fallback demo types - use real data only
-        
-        // Sort and add to filter dropdown
-        const sortedTypes = Array.from(allAssetTypes).sort((a, b) => 
-          a.toLowerCase().localeCompare(b.toLowerCase())
-        );
-        
-        sortedTypes.forEach(type => {
-          const opt = document.createElement('option');
-          opt.value = type;
-          opt.textContent = type;
-          typeFilter.appendChild(opt);
-        });
-        
-      } catch (error) {
-        console.error('Error loading asset types:', error);
-        // No fallback demo types on error - show empty dropdown
-      }
-    }
+    // loadAssetTypes function removed - no longer needed since we use card-based display instead of filter dropdown
 
     async function loadLocations() {
       try {

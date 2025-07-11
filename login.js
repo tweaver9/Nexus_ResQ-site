@@ -10,14 +10,9 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   console.log("Login form submitted"); // Debug log
 
-  let username = e.target.username.value.trim();
+  const username = e.target.username.value.trim();
   const password = e.target.password.value.trim();
   const errorDiv = document.getElementById("login-error");
-
-  // Extract just the username part (remove @domain if present)
-  if (username.includes('@')) {
-    username = username.split('@')[0];
-  }
 
   console.log("Username:", username, "Password length:", password.length); // Debug log
 
@@ -53,16 +48,19 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
     console.log("Calling backend for authentication..."); // Debug log
     console.log("Sending to backend:", { username, subdomain, passwordLength: password.length }); // Debug log
 
+    const requestBody = {
+      username: username,
+      password: password,
+      subdomain: subdomain
+    };
+    console.log("EXACT REQUEST BODY:", JSON.stringify(requestBody)); // Debug log
+
     const authResponse = await fetch('https://us-central1-nexus-res-q.cloudfunctions.net/api/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        username: username,
-        password: password,
-        subdomain: subdomain
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (!authResponse.ok) {
@@ -234,7 +232,7 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
 // Password change functionality for users who must change password
 async function handlePasswordChange() {
   const currentUser = JSON.parse(sessionStorage.getItem('nexusUser'));
-  const subdomain = getCurrentClientSubdomain();
+  const subdomain = getSubdomainFromHostname();
 
   if (!currentUser || !currentUser.must_change_password) {
     return;

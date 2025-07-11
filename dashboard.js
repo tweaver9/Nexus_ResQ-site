@@ -710,9 +710,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   function createLogEntryHTML(log) {
-    const timestamp = log.timestamp.toLocaleString();
-    const timeOnly = log.timestamp.toLocaleTimeString();
-    const dateOnly = log.timestamp.toLocaleDateString();
+    // Ensure timestamp is a Date object
+    const timestampDate = log.timestamp instanceof Date ? log.timestamp : new Date(log.timestamp || Date.now());
+    const timestamp = timestampDate.toLocaleString();
+    const timeOnly = timestampDate.toLocaleTimeString();
+    const dateOnly = timestampDate.toLocaleDateString();
 
     // Determine log type and icon
     const typeInfo = getLogTypeInfo(log.type);
@@ -829,7 +831,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     details.push(`
       <div class="log-detail-item">
         <div class="log-detail-label">Timestamp</div>
-        <div class="log-detail-value">${log.timestamp.toLocaleString()}</div>
+        <div class="log-detail-value">${(log.timestamp instanceof Date ? log.timestamp : new Date(log.timestamp || Date.now())).toLocaleString()}</div>
       </div>
     `);
 
@@ -893,7 +895,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const csvContent = [
       headers.join(','),
       ...filteredLogs.map(log => [
-        log.timestamp.toISOString(),
+        (log.timestamp instanceof Date ? log.timestamp : new Date(log.timestamp || Date.now())).toISOString(),
         log.type,
         `"${log.action.replace(/"/g, '""')}"`,
         log.user,
@@ -923,7 +925,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     const details = `
 Log Details:
-Timestamp: ${log.timestamp.toLocaleString()}
+Timestamp: ${(log.timestamp instanceof Date ? log.timestamp : new Date(log.timestamp || Date.now())).toLocaleString()}
 Type: ${log.type}
 Action: ${log.action}
 User: ${log.user}
