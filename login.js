@@ -44,19 +44,16 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
 
     // Process username for multi-tenant structure
     // If username contains @clientId, strip it to get the base username for backend
-    let processedUsername = username;
-    if (username.includes('@')) {
-      const [baseUsername, clientId] = username.split('@');
-      if (clientId !== subdomain) {
-        showError("Username domain doesn't match current client subdomain.");
-        return;
-      }
-      processedUsername = baseUsername;
-      console.log("Stripped client suffix from username:", processedUsername); // Debug log
-    }
-
-    // Backend expects just the base username (without @clientId)
-
+   let processedUsername = username.trim();
+if (processedUsername.includes('@')) {
+  const [baseUsername, clientId] = processedUsername.split('@');
+  if (clientId !== subdomain) {
+    showError("Username domain doesn't match current client subdomain.");
+    return;
+  }
+  // Keep the full username for backend
+  // processedUsername = baseUsername; // <-- DO NOT DO THIS
+}
     // Call your Firebase Cloud Function for authentication
     console.log("Calling backend for authentication..."); // Debug log
     console.log("Sending to backend:", { username: processedUsername, subdomain, passwordLength: password.length }); // Debug log
