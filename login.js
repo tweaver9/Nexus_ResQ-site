@@ -10,9 +10,14 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   console.log("Login form submitted"); // Debug log
 
-  const username = e.target.username.value.trim();
+  let username = e.target.username.value.trim();
   const password = e.target.password.value.trim();
   const errorDiv = document.getElementById("login-error");
+
+  // Extract just the username part (remove @domain if present)
+  if (username.includes('@')) {
+    username = username.split('@')[0];
+  }
 
   console.log("Username:", username, "Password length:", password.length); // Debug log
 
@@ -42,35 +47,22 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
 
     const clientData = clientDoc.data();
 
-    // Process username for multi-tenant structure
-    // If username contains @clientId, strip it to get the base username for backend
-   let processedUsername = username.trim();
-if (processedUsername.includes('@')) {
-  const [baseUsername, clientId] = processedUsername.split('@');
-  if (clientId !== subdomain) {
-    showError("Username domain doesn't match current client subdomain.");
-    return;
-  }
-  // Keep the full username for backend
-  // processedUsername = baseUsername; // <-- DO NOT DO THIS
-}
+    // Backend will handle user lookup and validation
+
     // Call your Firebase Cloud Function for authentication
     console.log("Calling backend for authentication..."); // Debug log
-    console.log("Sending to backend:", { username: processedUsername, subdomain, passwordLength: password.length }); // Debug log
-
-    const requestBody = {
-      username: processedUsername,
-      password: password,
-      subdomain: subdomain
-    };
-    console.log("EXACT REQUEST BODY:", JSON.stringify(requestBody)); // Debug log
+    console.log("Sending to backend:", { username, subdomain, passwordLength: password.length }); // Debug log
 
     const authResponse = await fetch('https://us-central1-nexus-res-q.cloudfunctions.net/api/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify({
+        username: username,
+        password: password,
+        subdomain: subdomain
+      })
     });
 
     if (!authResponse.ok) {
@@ -205,19 +197,7 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
   }
 
   try {
-    // Process username for multi-tenant structure
-    let processedUsername = username;
-    if (processedUsername.includes('@')) {
-      const [baseUsername, clientId] = processedUsername.split('@');
-      if (clientId !== subdomain) {
-        showError("Username domain doesn't match current client subdomain.");
-        return;
-      }
-      processedUsername = baseUsername;
-    }
-
     // Call backend to reset password
-    // Send just the base username to the backend (without @clientId)
     const defaultPassword = subdomain; // Use subdomain as default password
 
     const resetResponse = await fetch('https://us-central1-nexus-res-q.cloudfunctions.net/api/reset-password', {
@@ -226,7 +206,7 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: processedUsername,
+        username: username.trim(),
         code: 'forgot_password', // You might want to implement a proper reset code system
         newPassword: defaultPassword,
         clientName: subdomain
@@ -254,7 +234,7 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
 // Password change functionality for users who must change password
 async function handlePasswordChange() {
   const currentUser = JSON.parse(sessionStorage.getItem('nexusUser'));
-  const subdomain = getSubdomainFromHostname();
+  const subdomain = getCurrentClientSubdomain();
 
   if (!currentUser || !currentUser.must_change_password) {
     return;
