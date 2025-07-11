@@ -58,6 +58,28 @@ function formatHydroDue(hydroDue) {
   }
 }
 
+// Utility: Check if asset type should show Hydro Due
+function shouldShowHydroDue(assetType) {
+  if (!assetType) return false;
+  const type = assetType.toString().toLowerCase();
+  return type === 'fire extinguisher' || type === 'scba';
+}
+
+// Format Last Monthly Inspection as MM/DD/YYYY
+function formatInspectionDate(dateStr) {
+  if (!dateStr) return 'Not inspected';
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return 'Not inspected';
+    const mm = (date.getMonth() + 1).toString().padStart(2, '0');
+    const dd = date.getDate().toString().padStart(2, '0');
+    const yyyy = date.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+  } catch {
+    return 'Not inspected';
+  }
+}
+
 // ========== INITIALIZATION ==========
 window.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -203,7 +225,7 @@ function createAssetCard(asset) {
   const initial = (asset.subType || asset.type || 'A').charAt(0).toUpperCase();
   const assetId = asset.id || 'No ID';
   const subType = asset.subType || 'N/A';
-  const hydroDue = formatHydroDue(asset.hydro_due);
+  const hydroDue = shouldShowHydroDue(asset.type) ? formatHydroDue(asset.hydro_due) : null;
   const sublocation = asset.sublocation_name || 'N/A';
   const preciseLocation = asset.precise_location_name || 'N/A';
   const status = asset.status === false || asset.status === 'failed' ? 'Failed' : 'Active';
@@ -221,9 +243,7 @@ function createAssetCard(asset) {
     </div>
     
     <div class="asset-details">
-      <div class="detail-label">Hydro Due:</div>
-      <div class="detail-value">${hydroDue}</div>
-      
+      ${hydroDue !== null ? `<div class="detail-label">Hydro Due:</div><div class="detail-value">${hydroDue}</div>` : ''}
       <div class="detail-label">Sublocation:</div>
       <div class="detail-value">${sublocation}</div>
       
@@ -351,11 +371,11 @@ function applySearchAndSort() {
 function showAssetDetails(asset) {
   const content = document.getElementById('asset-detail-content');
   const formattedType = formatAssetType(asset.type);
-  const hydroDue = formatHydroDue(asset.hydro_due);
+  const hydroDue = shouldShowHydroDue(asset.type) ? formatHydroDue(asset.hydro_due) : null;
   
   content.innerHTML = `
     <div style="margin-bottom: 1rem;">
-      <h4 style="color: var(--nexus-yellow); margin-bottom: 0.5rem;">${asset.subType || formattedType || 'Asset'}</h4>
+      <h4 style="color: var(--nexus-yellow); margin-bottom: 0.5rem;">${asset.subType || ''}</h4>
       <p style="color: var(--nexus-muted);">${formattedType || 'Unknown Type'}</p>
     </div>
     
@@ -370,10 +390,7 @@ function showAssetDetails(asset) {
         <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.subType || 'Not set'}</span>
       </div>
       
-      <div>
-        <strong style="color: var(--nexus-light);">Hydro Due:</strong>
-        <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${hydroDue}</span>
-      </div>
+      ${hydroDue !== null ? `<div><strong style=\"color: var(--nexus-light);\">Hydro Due:</strong><span style=\"color: var(--nexus-muted); margin-left: 0.5rem;\">${hydroDue}</span></div>` : ''}
       
       <div>
         <strong style="color: var(--nexus-light);">Sublocation:</strong>
@@ -394,7 +411,7 @@ function showAssetDetails(asset) {
       
       <div>
         <strong style="color: var(--nexus-light);">Last Monthly Inspection:</strong>
-        <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${asset.last_monthly_inspection || 'Not inspected'}</span>
+        <span style="color: var(--nexus-muted); margin-left: 0.5rem;">${formatInspectionDate(asset.last_monthly_inspection)}</span>
       </div>
     </div>
   `;
@@ -429,14 +446,7 @@ function showAddAssetModal() {
         <input type="text" id="asset-id" required style="width: 100%; padding: 0.75rem; background: var(--nexus-card-hover); border: 1px solid var(--nexus-border); border-radius: var(--radius-sm); color: var(--nexus-light);">
       </div>
       
-      <div style="margin-bottom: 1.5rem;">
-        <label style="display: block; color: var(--nexus-light); margin-bottom: 0.5rem; font-weight: 500;">
-          Subtype:
-        </label>
-        <input type="text" id="asset-subtype" style="width: 100%; padding: 0.75rem; background: var(--nexus-card-hover); border: 1px solid var(--nexus-border); border-radius: var(--radius-sm); color: var(--nexus-light);">
-      </div>
-      
-      <div style="margin-bottom: 1.5rem;">
+      <div style="margin-bottom: 1.5rem;" id="hydro-due-field" style="display:none;">
         <label style="display: block; color: var(--nexus-light); margin-bottom: 0.5rem; font-weight: 500;">
           Hydro Due Date:
         </label>
@@ -480,8 +490,19 @@ function setupAddAssetFormListeners() {
   const customTypeInput = document.getElementById('custom-asset-type');
   const form = document.getElementById('add-asset-form');
   const cancelBtn = document.getElementById('cancel-add-asset');
-  
-  // Toggle custom type input
+  const hydroDueField = document.getElementById('hydro-due-field');
+  // Show/hide Hydro Due field based on type
+  function updateHydroDueVisibility() {
+    let assetType = typeSelect.value;
+    if (!assetType && customTypeInput.value.trim()) {
+      assetType = customTypeInput.value.trim();
+    }
+    if (shouldShowHydroDue(assetType)) {
+      hydroDueField.style.display = 'block';
+    } else {
+      hydroDueField.style.display = 'none';
+    }
+  }
   typeSelect.addEventListener('change', () => {
     if (typeSelect.value === '') {
       customTypeInput.style.display = 'block';
@@ -490,18 +511,17 @@ function setupAddAssetFormListeners() {
       customTypeInput.style.display = 'none';
       customTypeInput.value = '';
     }
+    updateHydroDueVisibility();
   });
-  
-  // Form submission
+  customTypeInput.addEventListener('input', updateHydroDueVisibility);
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     await addAsset();
   });
-  
-  // Cancel button
   cancelBtn.addEventListener('click', () => {
     document.getElementById('add-asset-modal').classList.remove('active');
   });
+  updateHydroDueVisibility();
 }
 
 async function addAsset() {
@@ -509,65 +529,51 @@ async function addAsset() {
     const typeSelect = document.getElementById('asset-type-select');
     const customTypeInput = document.getElementById('custom-asset-type');
     const assetId = document.getElementById('asset-id').value.trim();
-    const assetSubtype = document.getElementById('asset-subtype').value.trim();
-    const hydroDue = document.getElementById('hydro-due').value;
+    const assetSubtype = document.getElementById('asset-subtype') ? document.getElementById('asset-subtype').value.trim() : '';
+    const hydroDue = document.getElementById('hydro-due') ? document.getElementById('hydro-due').value : '';
     const sublocation = document.getElementById('sublocation').value.trim();
     const preciseLocation = document.getElementById('precise-location').value.trim();
-    
-    // Determine asset type
     let assetType = typeSelect.value;
     if (!assetType && customTypeInput.value.trim()) {
       assetType = customTypeInput.value.trim();
     }
-    
     if (!assetType || !assetId) {
       showToast('Asset type and ID are required', { type: 'error' });
       return;
     }
-    
-    // Create asset object
-    const newAsset = {
+    // Only include hydro_due if relevant
+    const assetData = {
       type: assetType,
       id: assetId,
       subType: assetSubtype || null,
-      hydro_due: hydroDue || null,
       sublocation_name: sublocation || null,
       precise_location_name: preciseLocation || null,
-      status: true, // Active by default
+      status: true,
       last_monthly_inspection: null,
       created_at: new Date().toISOString()
     };
-    
-    // Add to Firestore
-    const assetRef = await db.collection('clients').doc(currentClientId).collection('assets').add(newAsset);
-    
+    if (shouldShowHydroDue(assetType)) {
+      assetData.hydro_due = hydroDue || null;
+    }
+    // Add to Firestore with provided assetId as doc ID
+    await db.collection('clients').doc(currentClientId).collection('assets').doc(assetId).set(assetData);
     // Update local state
-    newAsset.id = assetRef.id;
-    allAssets.push(newAsset);
-    
-    // Update asset type stats
+    assetData.id = assetId;
+    allAssets.push(assetData);
     if (!assetTypeStats[assetType]) {
       assetTypeStats[assetType] = { total: 0, failed: 0 };
     }
     assetTypeStats[assetType].total++;
-    
-    // Close modal
     document.getElementById('add-asset-modal').classList.remove('active');
-    
-    // Refresh UI
     if (currentAssetType === assetType) {
-      // If we're viewing this asset type, refresh the asset list
       filteredAssets = allAssets.filter(asset => asset.type === assetType);
       renderAssetCards();
       document.getElementById('total-count').textContent = filteredAssets.length;
     } else {
-      // Otherwise refresh the asset type cards
       renderAssetTypeCards();
     }
-    
     updateStats();
     showToast('Asset added successfully', { type: 'success' });
-    
   } catch (error) {
     console.error('Error adding asset:', error);
     showToast('Error adding asset', { type: 'error' });
