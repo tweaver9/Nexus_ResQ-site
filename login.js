@@ -42,28 +42,26 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
 
     const clientData = clientDoc.data();
 
-    // Process username for multi-tenant structure
-    // If username contains @clientId, strip it to get the base username
-    let processedUsername = username;
+    // Validate username format for multi-tenant structure
+    // If username contains @clientId, validate it matches the current subdomain
     if (username.includes('@')) {
-      const [baseUsername, clientId] = username.split('@');
-      if (clientId === subdomain) {
-        processedUsername = baseUsername;
-        console.log("Stripped client suffix from username:", processedUsername); // Debug log
-      } else {
+      const [, clientId] = username.split('@');
+      if (clientId !== subdomain) {
         showError("Username domain doesn't match current client subdomain.");
         return;
       }
+      console.log("Username validated for client:", clientId); // Debug log
     }
 
     // Backend will handle user lookup and validation
+    // Send the ENTIRE username to the backend (including @clientId)
 
     // Call your Firebase Cloud Function for authentication
     console.log("Calling backend for authentication..."); // Debug log
-    console.log("Sending to backend:", { username: processedUsername, subdomain, passwordLength: password.length }); // Debug log
+    console.log("Sending to backend:", { username: username, subdomain, passwordLength: password.length }); // Debug log
 
     const requestBody = {
-      username: processedUsername,
+      username: username,
       password: password,
       subdomain: subdomain
     };
@@ -209,19 +207,18 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
   }
 
   try {
-    // Process username for multi-tenant structure
+    // Validate username format for multi-tenant structure
     let processedUsername = username.trim();
     if (processedUsername.includes('@')) {
-      const [baseUsername, clientId] = processedUsername.split('@');
-      if (clientId === subdomain) {
-        processedUsername = baseUsername;
-      } else {
+      const [, clientId] = processedUsername.split('@');
+      if (clientId !== subdomain) {
         showError("Username domain doesn't match current client subdomain.");
         return;
       }
     }
 
     // Call backend to reset password
+    // Send the ENTIRE username to the backend (including @clientId)
     const defaultPassword = subdomain; // Use subdomain as default password
 
     const resetResponse = await fetch('https://us-central1-nexus-res-q.cloudfunctions.net/api/reset-password', {
