@@ -679,60 +679,61 @@ body {
   }
 }
 
-/* === ADD ASSET MODAL (THEMED) === */
+/* === ADD ASSET MODAL (LOGIN THEME) === */
 #add-asset-modal .modal {
-  background: var(--nexus-card);
-  border-radius: 24px;
-  max-width: 460px;
-  width: 95%;
-  margin: 0 auto;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 1.5px 8px rgba(0,0,0,0.18);
-  padding: 2.5rem 2rem 2rem 2rem;
+  background: var(--primary-mid);
+  border-radius: 14px;
+  box-shadow: var(--box-shadow);
+  padding: 40px 38px 30px 38px;
+  max-width: 420px;
+  width: 100%;
+  margin: 48px auto 0 auto;
+  text-align: left;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: stretch;
 }
-
 #add-asset-modal .modal-header {
-  margin-bottom: 2rem;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  margin-bottom: 24px;
 }
-
 #add-asset-modal .modal-title {
-  font-family: 'Inter', 'Oswald', Arial, sans-serif;
-  font-size: 1.45rem;
-  font-weight: 700;
-  color: var(--nexus-light);
-  letter-spacing: 0.01em;
+  font-family: 'Oswald', 'Inter', Arial, sans-serif;
+  font-size: 1.42em;
+  font-weight: 600;
+  color: var(--primary-light);
+  letter-spacing: 0.03em;
+  margin-bottom: 0;
 }
-
 #add-asset-modal .modal-close {
   background: none;
   border: none;
-  color: var(--nexus-muted);
+  color: var(--primary-light);
   font-size: 1.7rem;
   cursor: pointer;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s, color 0.2s;
+  margin-left: 12px;
+  margin-top: -8px;
+  margin-bottom: -8px;
 }
 #add-asset-modal .modal-close:hover {
   background: var(--nexus-border);
-  color: var(--nexus-yellow);
+  color: #fff176;
 }
-
 #add-asset-modal .modal-content form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
-
 #add-asset-modal label {
   font-weight: 600;
   color: var(--nexus-light);
@@ -740,93 +741,78 @@ body {
   margin-bottom: 0.5rem;
   letter-spacing: 0.01em;
 }
-
 #add-asset-modal input[type="text"],
 #add-asset-modal input[type="month"],
 #add-asset-modal select {
-  background: var(--nexus-card-hover);
-  color: var(--nexus-light);
-  border: 2px solid var(--nexus-border);
-  border-radius: 14px;
-  padding: 0.85rem 1.1rem;
-  font-size: 1rem;
+  background: var(--input-bg);
+  color: #fff;
+  border: 1.6px solid var(--input-border);
+  border-radius: 8px;
+  padding: 13px 12px;
+  font-size: 1.07em;
   font-family: 'Inter', Arial, sans-serif;
   margin-top: 0.15rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 0.5rem;
+  transition: border 0.19s;
   outline: none;
   box-shadow: none;
 }
 #add-asset-modal input[type="text"]:focus,
 #add-asset-modal input[type="month"]:focus,
 #add-asset-modal select:focus {
-  border-color: var(--nexus-yellow);
-  box-shadow: 0 0 0 2px rgba(253,216,53,0.18);
+  border: 1.7px solid var(--primary-light);
+  outline: none;
 }
-
-#add-asset-modal input[type="text"]::placeholder,
-#add-asset-modal input[type="month"]::placeholder {
-  color: var(--nexus-muted);
+#add-asset-modal input::placeholder {
+  color: #b1bed7;
   opacity: 1;
 }
-
-#add-asset-modal .modal-content > form > div {
-  margin-bottom: 1.2rem;
-}
-
-#add-asset-modal .modal-content > form > div:last-child {
-  margin-bottom: 0;
-}
-
 #add-asset-modal button[type="submit"] {
-  background: var(--nexus-yellow);
-  color: var(--nexus-dark);
-  font-weight: 700;
-  border: none;
-  border-radius: 16px;
-  padding: 0.95rem 0;
-  font-size: 1.08rem;
-  box-shadow: 0 2px 12px rgba(253,216,53,0.10);
-  margin-top: 0.5rem;
-  cursor: pointer;
-  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
   width: 100%;
-  letter-spacing: 0.01em;
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 1.13em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.16s, color 0.16s;
+  margin-top: 10px;
+  box-shadow: 0 1.5px 6px rgba(12,22,44,0.09);
 }
-#add-asset-modal button[type="submit"]:hover {
-  background: #ffe066;
-  color: var(--nexus-dark);
-  box-shadow: 0 4px 18px rgba(253,216,53,0.18);
+#add-asset-modal button[type="submit"]:hover,
+#add-asset-modal button[type="submit"]:focus {
+  background: var(--button-hover);
+  color: var(--button-hover-text);
 }
-
 #add-asset-modal button[type="button"] {
   background: transparent;
-  color: var(--nexus-yellow);
+  color: var(--primary-light);
   font-weight: 600;
   border: none;
-  border-radius: 12px;
-  padding: 0.95rem 0;
-  font-size: 1.08rem;
-  margin-top: 0.5rem;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 1.13em;
+  margin-top: 10px;
   cursor: pointer;
   text-decoration: underline;
-  transition: color 0.18s, background 0.18s;
+  transition: color 0.16s, background 0.16s;
   width: 100%;
 }
 #add-asset-modal button[type="button"]:hover {
-  color: #fffbe6;
+  color: #fff176;
   background: rgba(253,216,53,0.08);
 }
-
 #add-asset-modal input:focus,
 #add-asset-modal select:focus {
   outline: none;
 }
-
 @media (max-width: 600px) {
   #add-asset-modal .modal {
-    max-width: 98vw;
-    padding: 1.2rem 0.5rem 1.2rem 0.5rem;
-    border-radius: 16px;
+    max-width: 97vw;
+    padding: 18px 2vw 16px 2vw;
+    border-radius: 12px;
   }
   #add-asset-modal .modal-title {
     font-size: 1.1rem;
