@@ -100,28 +100,28 @@ window.addEventListener('DOMContentLoaded', async () => {
 async function loadAllAssets() {
   allAssets = [];
   assetTypeStats = {};
-
+  window.normalizedAssetTypes = await fetchNormalizedAssetTypes();
   try {
     const assetsRef = db.collection('clients').doc(currentClientId).collection('assets');
     const snapshot = await assetsRef.get();
-    
     snapshot.forEach(doc => {
       const asset = { id: doc.id, ...doc.data() };
       allAssets.push(asset);
-
-      // Build asset type statistics
-      const assetType = asset.type || 'Unknown';
-      if (!assetTypeStats[assetType]) {
-        assetTypeStats[assetType] = { total: 0, failed: 0 };
+    });
+    // Build asset type statistics based on normalized types
+    window.normalizedAssetTypes.forEach(type => {
+      assetTypeStats[type] = { total: 0, failed: 0 };
+    });
+    allAssets.forEach(asset => {
+      const normalized = formatAssetType(asset.type);
+      if (!assetTypeStats[normalized]) {
+        assetTypeStats[normalized] = { total: 0, failed: 0 };
       }
-      assetTypeStats[assetType].total++;
-
-      // Count failed assets (status = false or 'failed')
+      assetTypeStats[normalized].total++;
       if (asset.status === false || asset.status === 'failed') {
-        assetTypeStats[assetType].failed++;
+        assetTypeStats[normalized].failed++;
       }
     });
-
     console.log('Loaded assets:', allAssets);
     console.log('Asset type stats:', assetTypeStats);
   } catch (error) {
@@ -134,22 +134,17 @@ async function loadAllAssets() {
 function renderAssetTypeCards() {
   const grid = document.getElementById('asset-type-grid');
   grid.innerHTML = '';
-
-  const assetTypes = Object.keys(assetTypeStats).filter(type => assetTypeStats[type].total > 0);
-  
+  const assetTypes = window.normalizedAssetTypes || [];
   if (assetTypes.length === 0) {
     document.getElementById('no-assets-msg').style.display = 'block';
     return;
   }
-
   document.getElementById('no-assets-msg').style.display = 'none';
-
   assetTypes.forEach(assetType => {
-    const stats = assetTypeStats[assetType];
+    const stats = assetTypeStats[assetType] || { total: 0, failed: 0 };
     const card = createAssetTypeCard(assetType, stats);
     grid.appendChild(card);
   });
-
   document.getElementById('total-count').textContent = allAssets.length;
 }
 
@@ -193,7 +188,11 @@ function showAssetsOfType(assetType) {
   document.getElementById('asset-grid').style.display = 'grid';
 
   // Filter assets for this type
-  filteredAssets = allAssets.filter(asset => asset.type === assetType);
+  // Firestore does not support case-insensitive queries, so we must filter client-side
+  // TODO: If Firestore adds case-insensitive queries, update this logic
+  filteredAssets = allAssets.filter(asset => {
+    return (asset.type || '').toLowerCase() === assetType.toLowerCase();
+  });
   
   // Update count
   document.getElementById('total-count').textContent = filteredAssets.length;
@@ -640,4 +639,20 @@ function showToast(message, options = {}) {
   setTimeout(() => {
     toast.remove();
   }, 3000);
+} 
+
+// Utility: Fetch asset types from Firestore and normalize/deduplicate
+async function fetchNormalizedAssetTypes() {
+  const typesSet = new Map();
+  try {
+    const typesDoc = await db.collection('clients').doc(currentClientId).collection('asset_types').doc('types_in_use').get();
+    const names = (typesDoc.exists && typesDoc.data().name) ? typesDoc.data().name : [];
+    names.forEach(type => {
+      const normalized = formatAssetType(type);
+      typesSet.set(normalized.toLowerCase(), normalized);
+    });
+  } catch (err) {
+    console.error('Error fetching asset types:', err);
+  }
+  return Array.from(typesSet.values());
 } 
