@@ -1,0 +1,222 @@
+body {
+  background: #0d1b2a;
+  color: #f2f2f2;
+  font-family: 'Oswald', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.users-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #142b47;
+  padding: 22px 32px 12px 32px;
+  border-bottom: 2px solid #223052;
+}
+.users-header h1 {
+  color: #fdd835;
+  font-size: 2.1em;
+  font-weight: 600;
+  margin: 0;
+}
+.primary-btn {
+  background: #fdd835;
+  color: #142b47;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 600;
+  padding: 7px 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px 0 #0a132232;
+  transition: background 0.13s, color 0.13s;
+}
+.primary-btn:hover {
+  background: #142b47;
+  color: #fdd835;
+}
+
+.secondary-btn {
+  background: #223052;
+  color: #fdd835;
+  border: none;
+  border-radius: 7px;
+  font-size: 1em;
+  font-weight: 500;
+  padding: 5px 14px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background 0.13s, color 0.13s;
+}
+.secondary-btn:hover {
+  background: #fdd835;
+  color: #142b47;
+}
+
+.users-main {
+  max-width: 1180px;
+  margin: 36px auto 0 auto;
+  padding: 0 16px 48px 16px;
+}
+
+.users-toolbar {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+.users-toolbar input[type="search"] {
+  font-size: 1em;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid #344267;
+  background: #192841;
+  color: #fff;
+  width: 215px;
+  outline: none;
+}
+.users-toolbar select {
+  background: #223052;
+  color: #f2f2f2;
+  border: none;
+  border-radius: 7px;
+  font-size: 1.01em;
+  padding: 6px 15px;
+  outline: none;
+}
+
+.user-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(315px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.user-card {
+  background: #16243c;
+  border-radius: 12px;
+  padding: 24px 18px 18px 18px;
+  box-shadow: 0 4px 22px 0 #0a132248;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  border: 1.5px solid #223052;
+}
+.user-card .user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.user-card .user-name {
+  font-size: 1.18em;
+  font-weight: 600;
+  color: #fdd835;
+}
+.user-card .user-role {
+  font-size: 0.96em;
+  font-weight: 500;
+  color: #1ecbe1;
+  background: #1e3d6332;
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+.user-card .user-area, .user-card .user-dept {
+  font-size: 0.97em;
+  font-weight: 500;
+  color: #f2f2f2b8;
+  margin-left: 5px;
+}
+.user-card .user-tasks {
+  font-size: 0.98em;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+.user-card .user-actions {
+  display: flex;
+  gap: 9px;
+  margin-top: 4px;
+}
+.user-card .action-btn {
+  background: #223052;
+  color: #fdd835;
+  border: none;
+  border-radius: 6px;
+  font-size: 1em;
+  font-family: inherit;
+  font-weight: 500;
+  padding: 4px 13px;
+  cursor: pointer;
+  transition: background 0.13s, color 0.13s;
+}
+.user-card .action-btn:hover {
+  background: #fdd835;
+  color: #142b47;
+}
+.user-card .status-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 7px;
+  background: #38e680;
+  vertical-align: middle;
+}
+.user-card .status-dot.inactive { background: #ff5050; }
+
+.empty-msg {
+  color: #fdd835;
+  text-align: center;
+  margin-top: 28px;
+  font-size: 1.12em;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: #142b47cc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal-content {
+  background: #16243c;
+  border-radius: 16px;
+  padding: 34px 34px 28px 34px;
+  box-shadow: 0 6px 36px 0 #000b1e77;
+  max-width: 410px;
+  width: 96vw;
+  color: #fff;
+}
+.modal-content h2 {
+  color: #fdd835;
+  font-size: 1.25em;
+  margin-top: 0;
+  margin-bottom: 17px;
+}
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.modal-content input, .modal-content select {
+  font-size: 1.01em;
+  padding: 8px 10px;
+  border-radius: 7px;
+  border: 1px solid #344267;
+  background: #192841;
+  color: #fff;
+  outline: none;
+}
+#add-user-message {
+  margin-top: 7px;
+  font-size: 1.03em;
+  color: #fdd835;
+}
+@media (max-width: 650px) {
+  .users-header { flex-direction: column; align-items: flex-start; padding: 12px 7px 6px 7px;}
+  .users-header h1 { font-size: 1.18em;}
+  .users-main { padding: 0 2px; }
+  .user-grid-container { grid-template-columns: 1fr; gap: 10px;}
+  .modal-content { padding: 18px 7px 13px 7px;}
+}

@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inspections Panel - Nexus Res-Q</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --nexus-yellow: #fdd835;
+      --nexus-bg: #0a0e1a;
+      --nexus-card: #151b2e;
+      --nexus-card-hover: #1a2138;
+      --nexus-dark: #0f1419;
+      --nexus-border: #2a3441;
+      --nexus-light: #ffffff;
+      --nexus-muted: #8792a3;
+      --nexus-success: #10b981;
+      --nexus-warning: #f59e0b;
+      --nexus-error: #ef4444;
+      --nexus-info: #3b82f6;
+      --radius: 16px;
+      --radius-sm: 8px;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.4);
+      --glow-yellow: 0 0 20px rgba(253, 216, 53, 0.6);
+      --glow-success: 0 0 16px rgba(16, 185, 129, 0.4);
+      --glow-error: 0 0 16px rgba(239, 68, 68, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%);
+      color: var(--nexus-light);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ===== INSPECTIONS PANEL CONTAINER ===== */
+    .inspections-panel {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* ===== HEADER SECTION ===== */
+    .inspections-header {
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid var(--nexus-border);
+      box-shadow: var(--shadow-card);
+    }
+
+    .inspections-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--nexus-light);
+      margin-bottom: 1.5rem;
+    }
+
+    /* ===== SEARCH AND FILTERS ===== */
+    .inspections-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .search-container {
+      position: relative;
+      flex: 1;
+      max-width: 500px;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--nexus-dark);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1rem 1rem 3rem;
+      color: var(--nexus-light);
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--nexus-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+    }
+
+    .search-input::placeholder {
+      color: var(--nexus-muted);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--nexus-muted);
+      pointer-events: none;
+    }
+
+    .filters-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-pill {
+      background: var(--nexus-dark);
+      border: 1px solid var(--nexus-border);
+      border-radius: 20px;
+      padding: 0.5rem 1rem;
+      color: var(--nexus-light);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 120px;
+    }
+
+    .filter-pill:hover,
+    .filter-pill:focus {
+      border-color: var(--nexus-yellow);
+      background: var(--nexus-card);
+      outline: none;
+    }
+
+    /* ===== INSPECTIONS LIST ===== */
+    .inspections-content {
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--nexus-border);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+
+    .inspections-list {
+      min-height: 400px;
+      max-height: 800px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--nexus-border) transparent;
+    }
+
+    .inspections-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .inspections-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .inspections-list::-webkit-scrollbar-thumb {
+      background: var(--nexus-border);
+      border-radius: 3px;
+      transition: background 0.2s ease;
+    }
+
+    .inspections-list::-webkit-scrollbar-thumb:hover {
+      background: var(--nexus-yellow);
+    }
+
+    /* ===== INSPECTION ENTRY CARDS ===== */
+    .inspection-entry {
+      background: var(--nexus-bg);
+      border-bottom: 1px solid var(--nexus-border);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .inspection-entry:hover {
+      background: var(--nexus-card-hover);
+      transform: translateX(4px);
+    }
+
+    .inspection-entry.expanded {
+      background: var(--nexus-card-hover);
+      border-left: 4px solid var(--nexus-yellow);
+    }
+
+    .inspection-main {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    /* ===== PDF ICON WITH GLOW ===== */
+    .pdf-icon-container {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .pdf-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--nexus-yellow), #f59e0b);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--glow-yellow);
+      border: 2px solid var(--nexus-yellow);
+    }
+
+    .pdf-icon:hover {
+      transform: scale(1.1);
+      box-shadow: var(--glow-yellow), 0 0 30px rgba(253, 216, 53, 0.8);
+      animation: pulse-glow 2s infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: var(--glow-yellow); }
+      50% { box-shadow: var(--glow-yellow), 0 0 40px rgba(253, 216, 53, 1); }
+    }
+
+    .pdf-icon svg {
+      width: 24px;
+      height: 24px;
+      color: var(--nexus-dark);
+    }
+
+    /* ===== INSPECTION CONTENT ===== */
+    .inspection-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .inspection-datetime {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .inspection-summary {
+      color: var(--nexus-light);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .inspection-meta {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .inspection-user {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+    }
+
+    .inspection-status {
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .inspection-status.pass {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--nexus-success);
+      border: 1px solid var(--nexus-success);
+    }
+
+    .inspection-status.fail {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--nexus-error);
+      border: 1px solid var(--nexus-error);
+    }
+
+    .inspection-status.partial {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--nexus-warning);
+      border: 1px solid var(--nexus-warning);
+    }
+
+    .inspection-asset-count {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+    }
+
+    /* ===== EXPAND ICON ===== */
+    .expand-icon {
+      color: var(--nexus-muted);
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .inspection-entry:hover .expand-icon {
+      color: var(--nexus-yellow);
+    }
+
+    .inspection-entry.expanded .expand-icon {
+      transform: rotate(180deg);
+      color: var(--nexus-yellow);
+    }
+
+    /* ===== EXPANDED DETAILS ===== */
+    .inspection-details {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--nexus-border);
+      display: none;
+    }
+
+    .inspection-entry.expanded .inspection-details {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .location-group {
+      margin-bottom: 2rem;
+    }
+
+    .location-header {
+      background: var(--nexus-dark);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--nexus-yellow);
+    }
+
+    .location-name {
+      color: var(--nexus-light);
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .location-summary {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+    }
+
+    .assets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .asset-item {
+      background: var(--nexus-card);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .asset-item:hover {
+      background: var(--nexus-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .asset-item.pass {
+      border-left: 4px solid var(--nexus-success);
+    }
+
+    .asset-item.fail {
+      border-left: 4px solid var(--nexus-error);
+    }
+
+    .asset-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .asset-id {
+      color: var(--nexus-light);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .asset-status {
+      padding: 0.25rem 0.5rem;
+      border-radius: 8px;
+      font-size: 0.625rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .asset-status.pass {
+      background: var(--nexus-success);
+      color: white;
+    }
+
+    .asset-status.fail {
+      background: var(--nexus-error);
+      color: white;
+    }
+
+    .asset-type {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .asset-issues {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--nexus-error);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .asset-issues-title {
+      color: var(--nexus-error);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .asset-issues-list {
+      color: var(--nexus-light);
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    /* ===== FOOTER ===== */
+    .inspections-footer {
+      background: var(--nexus-card);
+      border-top: 1px solid var(--nexus-border);
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+
+    .footer-stats {
+      color: var(--nexus-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .page-size-select {
+      background: var(--nexus-dark);
+      border: 1px solid var(--nexus-border);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 1rem;
+      color: var(--nexus-light);
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    .export-btn {
+      background: var(--nexus-yellow);
+      color: var(--nexus-dark);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .export-btn:hover {
+      background: #f59e0b;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(253, 216, 53, 0.3);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--nexus-muted);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      color: var(--nexus-light);
+      margin-bottom: 0.5rem;
+      font-size: 1.25rem;
+    }
+
+    .empty-state p {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .empty-state .retry-btn {
+      background: var(--nexus-yellow);
+      color: var(--nexus-dark);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 1rem 2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .empty-state .retry-btn:hover {
+      background: #f59e0b;
+      transform: translateY(-1px);
+    }
+
+    /* ===== LOADING STATE ===== */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 4rem 2rem;
+      color: var(--nexus-muted);
+    }
+
+    .loading-spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--nexus-border);
+      border-top: 2px solid var(--nexus-yellow);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 768px) {
+      .inspections-panel {
+        padding: 1rem;
+      }
+
+      .inspections-header {
+        padding: 1.5rem;
+      }
+
+      .filters-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-pill {
+        min-width: auto;
+      }
+
+      .inspection-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .pdf-icon-container {
+        align-self: flex-start;
+      }
+
+      .inspection-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .assets-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .inspections-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+      }
+
+      .footer-actions {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .inspections-title {
+        font-size: 1.5rem;
+      }
+
+      .search-input {
+        font-size: 0.875rem;
+      }
+
+      .inspection-entry {
+        padding: 1rem;
+      }
+
+      .pdf-icon {
+        width: 40px;
+        height: 40px;
+      }
+
+      .pdf-icon svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="inspections-panel">
+    <!-- Header Section -->
+    <div class="inspections-header">
+      <h1 class="inspections-title">Inspections</h1>
+      
+      <!-- Search and Filters -->
+      <div class="inspections-controls">
+        <div class="search-container">
+          <input type="text" class="search-input" id="inspections-search" 
+                 placeholder="Search by asset, user, zone, or ID…">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </div>
+        
+        <div class="filters-row">
+          <select class="filter-pill" id="date-filter">
+            <option value="">All Dates</option>
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
+          
+          <select class="filter-pill" id="user-filter">
+            <option value="">All Users</option>
+          </select>
+          
+          <select class="filter-pill" id="location-filter">
+            <option value="">All Locations</option>
+          </select>
+          
+          <select class="filter-pill" id="status-filter">
+            <option value="">All Status</option>
+            <option value="pass">Pass</option>
+            <option value="fail">Fail</option>
+            <option value="partial">Partial</option>
+          </select>
+          
+          <select class="filter-pill" id="asset-type-filter">
+            <option value="">All Asset Types</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inspections Content -->
+    <div class="inspections-content">
+      <div class="inspections-list" id="inspections-list">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <span>Loading inspections...</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="inspections-footer">
+        <div class="footer-stats">
+          <span id="inspections-stats">Showing 0 inspections</span>
+        </div>
+        <div class="footer-actions">
+          <select class="page-size-select" id="page-size-select">
+            <option value="25">25 per page</option>
+            <option value="50" selected>50 per page</option>
+            <option value="100">100 per page</option>
+          </select>
+          <button class="export-btn" id="export-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7,10 12,15 17,10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script type="module">
+    // Import Firebase functions (adjust path as needed)
+    import {
+      db,
+      getCurrentClientSubdomain,
+      getClientCollection
+    } from './firebase.js';
+    import {
+      collection,
+      getDocs,
+      query,
+      orderBy,
+      limit,
+      where
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Global variables
+    let allInspections = [];
+    let filteredInspections = [];
+    let allLocations = [];
+    let allUsers = [];
+    let allAssetTypes = [];
+    let currentClientSubdomain = null;
+    let currentPageSize = 50;
+    let currentPage = 1;
+    let currentFilters = {
+      search: '',
+      date: '',
+      user: '',
+      location: '',
+      status: '',
+      assetType: ''
+    };
+
+    // Initialize the panel
+    window.addEventListener('DOMContentLoaded', async () => {
+      currentClientSubdomain = getCurrentClientSubdomain();
+
+      if (!currentClientSubdomain) {
+        showError('No client context found. Please log in again.');
+        return;
+      }
+
+      await loadInspectionsData();
+      setupEventListeners();
+    });
+
+    // Load all data
+    async function loadInspectionsData() {
+      try {
+        showLoading();
+
+        // Load inspections, locations, users, and asset types in parallel
+        await Promise.all([
+          loadInspections(),
+          loadLocations(),
+          loadUsers(),
+          loadAssetTypes()
+        ]);
+
+        // Initialize filters and render
+        filteredInspections = [...allInspections];
+        populateFilterDropdowns();
+        renderInspections();
+        updateStats();
+
+        console.log(`Loaded ${allInspections.length} inspections for client ${currentClientSubdomain}`);
+      } catch (error) {
+        console.error('Error loading inspections data:', error);
+        showError('Failed to load inspections. Please try again.');
+      }
+    }
+
+    // Load inspections from Firestore
+    async function loadInspections() {
+      try {
+        const q = query(
+          getClientCollection(currentClientSubdomain, 'inspections'),
+          orderBy('timestamp', 'desc'),
+          limit(1000)
+        );
+
+        const snapshot = await getDocs(q);
+        allInspections = [];
+
+        snapshot.forEach(doc => {
+          if (doc.id !== '_placeholder') {
+            const data = doc.data();
+            const timestamp = data.timestamp ? new Date(data.timestamp) : new Date();
+
+            allInspections.push({
+              id: doc.id,
+              timestamp,
+              user: data.user || 'Unknown user',
+              status: determineInspectionStatus(data),
+              assets: data.assets || [],
+              scanOrder: data.scanOrder || [],
+              locations: groupAssetsByLocation(data.assets || []),
+              totalAssets: (data.assets || []).length,
+              passedAssets: (data.assets || []).filter(a => a.result === 'pass').length,
+              failedAssets: (data.assets || []).filter(a => a.result === 'fail').length,
+              ...data
+            });
+          }
+        });
+
+        // If no inspections exist, create sample data
+        if (allInspections.length === 0) {
+          await createSampleInspections();
+          // Reload after creating samples
+          const newSnapshot = await getDocs(q);
+          allInspections = [];
+          newSnapshot.forEach(doc => {
+            if (doc.id !== '_placeholder') {
+              const data = doc.data();
+              const timestamp = data.timestamp ? new Date(data.timestamp) : new Date();
+
+              allInspections.push({
+                id: doc.id,
+                timestamp,
+                user: data.user || 'Unknown user',
+                status: determineInspectionStatus(data),
+                assets: data.assets || [],
+                scanOrder: data.scanOrder || [],
+                locations: groupAssetsByLocation(data.assets || []),
+                totalAssets: (data.assets || []).length,
+                passedAssets: (data.assets || []).filter(a => a.result === 'pass').length,
+                failedAssets: (data.assets || []).filter(a => a.result === 'fail').length,
+                ...data
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error loading inspections:', error);
+        throw error;
+      }
+    }
+
+    // Load locations
+    async function loadLocations() {
+      try {
+        const snapshot = await getDocs(getClientCollection(currentClientSubdomain, 'locations'));
+        allLocations = [];
+
+        snapshot.forEach(doc => {
+          if (doc.id !== '_placeholder') {
+            allLocations.push({
+              id: doc.id,
+              name: doc.data().name || doc.id,
+              ...doc.data()
+            });
+          }
+        });
+      } catch (error) {
+        console.error('Error loading locations:', error);
+      }
+    }
+
+    // Load users
+    async function loadUsers() {
+      try {
+        const snapshot = await getDocs(getClientCollection(currentClientSubdomain, 'users'));
+        allUsers = [];
+
+        snapshot.forEach(doc => {
+          if (doc.id !== '_placeholder') {
+            const userData = doc.data();
+            allUsers.push({
+              id: doc.id,
+              username: userData.username || userData.firstName || doc.id,
+              ...userData
+            });
+          }
+        });
+      } catch (error) {
+        console.error('Error loading users:', error);
+      }
+    }
+
+    // Load asset types
+    async function loadAssetTypes() {
+      try {
+        // Get unique asset types from inspections
+        const assetTypes = new Set();
+
+        allInspections.forEach(inspection => {
+          inspection.assets.forEach(asset => {
+            if (asset.type) {
+              assetTypes.add(asset.type);
+            }
+          });
+        });
+
+        allAssetTypes = Array.from(assetTypes).sort();
+      } catch (error) {
+        console.error('Error loading asset types:', error);
+      }
+    }
+
+    // Determine inspection status
+    function determineInspectionStatus(data) {
+      if (!data.assets || data.assets.length === 0) return 'unknown';
+
+      const totalAssets = data.assets.length;
+      const passedAssets = data.assets.filter(a => a.result === 'pass').length;
+      const failedAssets = data.assets.filter(a => a.result === 'fail').length;
+
+      if (failedAssets === 0) return 'pass';
+      if (passedAssets === 0) return 'fail';
+      return 'partial';
+    }
+
+    // Group assets by location
+    function groupAssetsByLocation(assets) {
+      const grouped = {};
+
+      assets.forEach(asset => {
+        const location = asset.location || 'Unknown Location';
+        if (!grouped[location]) {
+          grouped[location] = [];
+        }
+        grouped[location].push(asset);
+      });
+
+      // Sort assets within each location
+      Object.keys(grouped).forEach(location => {
+        grouped[location] = sortAssets(grouped[location]);
+      });
+
+      return grouped;
+    }
+
+    // Sort assets based on ID type
+    function sortAssets(assets) {
+      // Check if all IDs are numeric
+      const allNumeric = assets.every(asset =>
+        asset.id && !isNaN(asset.id.replace(/[^0-9]/g, ''))
+      );
+
+      // Check if all IDs are letters only
+      const allLetters = assets.every(asset =>
+        asset.id && /^[A-Za-z]+$/.test(asset.id)
+      );
+
+      if (allNumeric) {
+        return assets.sort((a, b) => {
+          const numA = parseInt(a.id.replace(/[^0-9]/g, '')) || 0;
+          const numB = parseInt(b.id.replace(/[^0-9]/g, '')) || 0;
+          return numA - numB;
+        });
+      } else if (allLetters) {
+        return assets.sort((a, b) => a.id.localeCompare(b.id));
+      } else {
+        // Mixed - use scan order if available
+        return assets.sort((a, b) => {
+          const orderA = a.scanOrder || 999;
+          const orderB = b.scanOrder || 999;
+          return orderA - orderB;
+        });
+      }
+    }
+
+    // Create sample inspections if none exist
+    async function createSampleInspections() {
+      try {
+        const currentUser = sessionStorage.getItem('username') || 'admin';
+        const now = new Date();
+
+        const sampleInspections = [
+          {
+            timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+            user: currentUser,
+            assets: [
+              { id: 'FE-001', type: 'Fire Extinguisher', location: 'Building A - Floor 1', result: 'pass' },
+              { id: 'FE-002', type: 'Fire Extinguisher', location: 'Building A - Floor 1', result: 'pass' },
+              { id: 'AED-001', type: 'AED', location: 'Building A - Lobby', result: 'pass' },
+              { id: 'SM-001', type: 'Smoke Detector', location: 'Building A - Floor 2', result: 'fail', issues: ['Battery low', 'Dust accumulation'] }
+            ],
+            scanOrder: [1, 2, 3, 4]
+          },
+          {
+            timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+            user: 'inspector_jane',
+            assets: [
+              { id: 'FE-010', type: 'Fire Extinguisher', location: 'Building B - Floor 1', result: 'pass' },
+              { id: 'FE-011', type: 'Fire Extinguisher', location: 'Building B - Floor 1', result: 'fail', issues: ['Pressure low'] },
+              { id: 'EX-001', type: 'Emergency Exit', location: 'Building B - Stairwell', result: 'pass' }
+            ],
+            scanOrder: [1, 2, 3]
+          },
+          {
+            timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 48).toISOString(), // 2 days ago
+            user: currentUser,
+            assets: [
+              { id: 'AED-002', type: 'AED', location: 'Building C - Reception', result: 'pass' },
+              { id: 'FE-020', type: 'Fire Extinguisher', location: 'Building C - Kitchen', result: 'pass' },
+              { id: 'FE-021', type: 'Fire Extinguisher', location: 'Building C - Kitchen', result: 'pass' },
+              { id: 'AL-001', type: 'Fire Alarm', location: 'Building C - Hallway', result: 'fail', issues: ['Speaker damaged'] }
+            ],
+            scanOrder: [1, 2, 3, 4]
+          }
+        ];
+
+        const inspectionsCollection = getClientCollection(currentClientSubdomain, 'inspections');
+
+        for (const inspectionData of sampleInspections) {
+          await addDoc(inspectionsCollection, inspectionData);
+        }
+
+        console.log('Sample inspections created successfully');
+      } catch (error) {
+        console.error('Error creating sample inspections:', error);
+      }
+    }
+
+    // Populate filter dropdowns
+    function populateFilterDropdowns() {
+      // Populate users dropdown
+      const userFilter = document.getElementById('user-filter');
+      userFilter.innerHTML = '<option value="">All Users</option>';
+      allUsers.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.username;
+        option.textContent = user.username;
+        userFilter.appendChild(option);
+      });
+
+      // Populate locations dropdown
+      const locationFilter = document.getElementById('location-filter');
+      locationFilter.innerHTML = '<option value="">All Locations</option>';
+      allLocations.forEach(location => {
+        const option = document.createElement('option');
+        option.value = location.name;
+        option.textContent = location.name;
+        locationFilter.appendChild(option);
+      });
+
+      // Populate asset types dropdown
+      const assetTypeFilter = document.getElementById('asset-type-filter');
+      assetTypeFilter.innerHTML = '<option value="">All Asset Types</option>';
+      allAssetTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        assetTypeFilter.appendChild(option);
+      });
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Search input with debounce
+      const searchInput = document.getElementById('inspections-search');
+      let searchTimeout;
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          currentFilters.search = e.target.value.toLowerCase();
+          applyFilters();
+        }, 300);
+      });
+
+      // Filter dropdowns
+      document.getElementById('date-filter').addEventListener('change', (e) => {
+        currentFilters.date = e.target.value;
+        applyFilters();
+      });
+
+      document.getElementById('user-filter').addEventListener('change', (e) => {
+        currentFilters.user = e.target.value;
+        applyFilters();
+      });
+
+      document.getElementById('location-filter').addEventListener('change', (e) => {
+        currentFilters.location = e.target.value;
+        applyFilters();
+      });
+
+      document.getElementById('status-filter').addEventListener('change', (e) => {
+        currentFilters.status = e.target.value;
+        applyFilters();
+      });
+
+      document.getElementById('asset-type-filter').addEventListener('change', (e) => {
+        currentFilters.assetType = e.target.value;
+        applyFilters();
+      });
+
+      // Page size
+      document.getElementById('page-size-select').addEventListener('change', (e) => {
+        currentPageSize = parseInt(e.target.value);
+        currentPage = 1;
+        renderInspections();
+        updateStats();
+      });
+
+      // Export button
+      document.getElementById('export-btn').addEventListener('click', exportInspections);
+    }
+
+    // Apply filters
+    function applyFilters() {
+      filteredInspections = allInspections.filter(inspection => {
+        // Search filter
+        if (currentFilters.search) {
+          const searchTerm = currentFilters.search;
+          const searchableText = `${inspection.user} ${inspection.assets.map(a => a.id + ' ' + a.type + ' ' + a.location).join(' ')}`.toLowerCase();
+          if (!searchableText.includes(searchTerm)) return false;
+        }
+
+        // Date filter
+        if (currentFilters.date) {
+          const inspectionDate = new Date(inspection.timestamp);
+          const today = new Date();
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          switch (currentFilters.date) {
+            case 'today':
+              if (inspectionDate.toDateString() !== today.toDateString()) return false;
+              break;
+            case 'yesterday':
+              if (inspectionDate.toDateString() !== yesterday.toDateString()) return false;
+              break;
+            case 'week':
+              const weekAgo = new Date(today);
+              weekAgo.setDate(weekAgo.getDate() - 7);
+              if (inspectionDate < weekAgo) return false;
+              break;
+            case 'month':
+              const monthAgo = new Date(today);
+              monthAgo.setMonth(monthAgo.getMonth() - 1);
+              if (inspectionDate < monthAgo) return false;
+              break;
+          }
+        }
+
+        // User filter
+        if (currentFilters.user && inspection.user !== currentFilters.user) return false;
+
+        // Location filter
+        if (currentFilters.location) {
+          const hasLocation = inspection.assets.some(asset => asset.location === currentFilters.location);
+          if (!hasLocation) return false;
+        }
+
+        // Status filter
+        if (currentFilters.status && inspection.status !== currentFilters.status) return false;
+
+        // Asset type filter
+        if (currentFilters.assetType) {
+          const hasAssetType = inspection.assets.some(asset => asset.type === currentFilters.assetType);
+          if (!hasAssetType) return false;
+        }
+
+        return true;
+      });
+
+      currentPage = 1;
+      renderInspections();
+      updateStats();
+    }
+
+    // Render inspections
+    function renderInspections() {
+      const inspectionsList = document.getElementById('inspections-list');
+
+      if (filteredInspections.length === 0) {
+        inspectionsList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No inspections found</h3>
+            <p>No inspections match your selected filters.</p>
+            <button class="retry-btn" onclick="clearAllFilters()">Clear Filters</button>
+          </div>
+        `;
+        return;
+      }
+
+      // Calculate pagination
+      const startIndex = (currentPage - 1) * currentPageSize;
+      const endIndex = Math.min(startIndex + currentPageSize, filteredInspections.length);
+      const inspectionsToShow = filteredInspections.slice(startIndex, endIndex);
+
+      // Render inspection entries
+      inspectionsList.innerHTML = inspectionsToShow.map(inspection => createInspectionEntryHTML(inspection)).join('');
+
+      // Add click handlers for expansion and PDF download
+      inspectionsList.querySelectorAll('.inspection-entry').forEach(entry => {
+        entry.addEventListener('click', (e) => {
+          if (e.target.closest('.pdf-icon')) return; // Don't expand when clicking PDF
+          entry.classList.toggle('expanded');
+        });
+      });
+
+      inspectionsList.querySelectorAll('.pdf-icon').forEach(icon => {
+        icon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const inspectionId = e.target.closest('.inspection-entry').dataset.inspectionId;
+          downloadInspectionPDF(inspectionId);
+        });
+      });
+    }
+
+    // Create inspection entry HTML
+    function createInspectionEntryHTML(inspection) {
+      const datetime = inspection.timestamp.toLocaleString();
+      const locationSummary = Object.keys(inspection.locations).join(', ') || 'Unknown locations';
+
+      return `
+        <div class="inspection-entry" data-inspection-id="${inspection.id}">
+          <div class="inspection-main">
+            <div class="pdf-icon-container">
+              <div class="pdf-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14,2 14,8 20,8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10,9 9,9 8,9"></polyline>
+                </svg>
+              </div>
+            </div>
+
+            <div class="inspection-content">
+              <div class="inspection-datetime">${datetime}</div>
+              <div class="inspection-summary">${inspection.totalAssets} assets in ${locationSummary}</div>
+              <div class="inspection-meta">
+                <span class="inspection-user">by ${inspection.user}</span>
+                <span class="inspection-status ${inspection.status}">${inspection.status.toUpperCase()}</span>
+                <span class="inspection-asset-count">${inspection.passedAssets} passed, ${inspection.failedAssets} failed</span>
+              </div>
+            </div>
+
+            <svg class="expand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </div>
+
+          <div class="inspection-details">
+            ${createInspectionDetailsHTML(inspection)}
+          </div>
+        </div>
+      `;
+    }
+
+    // Create inspection details HTML
+    function createInspectionDetailsHTML(inspection) {
+      const locationGroups = Object.entries(inspection.locations);
+
+      return locationGroups.map(([locationName, assets]) => {
+        const passedCount = assets.filter(a => a.result === 'pass').length;
+        const failedCount = assets.filter(a => a.result === 'fail').length;
+
+        return `
+          <div class="location-group">
+            <div class="location-header">
+              <div class="location-name">${locationName}</div>
+              <div class="location-summary">${assets.length} assets • ${passedCount} passed • ${failedCount} failed</div>
+            </div>
+            <div class="assets-grid">
+              ${assets.map(asset => createAssetItemHTML(asset)).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Create asset item HTML
+    function createAssetItemHTML(asset) {
+      const hasIssues = asset.issues && asset.issues.length > 0;
+
+      return `
+        <div class="asset-item ${asset.result}">
+          <div class="asset-header">
+            <div class="asset-id">${asset.id}</div>
+            <div class="asset-status ${asset.result}">${asset.result}</div>
+          </div>
+          <div class="asset-type">${asset.type}</div>
+          ${hasIssues ? `
+            <div class="asset-issues">
+              <div class="asset-issues-title">Issues Found</div>
+              <div class="asset-issues-list">${asset.issues.join(', ')}</div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // Update stats
+    function updateStats() {
+      const statsElement = document.getElementById('inspections-stats');
+      const startIndex = (currentPage - 1) * currentPageSize + 1;
+      const endIndex = Math.min(currentPage * currentPageSize, filteredInspections.length);
+      const total = filteredInspections.length;
+
+      if (total === 0) {
+        statsElement.textContent = 'No inspections found';
+      } else {
+        statsElement.textContent = `Showing ${startIndex}–${endIndex} of ${total} inspections`;
+      }
+    }
+
+    // Export inspections
+    function exportInspections() {
+      if (filteredInspections.length === 0) {
+        alert('No inspections to export');
+        return;
+      }
+
+      // Create CSV content
+      const headers = ['Date', 'Time', 'User', 'Status', 'Total Assets', 'Passed', 'Failed', 'Locations'];
+      const csvContent = [
+        headers.join(','),
+        ...filteredInspections.map(inspection => [
+          inspection.timestamp.toLocaleDateString(),
+          inspection.timestamp.toLocaleTimeString(),
+          inspection.user,
+          inspection.status,
+          inspection.totalAssets,
+          inspection.passedAssets,
+          inspection.failedAssets,
+          `"${Object.keys(inspection.locations).join(', ')}"`
+        ].join(','))
+      ].join('\n');
+
+      // Download file
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `nexus-inspections-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }
+
+    // Download inspection PDF
+    function downloadInspectionPDF(inspectionId) {
+      const inspection = allInspections.find(i => i.id === inspectionId);
+      if (!inspection) return;
+
+      // This would typically call your backend PDF generation endpoint
+      // For now, we'll show a placeholder
+      console.log('Downloading PDF for inspection:', inspectionId);
+
+      // Example backend call:
+      // fetch(`/api/inspections/${inspectionId}/pdf`, {
+      //   method: 'GET',
+      //   headers: {
+      //     'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      //     'X-Client-ID': currentClientSubdomain
+      //   }
+      // })
+      // .then(response => response.blob())
+      // .then(blob => {
+      //   const url = window.URL.createObjectURL(blob);
+      //   const a = document.createElement('a');
+      //   a.href = url;
+      //   a.download = `inspection-${inspectionId}-${inspection.timestamp.toISOString().split('T')[0]}.pdf`;
+      //   document.body.appendChild(a);
+      //   a.click();
+      //   document.body.removeChild(a);
+      //   window.URL.revokeObjectURL(url);
+      // });
+
+      // Placeholder alert
+      alert(`PDF download for inspection ${inspectionId} would be triggered here.\n\nThis would call your backend PDF generation service with:\n- Inspection data grouped by location\n- Assets sorted by ID type\n- Professional formatting`);
+    }
+
+    // Clear all filters
+    window.clearAllFilters = function() {
+      currentFilters = {
+        search: '',
+        date: '',
+        user: '',
+        location: '',
+        status: '',
+        assetType: ''
+      };
+
+      // Reset UI elements
+      document.getElementById('inspections-search').value = '';
+      document.getElementById('date-filter').value = '';
+      document.getElementById('user-filter').value = '';
+      document.getElementById('location-filter').value = '';
+      document.getElementById('status-filter').value = '';
+      document.getElementById('asset-type-filter').value = '';
+
+      applyFilters();
+    };
+
+    // Utility functions
+    function showLoading() {
+      const inspectionsList = document.getElementById('inspections-list');
+      inspectionsList.innerHTML = `
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <span>Loading inspections...</span>
+        </div>
+      `;
+    }
+
+    function showError(message) {
+      const inspectionsList = document.getElementById('inspections-list');
+      inspectionsList.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚠️</div>
+          <h3>Error</h3>
+          <p>${message}</p>
+          <button class="retry-btn" onclick="location.reload()">Retry</button>
+        </div>
+      `;
+    }
+
+    // Make functions globally available
+    window.downloadInspectionPDF = downloadInspectionPDF;
+    window.exportInspections = exportInspections;
+  </script>
+</body>
+</html>

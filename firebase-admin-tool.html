@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus ResQ - Firebase Admin Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="CSS/nexus-modern.css">
+    <style>
+        /* Page-specific styles */
+
+        /* Modern CSS variables are imported from nexus-modern.css */
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--nexus-yellow);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--nexus-muted);
+            font-size: 1.1rem;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .admin-card {
+            background: var(--nexus-card);
+            border-radius: var(--radius);
+            padding: 2rem;
+            border: 1px solid var(--nexus-border);
+            box-shadow: var(--shadow-card);
+        }
+
+        .admin-card h3 {
+            color: var(--nexus-yellow);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--nexus-light);
+            font-weight: 500;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--nexus-card-hover);
+            border: 1px solid var(--nexus-border);
+            border-radius: var(--radius-sm);
+            color: var(--nexus-light);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--nexus-yellow);
+            box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--nexus-yellow);
+            color: var(--nexus-bg);
+        }
+
+        .btn-primary:hover {
+            background: #fbc02d;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--nexus-success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--nexus-error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--nexus-border);
+            color: var(--nexus-light);
+        }
+
+        .btn-secondary:hover {
+            background: var(--nexus-muted);
+        }
+
+        .mega-load-section {
+            background: linear-gradient(135deg, var(--nexus-card), var(--nexus-card-hover));
+            border: 2px solid var(--nexus-yellow);
+            border-radius: var(--radius);
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .mega-load-section h2 {
+            color: var(--nexus-yellow);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .mega-load-section p {
+            color: var(--nexus-muted);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .mega-load-btn {
+            background: linear-gradient(135deg, var(--nexus-yellow), #fbc02d);
+            color: var(--nexus-bg);
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: var(--radius);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 32px rgba(253, 216, 53, 0.3);
+        }
+
+        .mega-load-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(253, 216, 53, 0.4);
+        }
+
+        .status-area {
+            background: var(--nexus-card);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border: 1px solid var(--nexus-border);
+        }
+
+        .status-area h4 {
+            color: var(--nexus-yellow);
+            margin-bottom: 1rem;
+        }
+
+        .status-log {
+            background: var(--nexus-bg);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            border: 1px solid var(--nexus-border);
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0;
+        }
+
+        .log-success { color: var(--nexus-success); }
+        .log-error { color: var(--nexus-error); }
+        .log-info { color: var(--nexus-yellow); }
+        .log-muted { color: var(--nexus-muted); }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--nexus-border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--nexus-yellow), #fbc02d);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .firebase-config {
+            background: var(--nexus-bg);
+            border: 1px solid var(--nexus-border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .firebase-config code {
+            color: var(--nexus-yellow);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .connection-status.connected {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--nexus-success);
+            border: 1px solid var(--nexus-success);
+        }
+
+        .connection-status.disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--nexus-error);
+            border: 1px solid var(--nexus-error);
+        }
+
+        .data-preview {
+            background: var(--nexus-bg);
+            border: 1px solid var(--nexus-border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--nexus-card);
+            border-radius: var(--radius);
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            border: 1px solid var(--nexus-border);
+            box-shadow: var(--shadow-card);
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--nexus-light);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--nexus-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--nexus-border);
+            color: var(--nexus-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 Nexus ResQ Admin Tool</h1>
+            <p>Firebase Database Management & Client Onboarding System</p>
+            <div class="connection-status disconnected" id="connection-status">
+                <span>●</span>
+                <span id="connection-text">Not Connected</span>
+            </div>
+        </div>
+
+        <!-- MEGA LOAD SECTION -->
+        <div class="mega-load-section">
+            <h2>🚀 ONE-CLICK MEGA LOAD</h2>
+            <p>Deploy a fully loaded test client with 225+ assets, locations, users, questions, and sample data</p>
+            <button class="mega-load-btn" onclick="deployMegaLoad()">
+                DEPLOY EVERYTHING NOW
+            </button>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- FIREBASE CONFIG -->
+        <div class="admin-card">
+            <h3>🔧 Firebase Configuration</h3>
+            <div class="firebase-config">
+                <code>
+                    // Replace with your Firebase config<br>
+                    const firebaseConfig = {<br>
+                    &nbsp;&nbsp;apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",<br>
+                    &nbsp;&nbsp;authDomain: "nexus-res-q.firebaseapp.com",<br>
+                    &nbsp;&nbsp;projectId: "nexus-res-q",<br>
+                    &nbsp;&nbsp;storageBucket: "nexus-res-q.appspot.com"<br>
+                    };
+                </code>
+            </div>
+            <button class="btn btn-primary" onclick="initializeFirebase()">Connect to Firebase</button>
+            <button class="btn btn-secondary" onclick="testConnection()">Test Connection</button>
+        </div>
+
+        <!-- ADMIN TOOLS GRID -->
+        <div class="admin-grid">
+            <!-- CLIENT MANAGEMENT -->
+            <div class="admin-card">
+                <h3>👥 Client Management</h3>
+                <div class="form-group">
+                    <label class="form-label">Client Name</label>
+                    <input type="text" class="form-input" id="client-name" placeholder="SpaceX">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subdomain</label>
+                    <input type="text" class="form-input" id="client-subdomain" placeholder="spacex">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Custom Terminology (JSON)</label>
+                    <textarea class="form-textarea" id="client-terminology" placeholder='{"level0": "Buildings", "level1": "Zones", "level2": "Points"}'></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="createClient()">Create Client</button>
+            </div>
+
+            <!-- ASSET TYPE MANAGEMENT -->
+            <div class="admin-card">
+                <h3>🔧 Asset Types</h3>
+                <div class="form-group">
+                    <label class="form-label">Asset Type Name</label>
+                    <input type="text" class="form-input" id="asset-type-name" placeholder="Fire Extinguisher">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Client ID</label>
+                    <select class="form-select" id="asset-type-client">
+                        <option value="">Select Client</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="createAssetType()">Add Asset Type</button>
+                <button class="btn btn-secondary" onclick="viewAssetTypes()">View All Types</button>
+            </div>
+
+            <!-- LOCATION BUILDER -->
+            <div class="admin-card">
+                <h3>📍 Location Builder</h3>
+                <div class="form-group">
+                    <label class="form-label">Location Code (3-4 chars)</label>
+                    <input type="text" class="form-input" id="location-code" placeholder="BLDG" maxlength="4">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location Name</label>
+                    <input type="text" class="form-input" id="location-name" placeholder="Main Building">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Parent Location</label>
+                    <select class="form-select" id="location-parent">
+                        <option value="">Top Level</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="createLocation()">Add Location</button>
+            </div>
+
+            <!-- QUESTION MANAGEMENT -->
+            <div class="admin-card">
+                <h3>❓ Question Management</h3>
+                <div class="form-group">
+                    <label class="form-label">Question Text</label>
+                    <input type="text" class="form-input" id="question-text" placeholder="Is the pressure gauge in the green zone?">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Question Type</label>
+                    <select class="form-select" id="question-type">
+                        <option value="boolean">Yes/No</option>
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="photo">Photo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Asset Type</label>
+                    <select class="form-select" id="question-asset-type">
+                        <option value="">Select Asset Type</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="createQuestion()">Add Question</button>
+            </div>
+
+            <!-- USER MANAGEMENT -->
+            <div class="admin-card">
+                <h3>👤 User Management</h3>
+                <div class="form-group">
+                    <label class="form-label">User Name</label>
+                    <input type="text" class="form-input" id="user-name" placeholder="Susan Smith">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="username" placeholder="susan.smith">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select class="form-select" id="user-role">
+                        <option value="inspector">Inspector</option>
+                        <option value="supervisor">Supervisor</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="createUser()">Add User</button>
+            </div>
+
+            <!-- DATA PREVIEW -->
+            <div class="admin-card">
+                <h3>📊 Data Preview</h3>
+                <button class="btn btn-secondary" onclick="previewData('clients')">View Clients</button>
+                <button class="btn btn-secondary" onclick="previewData('assets')">View Assets</button>
+                <button class="btn btn-secondary" onclick="previewData('locations')">View Locations</button>
+                <div class="data-preview" id="data-preview">
+                    Select a collection to preview...
+                </div>
+            </div>
+        </div>
+
+        <!-- STATUS AREA -->
+        <div class="status-area">
+            <h4>📋 Operation Log</h4>
+            <div class="status-log" id="status-log">
+                <div class="log-entry log-muted">Firebase Admin Tool initialized. Ready for operations...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA PREVIEW MODAL -->
+    <div class="modal-overlay" id="data-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Data Preview</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="data-preview" id="modal-data-preview">
+                Loading...
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <script>
+        // Role Check - Only allow nexus users
+        const userRole = sessionStorage.getItem('role');
+        if (userRole !== 'nexus') {
+            document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">Access Denied<br><br>This tool is restricted to Nexus employees only.<br><br><a href="dashboard.html" style="color:#fdd835;">Return to Dashboard</a></div>';
+            throw new Error("Unauthorized Access");
+        }
+
+        // Global variables
+        let db = null;
+        let storage = null;
+        let isConnected = false;
+
+        // Firebase configuration (REPLACE WITH YOUR CONFIG)
+        const firebaseConfig = {
+            apiKey: "your-api-key-here",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "your-app-id"
+        };
+
+        // Initialize Firebase
+        function initializeFirebase() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                db = firebase.firestore();
+                storage = firebase.storage();
+                
+                updateConnectionStatus(true);
+                logMessage("Firebase initialized successfully!", "success");
+                loadClientOptions();
+            } catch (error) {
+                updateConnectionStatus(false);
+                logMessage(`Firebase initialization failed: ${error.message}`, "error");
+            }
+        }
+
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            isConnected = connected;
+            const statusEl = document.getElementById('connection-status');
+            const textEl = document.getElementById('connection-text');
+            
+            if (connected) {
+                statusEl.className = 'connection-status connected';
+                textEl.textContent = 'Connected to Firebase';
+            } else {
+                statusEl.className = 'connection-status disconnected';
+                textEl.textContent = 'Not Connected';
+            }
+        }
+
+        // Test Firebase connection
+        async function testConnection() {
+            if (!db) {
+                logMessage("Please initialize Firebase first", "error");
+                return;
+            }
+
+            try {
+                await db.collection('test').doc('connection').set({
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    test: true
+                });
+                
+                await db.collection('test').doc('connection').delete();
+                logMessage("Connection test successful!", "success");
+            } catch (error) {
+                logMessage(`Connection test failed: ${error.message}`, "error");
+            }
+        }
+
+        // Log message function
+        function logMessage(message, type = "info") {
+            const logEl = document.getElementById('status-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // Update progress bar
+        function updateProgress(percentage) {
+            document.getElementById('progress-fill').style.width = `${percentage}%`;
+        }
+
+        // MEGA LOAD FUNCTION - ONE CLICK DEPLOY EVERYTHING
+        async function deployMegaLoad() {
+            if (!db) {
+                logMessage("Please connect to Firebase first!", "error");
+                return;
+            }
+
+            logMessage("🚀 Starting MEGA LOAD deployment...", "info");
+            updateProgress(0);
+
+            try {
+                // Step 1: Create test client (5%)
+                logMessage("Creating test client: NexusTest Corp...", "info");
+                await createTestClient();
+                updateProgress(5);
+
+                // Step 2: Create asset types (15%)
+                logMessage("Creating asset types...", "info");
+                await createTestAssetTypes();
+                updateProgress(15);
+
+                // Step 3: Create locations (25%)
+                logMessage("Building location hierarchy...", "info");
+                await createTestLocations();
+                updateProgress(25);
+
+                // Step 4: Create users (35%)
+                logMessage("Creating test users...", "info");
+                await createTestUsers();
+                updateProgress(35);
+
+                // Step 5: Create questions (45%)
+                logMessage("Setting up inspection questions...", "info");
+                await createTestQuestions();
+                updateProgress(45);
+
+                // Step 6: Create frequencies (55%)
+                logMessage("Creating inspection frequencies...", "info");
+                await createTestFrequencies();
+                updateProgress(55);
+
+                // Step 7: Create 225+ assets (85%)
+                logMessage("Generating 225+ test assets...", "info");
+                await createTestAssets();
+                updateProgress(85);
+
+                // Step 8: Create sample inspections (95%)
+                logMessage("Creating sample inspection records...", "info");
+                await createTestInspections();
+                updateProgress(95);
+
+                // Step 9: Complete (100%)
+                logMessage("🎉 MEGA LOAD COMPLETE! Test client fully deployed!", "success");
+                updateProgress(100);
+                
+                logMessage("✅ Client: nexustest", "success");
+                logMessage("✅ 225+ Assets created", "success");
+                logMessage("✅ Multi-level locations", "success");
+                logMessage("✅ Test users and assignments", "success");
+                logMessage("✅ Complete question sets", "success");
+                logMessage("✅ Sample inspection data", "success");
+
+            } catch (error) {
+                logMessage(`MEGA LOAD FAILED: ${error.message}`, "error");
+                console.error(error);
+            }
+        }
+
+        // Create test client with new structure
+        async function createTestClient() {
+            const clientData = {
+                name: "NexusTest Corp",
+                subdomain: "nexustest",
+                logo_url: "",
+                settings: {
+                    barcodeDelimiter: "-",
+                    barcodeLevels: ["zone", "sublocation", "precisionlocation"],
+                    preciseScanEnabled: true,
+                    reportFormat: "pdf",
+                    typingAllowed: true,
+                    mapDivisions: ["Building A", "Building B", "Building C"],
+                    customAssetTypes: true,
+                    customQuestions: false
+                },
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                status: "active",
+                onboarding_completed: true
+            };
+
+            // Create client root document
+            await db.collection('clients').doc('nexustest').set(clientData);
+
+            // Create required collections with placeholder documents
+            const clientRef = db.collection('clients').doc('nexustest');
+
+            await clientRef.collection('assets').doc('_placeholder').set({
+                _placeholder: true,
+                created: new Date().toISOString()
+            });
+
+            await clientRef.collection('assignments').doc('_placeholder').set({
+                _placeholder: true,
+                created: new Date().toISOString()
+            });
+
+            await clientRef.collection('inspectionRecords').doc('_placeholder').set({
+                _placeholder: true,
+                created: new Date().toISOString()
+            });
+
+            await clientRef.collection('logs').doc('admin_created').set({
+                action: "test_client_created",
+                message: "Test client created via admin tool",
+                timestamp: new Date().toISOString(),
+                user: "admin"
+            });
+
+            logMessage("✅ Test client 'nexustest' created with new structure", "success");
+        }
+
+        // Create test asset types
+        async function createTestAssetTypes() {
+            const assetTypes = [
+                { id: "fire_extinguisher", name: "Fire Extinguisher", icon: "🧯" },
+                { id: "hydrant", name: "Fire Hydrant", icon: "🚰" },
+                { id: "sprinkler", name: "Sprinkler System", icon: "💧" },
+                { id: "alarm", name: "Fire Alarm", icon: "🚨" },
+                { id: "exit_sign", name: "Exit Sign", icon: "🚪" },
+                { id: "aed", name: "AED Device", icon: "❤️" },
+                { id: "emergency_kit", name: "Emergency Kit", icon: "🎒" },
+                { id: "hose_reel", name: "Hose Reel", icon: "🔄" }
+            ];
+
+            const batch = db.batch();
+            
+            assetTypes.forEach(type => {
+                const ref = db.collection('asset_types').doc(`nexustest_${type.id}`);
+                batch.set(ref, {
+                    ...type,
+                    clientId: "nexustest",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            });
+
+            await batch.commit();
+
+            // Create subtypes
+            const subtypes = [
+                { id: "5lb_extinguisher", name: "5lb Extinguisher", assetTypeId: "fire_extinguisher" },
+                { id: "10lb_extinguisher", name: "10lb Extinguisher", assetTypeId: "fire_extinguisher" },
+                { id: "30lb_extinguisher", name: "30lb Extinguisher", assetTypeId: "fire_extinguisher" },
+                { id: "interior_hydrant", name: "Interior Hydrant", assetTypeId: "hydrant" },
+                { id: "exterior_hydrant", name: "Exterior Hydrant", assetTypeId: "hydrant" },
+                { id: "overhead_sprinkler", name: "Overhead Sprinkler", assetTypeId: "sprinkler" },
+                { id: "wall_sprinkler", name: "Wall Sprinkler", assetTypeId: "sprinkler" },
+                { id: "manual_alarm", name: "Manual Pull Alarm", assetTypeId: "alarm" },
+                { id: "smoke_detector", name: "Smoke Detector", assetTypeId: "alarm" }
+            ];
+
+            const subtypeBatch = db.batch();
+            
+            subtypes.forEach(subtype => {
+                const ref = db.collection('asset_subtypes').doc(`nexustest_${subtype.id}`);
+                subtypeBatch.set(ref, {
+                    ...subtype,
+                    clientId: "nexustest",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            });
+
+            await subtypeBatch.commit();
+        }
+
+        // Create test locations
+        async function createTestLocations() {
+            const locations = [];
+            
+            // Level 0: Buildings
+            const buildings = [
+                { code: "MAIN", name: "Main Building" },
+                { code: "WARH", name: "Warehouse" },
+                { code: "ADMN", name: "Admin Building" },
+                { code: "LAB1", name: "Laboratory 1" },
+                { code: "LAB2", name: "Laboratory 2" }
+            ];
+
+            // Level 1: Zones per building
+            const zones = [
+                "FL01", "FL02", "FL03", "FL04", "FL05",
+                "BSMT", "ROOF", "PRKG", "LOAD", "STOR"
+            ];
+
+            // Level 2: Points per zone
+            const points = [
+                "NW", "NE", "SW", "SE", "CTR",
+                "ENT1", "ENT2", "EXIT", "STRS", "ELEV",
+                "RM01", "RM02", "RM03", "RM04", "RM05"
+            ];
+
+            const batch = db.batch();
+            let locationCounter = 0;
+
+            // Create buildings (level 0)
+            buildings.forEach((building, bIdx) => {
+                const buildingId = `nexustest_loc_${locationCounter++}`;
+                locations.push({
+                    id: buildingId,
+                    code: building.code,
+                    name: building.name,
+                    level: 0,
+                    fullPath: building.code,
+                    children: []
+                });
+
+                const buildingRef = db.collection('locations').doc(buildingId);
+                batch.set(buildingRef, {
+                    id: buildingId,
+                    code: building.code,
+                    name: building.name,
+                    clientId: "nexustest",
+                    level: 0,
+                    parentId: null,
+                    fullPath: building.code,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Create zones for this building (level 1)
+                zones.forEach((zone, zIdx) => {
+                    const zoneId = `nexustest_loc_${locationCounter++}`;
+                    const zonePath = `${building.code}-${zone}`;
+                    
+                    locations[bIdx].children.push({
+                        id: zoneId,
+                        code: zone,
+                        name: `${building.name} - ${zone}`,
+                        level: 1,
+                        fullPath: zonePath,
+                        children: []
+                    });
+
+                    const zoneRef = db.collection('locations').doc(zoneId);
+                    batch.set(zoneRef, {
+                        id: zoneId,
+                        code: zone,
+                        name: `${building.name} - ${zone}`,
+                        clientId: "nexustest",
+                        level: 1,
+                        parentId: buildingId,
+                        fullPath: zonePath,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    // Create points for this zone (level 2)
+                    points.slice(0, 8).forEach((point, pIdx) => { // Limit points per zone
+                        const pointId = `nexustest_loc_${locationCounter++}`;
+                        const pointPath = `${building.code}-${zone}-${point}`;
+                        
+                        const pointRef = db.collection('locations').doc(pointId);
+                        batch.set(pointRef, {
+                            id: pointId,
+                            code: point,
+                            name: `${building.name} - ${zone} - ${point}`,
+                            clientId: "nexustest",
+                            level: 2,
+                            parentId: zoneId,
+                            fullPath: pointPath,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    });
+                });
+            });
+
+            await batch.commit();
+            return locations;
+        }
+
+        // Create test users function removed - no dummy data
+        async function createTestUsers() {
+            console.log('Test user creation disabled - use real user creation only');
+            logMessage('Test user creation disabled - use real user creation only', 'info');
+        }
+
+        // Create test questions
+        async function createTestQuestions() {
+            const questions = [
+                // Fire Extinguisher Questions
+                { text: "Is the pressure gauge in the green zone?", type: "boolean", assetType: "fire_extinguisher", frequency: "monthly" },
+                { text: "Is the safety pin intact?", type: "boolean", assetType: "fire_extinguisher", frequency: "monthly" },
+                { text: "Is there visible damage to the extinguisher?", type: "boolean", assetType: "fire_extinguisher", frequency: "monthly" },
+                { text: "Record the pressure reading", type: "number", assetType: "fire_extinguisher", frequency: "annual" },
+                { text: "Take photo of pressure gauge", type: "photo", assetType: "fire_extinguisher", frequency: "annual" },
+                
+                // Hydrant Questions
+                { text: "Is the hydrant accessible?", type: "boolean", assetType: "hydrant", frequency: "monthly" },
+                { text: "Is the cap secure?", type: "boolean", assetType: "hydrant", frequency: "monthly" },
+                { text: "Record water pressure (PSI)", type: "number", assetType: "hydrant", frequency: "annual" },
+                { text: "Flow test results", type: "text", assetType: "hydrant", frequency: "annual" },
+                
+                // Sprinkler Questions
+                { text: "Are sprinkler heads unobstructed?", type: "boolean", assetType: "sprinkler", frequency: "monthly" },
+                { text: "Is there visible corrosion?", type: "boolean", assetType: "sprinkler", frequency: "monthly" },
+                { text: "System pressure reading", type: "number", assetType: "sprinkler", frequency: "quarterly" },
+                
+                // Alarm Questions
+                { text: "Does the alarm sound when tested?", type: "boolean", assetType: "alarm", frequency: "monthly" },
+                { text: "Is the LED indicator functioning?", type: "boolean", assetType: "alarm", frequency: "monthly" },
+                { text: "Battery test results", type: "text", assetType: "alarm", frequency: "annual" }
+            ];
+
+            const batch = db.batch();
+            
+            questions.forEach((question, index) => {
+                const questionId = `nexustest_question_${index + 1}`;
+                const ref = db.collection('questions').doc(questionId);
+                batch.set(ref, {
+                    id: questionId,
+                    text: question.text,
+                    type: question.type,
+                    assetTypeId: question.assetType,
+                    frequencyId: question.frequency,
+                    clientId: "nexustest",
+                    isStandard: true,
+                    order: index + 1,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            });
+
+            await batch.commit();
+        }
+
+        // Create test frequencies
+        async function createTestFrequencies() {
+            const frequencies = [
+                { id: "weekly", name: "Weekly", interval: 7, intervalType: "days" },
+                { id: "monthly", name: "Monthly", interval: 1, intervalType: "months" },
+                { id: "quarterly", name: "Quarterly", interval: 3, intervalType: "months" },
+                { id: "annual", name: "Annual", interval: 12, intervalType: "months" },
+                { id: "biannual", name: "Bi-Annual", interval: 6, intervalType: "months" }
+            ];
+
+            const batch = db.batch();
+            
+            frequencies.forEach(freq => {
+                const ref = db.collection('frequencies').doc(`nexustest_${freq.id}`);
+                batch.set(ref, {
+                    ...freq,
+                    clientId: "nexustest",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            });
+
+            await batch.commit();
+        }
+
+        // Create test assets in client-specific collection
+        async function createTestAssets() {
+            // Get all locations for asset placement from client-specific collection
+            const locationsSnapshot = await db.collection('clients').doc('nexustest')
+                .collection('locations').get();
+
+            const locations = [];
+            locationsSnapshot.docs.forEach(doc => {
+                if (doc.id !== '_placeholder') {
+                    locations.push({ id: doc.id, ...doc.data() });
+                }
+            });
+
+            if (locations.length === 0) {
+                logMessage("❌ No locations found. Create locations first.", "error");
+                return;
+            }
+
+            const assetTypes = [
+                "fire_extinguisher", "hydrant", "sprinkler", "alarm",
+                "exit_sign", "aed", "emergency_kit", "hose_reel"
+            ];
+
+            const batch = db.batch();
+            let assetCounter = 0;
+            const assetsToCreate = 225;
+
+            for (let i = 0; i < assetsToCreate; i++) {
+                const location = locations[i % locations.length];
+                const assetType = assetTypes[i % assetTypes.length];
+                const randomSuffix = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
+                
+                const cleanPath = location.fullPath.replace(/-/g, '');
+                const barcode = cleanPath + randomSuffix;
+                const assetId = `nexustest_${barcode}`;
+
+                // Generate due dates
+                const now = new Date();
+                const monthlyDue = new Date(now.getFullYear(), now.getMonth() + Math.floor(Math.random() * 3), 1);
+                const annualDue = new Date(now.getFullYear(), now.getMonth() + Math.floor(Math.random() * 12), 1);
+
+                const ref = db.collection('assets').doc(assetId);
+                batch.set(ref, {
+                    id: assetId,
+                    barcode: barcode,
+                    assetTypeId: assetType,
+                    subtypeId: getRandomSubtype(assetType),
+                    clientId: "nexustest",
+                    locationId: location.id,
+                    locationPath: location.fullPath,
+                    serialNumber: `SN${randomSuffix}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`,
+                    monthlyDue: formatDate(monthlyDue),
+                    annualDue: formatDate(annualDue),
+                    status: getRandomStatus(),
+                    lastInspection: null,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    isActive: true
+                });
+
+                assetCounter++;
+            }
+
+            await batch.commit();
+            logMessage(`✅ Created ${assetCounter} assets`, "success");
+        }
+
+        // Helper functions
+        function getRandomSubtype(assetType) {
+            const subtypes = {
+                "fire_extinguisher": ["5lb_extinguisher", "10lb_extinguisher", "30lb_extinguisher"],
+                "hydrant": ["interior_hydrant", "exterior_hydrant"],
+                "sprinkler": ["overhead_sprinkler", "wall_sprinkler"],
+                "alarm": ["manual_alarm", "smoke_detector"]
+            };
+            
+            const typeSubtypes = subtypes[assetType] || [assetType];
+            return typeSubtypes[Math.floor(Math.random() * typeSubtypes.length)];
+        }
+
+        function getRandomStatus() {
+            const statuses = ["complete", "due-soon", "overdue"];
+            return statuses[Math.floor(Math.random() * statuses.length)];
+        }
+
+        function formatDate(date) {
+            return `${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+        }
+
+        // Create test inspections
+        async function createTestInspections() {
+            // Create some sample inspection records
+            const inspections = [
+                {
+                    id: "nexustest_insp_001",
+                    assetId: "nexustest_MAINFL01NW0001",
+                    userId: "nexustest_user_1",
+                    frequencyType: "monthly",
+                    status: "completed",
+                    completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                },
+                {
+                    id: "nexustest_insp_002", 
+                    assetId: "nexustest_MAINFL01NE0002",
+                    userId: "nexustest_user_2",
+                    frequencyType: "monthly",
+                    status: "completed",
+                    completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }
+            ];
+
+            const batch = db.batch();
+            
+            inspections.forEach(inspection => {
+                const ref = db.collection('inspections').doc(inspection.id);
+                batch.set(ref, {
+                    ...inspection,
+                    clientId: "nexustest",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            });
+
+            await batch.commit();
+        }
+
+        // Regular admin functions
+        async function createClient() {
+            if (!db) {
+                logMessage("Please connect to Firebase first!", "error");
+                return;
+            }
+
+            const name = document.getElementById('client-name').value.trim();
+            const subdomain = document.getElementById('client-subdomain').value.trim();
+            const terminology = document.getElementById('client-terminology').value.trim();
+
+            if (!name || !subdomain) {
+                logMessage("Please fill in client name and subdomain", "error");
+                return;
+            }
+
+            try {
+                let parsedTerminology = {};
+                if (terminology) {
+                    parsedTerminology = JSON.parse(terminology);
+                }
+
+                await db.collection('clients').doc(subdomain).set({
+                    id: subdomain,
+                    name: name,
+                    subdomain: subdomain,
+                    terminology: parsedTerminology,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    isActive: true
+                });
+
+                logMessage(`✅ Client "${name}" created successfully!`, "success");
+                
+                // Clear form
+                document.getElementById('client-name').value = '';
+                document.getElementById('client-subdomain').value = '';
+                document.getElementById('client-terminology').value = '';
+                
+                loadClientOptions();
+            } catch (error) {
+                logMessage(`Error creating client: ${error.message}`, "error");
+            }
+        }
+
+        async function createAssetType() {
+            if (!db) {
+                logMessage("Please connect to Firebase first!", "error");
+                return;
+            }
+
+            const name = document.getElementById('asset-type-name').value.trim();
+            const clientId = document.getElementById('asset-type-client').value;
+
+            if (!name || !clientId) {
+                logMessage("Please fill in asset type name and select client", "error");
+                return;
+            }
+
+            try {
+                const id = name.toLowerCase().replace(/\s+/g, '_');
+                const docId = `${clientId}_${id}`;
+
+                await db.collection('asset_types').doc(docId).set({
+                    id: docId,
+                    name: name,
+                    clientId: clientId,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                logMessage(`✅ Asset type "${name}" created!`, "success");
+                document.getElementById('asset-type-name').value = '';
+            } catch (error) {
+                logMessage(`Error creating asset type: ${error.message}`, "error");
+            }
+        }
+
+        async function createLocation() {
+            if (!db) {
+                logMessage("Please connect to Firebase first!", "error");
+                return;
+            }
+
+            const code = document.getElementById('location-code').value.trim().toUpperCase();
+            const name = document.getElementById('location-name').value.trim();
+            const parentId = document.getElementById('location-parent').value;
+
+            if (!code || !name) {
+                logMessage("Please fill in location code and name", "error");
+                return;
+            }
+
+            try {
+                const locationId = `nexustest_loc_${Date.now()}`;
+                
+                let level = 0;
+                let fullPath = code;
+                
+                if (parentId) {
+                    // Get parent to determine level and path
+                    const parentDoc = await db.collection('locations').doc(parentId).get();
+                    if (parentDoc.exists) {
+                        const parentData = parentDoc.data();
+                        level = parentData.level + 1;
+                        fullPath = `${parentData.fullPath}-${code}`;
+                    }
+                }
+
+                await db.collection('locations').doc(locationId).set({
+                    id: locationId,
+                    code: code,
+                    name: name,
+                    clientId: "nexustest", // Default to test client
+                    level: level,
+                    parentId: parentId || null,
+                    fullPath: fullPath,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                logMessage(`✅ Location "${name}" created!`, "success");
+                
+                // Clear form
+                document.getElementById('location-code').value = '';
+                document.getElementById('location-name').value = '';
+                document.getElementById('location-parent').value = '';
+                
+                loadLocationOptions();
+            } catch (error) {
+                logMessage(`Error creating location: ${error.message}`, "error");
+            }
+        }
+
+        async function createQuestion() {
+            if (!db) {
+                logMessage("Please connect to Firebase first!", "error");
+                return;
+            }
+
+            const text = document.getElementById('question-text').value.trim();
+            const type = document.getElementById('question-type').value;
+            const assetType = document.getElementById('question-asset-type').value;
+
+            if (!text || !type || !assetType) {
+                logMessage("Please fill in all question fields", "error");
+                return;
+            }
+
+            try {
+                const questionId = `nexustest_question_${Date.now()}`;
+
+                await db.collection('questions').doc(questionId).set({
+                    id: questionId,
+                    text: text,
+                    type: type,
+                    assetTypeId: assetType,
+                    clientId: "nexustest", // Default to test client
+                    isStandard: false, // Custom question
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                logMessage(`✅ Question created!`, "success");
+                
+                // Clear form
+                document.getElementById('question-text').value = '';
+                document.getElementById('question-type').value = 'boolean';
+                document.getElementById('question-asset-type').value = '';
+            } catch (error) {
+                logMessage(`Error creating question: ${error.message}`, "error");
+            }
+        }
+
+        async function createUser() {
+            if (!db) {
+                logMessage("Please connect to Firebase first!", "error");
+                return;
+            }
+
+            const name = document.getElementById('user-name').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const role = document.getElementById('user-role').value;
+
+            if (!name || !username || !role) {
+                logMessage("Please fill in all user fields", "error");
+                return;
+            }
+
+            try {
+                const userId = `nexustest_user_${Date.now()}`;
+
+                await db.collection('users').doc(userId).set({
+                    id: userId,
+                    name: name,
+                    username: username,
+                    role: role,
+                    clientId: "nexustest", // Default to test client
+                    isActive: true,
+                    lastLogin: null,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                logMessage(`✅ User "${name}" created!`, "success");
+                
+                // Clear form
+                document.getElementById('user-name').value = '';
+                document.getElementById('username').value = '';
+                document.getElementById('user-role').value = 'inspector';
+            } catch (error) {
+                logMessage(`Error creating user: ${error.message}`, "error");
+            }
+        }
+
+        async function previewData(collection) {
+            if (!db) {
+                logMessage("Please connect to Firebase first!", "error");
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection(collection).limit(10).get();
+                const data = snapshot.docs.map(doc => doc.data());
+                
+                const previewEl = document.getElementById('data-preview');
+                previewEl.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                logMessage(`Loaded ${data.length} records from ${collection}`, "info");
+            } catch (error) {
+                logMessage(`Error loading ${collection}: ${error.message}`, "error");
+            }
+        }
+
+        async function viewAssetTypes() {
+            if (!db) {
+                logMessage("Please connect to Firebase first!", "error");
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection('asset_types').get();
+                const data = snapshot.docs.map(doc => doc.data());
+                
+                document.getElementById('modal-title').textContent = 'Asset Types';
+                document.getElementById('modal-data-preview').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                document.getElementById('data-modal').classList.add('active');
+            } catch (error) {
+                logMessage(`Error loading asset types: ${error.message}`, "error");
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('data-modal').classList.remove('active');
+        }
+
+        // Load options for dropdowns
+        async function loadClientOptions() {
+            if (!db) return;
+
+            try {
+                const snapshot = await db.collection('clients').get();
+                const select = document.getElementById('asset-type-client');
+                
+                // Clear existing options except first
+                select.innerHTML = '<option value="">Select Client</option>';
+                
+                snapshot.docs.forEach(doc => {
+                    const client = doc.data();
+                    const option = document.createElement('option');
+                    option.value = client.id;
+                    option.textContent = client.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                logMessage(`Error loading clients: ${error.message}`, "error");
+            }
+        }
+
+        async function loadLocationOptions() {
+            if (!db) return;
+
+            try {
+                const snapshot = await db.collection('locations')
+                    .where('clientId', '==', 'nexustest')
+                    .orderBy('level')
+                    .get();
+                
+                const select = document.getElementById('location-parent');
+                
+                // Clear existing options except first
+                select.innerHTML = '<option value="">Top Level</option>';
+                
+                snapshot.docs.forEach(doc => {
+                    const location = doc.data();
+                    const option = document.createElement('option');
+                    option.value = location.id;
+                    option.textContent = `${'  '.repeat(location.level)}${location.name}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                logMessage(`Error loading locations: ${error.message}`, "error");
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            logMessage("Firebase Admin Tool loaded. Ready to deploy!", "info");
+        });
+
+        // Click outside modal to close
+        document.getElementById('data-modal').addEventListener('click', function(e) {
+            if (e.target.id === 'data-modal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

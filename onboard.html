@@ -1,0 +1,1540 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Firebase App (ESM) -->
+<script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script>
+<meta charset="UTF-8">
+<title>Nexus Res-Q | Client Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --nexus-yellow: #fdd835;
+    --nexus-bg: #0a0e1a;
+    --nexus-card: #151b2e;
+    --nexus-card-hover: #1a2138;
+    --nexus-dark: #0f1419;
+    --nexus-border: #2a3441;
+    --nexus-light: #ffffff;
+    --nexus-muted: #8792a3;
+    --nexus-success: #10b981;
+    --nexus-warning: #f59e0b;
+    --nexus-error: #ef4444;
+    --nexus-info: #3b82f6;
+    --radius: 16px;
+    --radius-sm: 8px;
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    height: 100%;
+    background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--nexus-light);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .onboard-root {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 0;
+  }
+  .onboard-left {
+    width: 400px;
+    height: 540px;
+    background: var(--nexus-card);
+    color: var(--nexus-light);
+    display: flex;
+    flex-direction: column;
+    padding: 44px 38px 44px 44px;
+    border-radius: var(--radius) 0 0 var(--radius);
+    position: relative;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--nexus-border);
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin: 0;
+  }
+  .back-arrow {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.8em;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+  }
+  .back-arrow:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(-2px);
+  }
+  .nexus-logo {
+    height: 46px;
+    width: auto;
+    margin-bottom: 28px;
+    filter: drop-shadow(0 3px 7px #0008);
+  }
+  .onboard-headline {
+    font-size: 1.55em;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: var(--nexus-yellow);
+    letter-spacing: 1px;
+  }
+  .feature-blurb {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .feature-icon {
+    font-size: 1.5em;
+    color: var(--nexus-yellow);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .feature-text strong {
+    color: var(--nexus-yellow);
+    font-weight: 500;
+  }
+  .feature-text {
+    font-size: 1.01em;
+    color: #ececec;
+    line-height: 1.2;
+    margin-right: 10px;
+  }
+  .lines-bg {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.19;
+    background: repeating-linear-gradient(115deg, transparent 0 55px, var(--nexus-yellow) 60px 63px, transparent 70px 180px);
+  }
+  .onboard-right {
+    width: 430px;
+    height: 540px;
+    background: var(--nexus-card);
+    color: var(--nexus-light);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--nexus-border);
+    border-left: none;
+    padding: 46px 38px 38px 38px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    overflow-y: auto;
+    max-height: 540px;
+  }
+  .step-label {
+    font-size: 1.18em;
+    font-weight: 600;
+    color: var(--nexus-yellow);
+    margin-bottom: 25px;
+    letter-spacing: 0.4px;
+  }
+  .form-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 22px;
+  }
+  label {
+    font-size: 1.08em;
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: var(--nexus-yellow);
+    letter-spacing: 0.04em;
+  }
+  input[type="text"], input[type="file"], input[type="password"], select {
+    font-family: 'Oswald', Arial, sans-serif;
+    font-size: 1.07em;
+    padding: 11px 13px;
+    border: 2px solid var(--nexus-card);
+    border-radius: 7px;
+    background: var(--nexus-input);
+    color: var(--nexus-light);
+    outline: none;
+    transition: border 0.18s, box-shadow 0.18s;
+  }
+  input[type="text"]:focus, input[type="file"]:focus {
+    border: 2.3px solid var(--nexus-yellow);
+    background: var(--nexus-input);
+    color: var(--nexus-light);
+    box-shadow: 0 0 0 2px #fdd83544;
+  }
+  input::placeholder {
+    color: #93a7c6;
+    opacity: 1;
+  }
+
+  .freq-btn {
+    background: #18203a;
+    color: #fdd835;
+    font-family: 'Oswald', Arial, sans-serif;
+    font-size: 1.09em;
+    border: 2px solid #233358;
+    border-radius: 7px;
+    padding: 8px 14px;
+    margin: 0 7px 12px 0;
+    cursor: pointer;
+    transition: background 0.14s, color 0.14s, border 0.13s;
+    outline: none;
+  }
+  .freq-btn.selected, .freq-btn.hydro {
+    background: #fdd835;
+    color: #18203a;
+    border-color: #fdd835;
+    font-weight: 700;
+  }
+  .freq-btn:disabled {
+    opacity: 0.84;
+    cursor: not-allowed;
+  }
+
+  .add-division-btn, .remove-division-btn {
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 700;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    min-width: 40px;
+  }
+  
+  .add-division-btn {
+    background: #28a745;
+    color: #fff;
+  }
+  
+  .add-division-btn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+  }
+  
+  .remove-division-btn {
+    background: #dc3545;
+    color: #fff;
+  }
+  
+  .remove-division-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+  }
+
+  .custom-division-row {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .next-btn {
+    width: 100%;
+    margin-top: 17px;
+    background: var(--nexus-yellow);
+    color: var(--nexus-bg);
+    font-size: 1.13em;
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 0 10px 0;
+    box-shadow: 0 2px 10px #d7b70011;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    transition: background 0.13s, color 0.13s;
+  }
+  .next-btn:hover, .next-btn:focus {
+    background: #ffe45e;
+    color: var(--nexus-card);
+    box-shadow: 0 5px 18px #fdd83544;
+  }
+  table {
+    border-collapse: collapse;
+    background: #203358;
+    border-radius: 9px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  th, td {
+    padding: 6px 11px;
+    font-size: 1em;
+  }
+  th {
+    color: #fdd835;
+    text-align: left;
+    border-bottom: 1.5px solid #1c3050;
+  }
+  td {
+    color: #ececec;
+  }
+  @media (max-width: 1000px) {
+    .onboard-root { transform: scale(0.94);}
+  }
+</style>
+
+</head>
+<body>
+<div class="onboard-root">
+  <div class="onboard-left">
+    <button class="back-arrow" onclick="window.location.href='dashboard.html'" title="Back to Dashboard">←</button>
+    <img src="logos/nexusresq.jpg" alt="Nexus Res-Q Logo" class="nexus-logo" />
+    <div class="onboard-headline">Client Onboarding!</div>
+    <div class="feature-blurb">
+      <span class="feature-icon">🛡️</span>
+      <div class="feature-text"><strong>Intuitive Database</strong><br>No guesswork—every field is mapped and checked, ensuring consistency.</div>
+    </div>
+    <div class="feature-blurb">
+      <span class="feature-icon">🔗</span>
+      <div class="feature-text"><strong>Secure Asset Management</strong><br>Assets, users, locations—automated and connected from day one.</div>
+    </div>
+    <div class="feature-blurb">
+      <span class="feature-icon">🔍</span>
+      <div class="feature-text"><strong>Audit Ready</strong><br>Inspections are dated, signed, and kept secure in our cloud!</div>
+    </div>
+    <div class="lines-bg"></div>
+  </div>
+  <div class="onboard-right">
+    <div class="step-label">Step 1: Client Details</div>
+    <form id="step1Form" autocomplete="off">
+      <div class="form-row">
+        <label for="clientName">Client Name</label>
+        <input type="text" id="clientName" name="clientName" maxlength="48" required autocomplete="off" placeholder="Enter client name..." />
+      </div>
+      <div class="form-row">
+        <label for="clientLogo">Upload Client Logo</label>
+        <input type="file" id="clientLogo" name="clientLogo" accept="image/*" required />
+        <div style="font-size:0.9em;color:#555; margin-top:5px;">SVG or PNG recommended, max 1MB.</div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+    </form>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+<script type="module">
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+// Simple function to get bcrypt - try multiple possible locations
+function getBcrypt() {
+  if (window.bcrypt && typeof window.bcrypt.hashSync === 'function') {
+    return window.bcrypt;
+  }
+  if (window.dcodeIO && window.dcodeIO.bcrypt && typeof window.dcodeIO.bcrypt.hashSync === 'function') {
+    return window.dcodeIO.bcrypt;
+  }
+  return null;
+}
+
+// Role Check - Only allow nexus users
+const userRole = sessionStorage.getItem('role');
+if (userRole !== 'nexus') {
+  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">Access Denied<br><br>This page is restricted to Nexus Owners.<br><br><a href="dashboard.html" style="color:#fdd835;">Return to Dashboard</a></div>';
+  throw new Error("Unauthorized Access");
+}
+
+// --- FIREBASE SETUP ---
+const firebaseConfig = {
+  apiKey: "AIzaSyAqnCQnFROLiVsQPIvgOe7mAciDiwCuLOg",
+  authDomain: "nexus-res-q.firebaseapp.com",
+  projectId: "nexus-res-q",
+  storageBucket: "nexus-res-q.firebasestorage.app",
+  messagingSenderId: "203995658810",
+  appId: "1:203995658810:web:97ae2ef0e9d1ed785cd303"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+const onboardingData = {};
+const onboardRight = document.querySelector('.onboard-right');
+const step1Form = document.getElementById('step1Form');
+step1Form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const clientName = document.getElementById('clientName').value.trim();
+  const clientLogoFile = document.getElementById('clientLogo').files[0];
+  if (!clientName) return alert('Please enter a client name.');
+  if (!clientLogoFile) return alert('Please upload a client logo.');
+  onboardingData.clientName = clientName;
+  onboardingData.logoFile = clientLogoFile;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    onboardingData.clientName = clientName;
+    onboardingData.clientLogo = evt.target.result;
+    showStep2();
+  };
+  reader.readAsDataURL(clientLogoFile);
+});
+
+// ---- STEP 2: ADMIN SETUP ----
+function showStep2() {
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 2: Client Admin Setup</div>
+    <form id="step2Form" autocomplete="off">
+      <div class="form-row">
+        <label for="adminFirst">Admin First Name</label>
+        <input type="text" id="adminFirst" maxlength="40" required placeholder="First name..." />
+      </div>
+      <div class="form-row">
+        <label for="adminLast">Admin Last Name</label>
+        <input type="text" id="adminLast" maxlength="40" required placeholder="Last name..." />
+      </div>
+      <div class="form-row">
+        <label>Username</label>
+        <input type="text" id="adminUsername" readonly style="background:#2224;" />
+      </div>
+      <div class="form-row">
+        <label>Default Password</label>
+        <input type="text" id="adminPassword" readonly style="background:#2224;" />
+        <div style="font-size:0.9em;color:#ffd;">Admin will be required to change password on first login.</div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+      <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo1">Back</button>
+    </form>
+  `;
+  const adminFirst = document.getElementById('adminFirst');
+  const adminLast = document.getElementById('adminLast');
+  const adminUsername = document.getElementById('adminUsername');
+  const adminPassword = document.getElementById('adminPassword');
+  function updateUserPass() {
+    let c = (onboardingData.clientName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    let f = (adminFirst.value || '').trim().toLowerCase().replace(/[^a-z]/g, "");
+    let l = (adminLast.value || '').trim().toLowerCase().replace(/[^a-z]/g, "");
+    if (f && l && c) {
+      adminUsername.value = `${f[0]}${l}@${c}`;
+      adminPassword.value = c;
+    } else {
+      adminUsername.value = '';
+      adminPassword.value = '';
+    }
+  }
+  adminFirst.addEventListener('input', updateUserPass);
+  adminLast.addEventListener('input', updateUserPass);
+
+  document.getElementById('step2Form').onsubmit = function(e) {
+    e.preventDefault();
+    let f = adminFirst.value.trim().toLowerCase().replace(/[^a-z]/g, '');
+    let l = adminLast.value.trim().toLowerCase().replace(/[^a-z]/g, '');
+    let c = (onboardingData.clientName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!f || !l) return alert("Please enter both names.");
+    onboardingData.adminFirst = f;
+    onboardingData.adminLast = l;
+    onboardingData.adminUsername = `${f[0].toLowerCase()}${l.toLowerCase()}@${c}`;
+    onboardingData.adminPassword = c;
+    onboardingData.adminMustChange = true;
+    showStep3();
+  };
+  document.getElementById('backTo1').onclick = function() { showStep1(true); };
+}
+
+// ---- STEP 3: MAP/DIVISION/SCAN SETUP ----
+function showStep3() {
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 3: Map & Scanning Setup</div>
+    <form id="step3Form" autocomplete="off">
+      <div class="form-row">
+        <label for="mapDivisionType">How is your site map divided?</label>
+        <select id="mapDivisionType" required>
+          <option value="">Select division type...</option>
+          <option value="Zone">Zone</option>
+          <option value="Building">Building</option>
+          <option value="Unit">Unit</option>
+          <option value="Area">Area</option>
+          <option value="Control Room">Control Room</option>
+          <option value="Custom">Custom (unique names)</option>
+        </select>
+      </div>
+
+      <div id="customDivisionsSection" style="display:none;">
+        <div class="form-row">
+          <label>How many custom divisions do you have?</label>
+          <input type="number" id="customDivisionCount" min="1" max="50" placeholder="Enter number..." />
+        </div>
+        <div id="customDivisionInputs" style="display:none;">
+          <div class="form-row">
+            <label>Enter your division names and codes:</label>
+            <div id="customDivisionList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="standardDivisionsSection" style="display:none;">
+        <div class="form-row">
+          <label>What do you call this level? <span id="currentDivisionType"></span></label>
+          <input type="text" id="divisionLabel" placeholder="e.g., Area, Zone, Building..." />
+          <div style="font-size:0.9em;color:#555;margin-top:5px;">
+            This is how this level will appear in your system (optional - defaults to the type you selected)
+          </div>
+        </div>
+        <div class="form-row">
+          <label>How many <span id="divisionLabelDisplay"></span> do you have?</label>
+          <input type="number" id="numDivisions" min="1" max="999" placeholder="Enter number..." />
+        </div>
+        <div id="divisionCodesSection" style="display:none;">
+          <div class="form-row">
+            <label>Enter unique codes for each <span id="divisionLabelDisplay2"></span>:</label>
+            <div id="divisionCodesList"></div>
+            <div style="font-size:0.9em;color:#555;margin-top:5px;">
+              These codes will be used for barcode generation and asset location tracking
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label>Barcode delimiter (character between location codes):</label>
+        <select id="barcodeDelimiter">
+          <option value="-">Dash (-)</option>
+          <option value="_">Underscore (_)</option>
+          <option value="">None</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>Are users required to scan a <strong>precise</strong> location?</label>
+        <div>
+          <label><input type="radio" name="preciseLoc" value="yes" required> Yes - Unique barcode for each asset location</label>
+          <label><input type="radio" name="preciseLoc" value="no" style="margin-left:17px;"> No - Broad area scanning only</label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label>Can users type entries or must they scan?</label>
+        <div>
+          <label><input type="radio" name="scanOnly" value="no" required> Typing allowed</label>
+          <label><input type="radio" name="scanOnly" value="yes" style="margin-left:17px;"> Must scan only</label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label>Report format preference:</label>
+        <select id="reportFormat">
+          <option value="pdf">PDF</option>
+          <option value="csv">CSV</option>
+          <option value="both">Both PDF and CSV</option>
+        </select>
+      </div>
+
+      <button class="next-btn" type="submit">Continue</button>
+      <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo2">Back</button>
+    </form>
+  `;
+
+  // Enhanced map division logic
+  const mapDivisionType = document.getElementById('mapDivisionType');
+  const customDivisionsSection = document.getElementById('customDivisionsSection');
+  const standardDivisionsSection = document.getElementById('standardDivisionsSection');
+  const customDivisionCount = document.getElementById('customDivisionCount');
+  const customDivisionInputs = document.getElementById('customDivisionInputs');
+  const divisionLabel = document.getElementById('divisionLabel');
+  const numDivisions = document.getElementById('numDivisions');
+  const divisionCodesSection = document.getElementById('divisionCodesSection');
+
+  // Handle map division type change
+  mapDivisionType.addEventListener('change', function() {
+    const value = this.value;
+    const currentDivisionType = document.getElementById('currentDivisionType');
+    const divisionLabelDisplay = document.getElementById('divisionLabelDisplay');
+    const divisionLabelDisplay2 = document.getElementById('divisionLabelDisplay2');
+
+    if (value === 'Custom') {
+      customDivisionsSection.style.display = 'block';
+      standardDivisionsSection.style.display = 'none';
+    } else if (value) {
+      customDivisionsSection.style.display = 'none';
+      standardDivisionsSection.style.display = 'block';
+      currentDivisionType.textContent = value;
+      divisionLabelDisplay.textContent = value.toLowerCase() + 's';
+      divisionLabelDisplay2.textContent = value.toLowerCase();
+      divisionLabel.placeholder = `e.g., ${value}, Area, Zone...`;
+    } else {
+      customDivisionsSection.style.display = 'none';
+      standardDivisionsSection.style.display = 'none';
+    }
+  });
+
+  // Handle custom division count change
+  customDivisionCount.addEventListener('input', function() {
+    const count = parseInt(this.value);
+    if (count > 0 && count <= 50) {
+      customDivisionInputs.style.display = 'block';
+      generateCustomDivisionInputs(count);
+    } else {
+      customDivisionInputs.style.display = 'none';
+    }
+  });
+
+  // Generate custom division inputs
+  function generateCustomDivisionInputs(count) {
+    const container = document.getElementById('customDivisionList');
+    container.innerHTML = '';
+
+    for (let i = 0; i < count; i++) {
+      const row = document.createElement('div');
+      row.style = 'display:flex;gap:10px;margin-bottom:10px;align-items:center;';
+      row.innerHTML = `
+        <span style="min-width:30px;font-weight:600;">${i + 1}.</span>
+        <input type="text" class="customDivisionName" placeholder="Division name..." style="flex:1;" />
+        <input type="text" class="customDivisionCode" placeholder="Code (e.g., 001, CR1)" style="width:120px;" />
+      `;
+      container.appendChild(row);
+    }
+  }
+
+  // Handle standard division count change
+  numDivisions.addEventListener('input', function() {
+    const count = parseInt(this.value);
+    if (count > 0 && count <= 999) {
+      divisionCodesSection.style.display = 'block';
+      generateDivisionCodeInputs(count);
+    } else {
+      divisionCodesSection.style.display = 'none';
+    }
+  });
+
+  // Generate division code inputs
+  function generateDivisionCodeInputs(count) {
+    const container = document.getElementById('divisionCodesList');
+    const divisionType = mapDivisionType.value;
+    const label = divisionLabel.value || divisionType;
+
+    container.innerHTML = '';
+
+    for (let i = 0; i < count; i++) {
+      const row = document.createElement('div');
+      row.style = 'display:flex;gap:10px;margin-bottom:10px;align-items:center;';
+      row.innerHTML = `
+        <span style="min-width:80px;font-weight:600;">${label} ${i + 1}:</span>
+        <input type="text" class="divisionCode" placeholder="Code (e.g., ${String(i + 1).padStart(3, '0')})" style="width:120px;" />
+      `;
+      container.appendChild(row);
+    }
+  }
+
+  // Handle precision location followup (simplified - no UUID generation)
+  document.querySelectorAll('input[name="preciseLoc"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      const val = document.querySelector('input[name="preciseLoc"]:checked').value;
+      const followup = document.getElementById('preciseFollowup');
+      if (val === "yes") {
+        followup.innerHTML = `
+          <div class="form-row">
+            <label>Do you already have a system for naming sub-locations?</label>
+            <div>
+              <label><input type="radio" name="hasNaming" value="yes" required> Yes</label>
+              <label><input type="radio" name="hasNaming" value="no" style="margin-left:17px;"> No</label>
+            </div>
+            <div style="font-size:0.9em;color:#93a7c6;margin-top:6px;">
+              Location management can be configured after onboarding is complete.
+            </div>
+          </div>
+        `;
+      } else {
+        followup.innerHTML = '';
+      }
+    });
+  });
+
+  document.getElementById('step3Form').onsubmit = function(e) {
+    e.preventDefault();
+
+    const mapDivisionType = document.getElementById('mapDivisionType').value;
+    const barcodeDelimiter = document.getElementById('barcodeDelimiter').value;
+    const reportFormat = document.getElementById('reportFormat').value;
+    const preciseLoc = document.querySelector('input[name="preciseLoc"]:checked')?.value;
+    const scanOnly = document.querySelector('input[name="scanOnly"]:checked')?.value;
+
+    if (!mapDivisionType || !preciseLoc || !scanOnly) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
+    let divisions = [];
+    let divisionCodes = [];
+    let divisionLabels = {};
+
+    if (mapDivisionType === 'Custom') {
+      // Collect custom divisions
+      const nameInputs = document.querySelectorAll('.customDivisionName');
+      const codeInputs = document.querySelectorAll('.customDivisionCode');
+
+      for (let i = 0; i < nameInputs.length; i++) {
+        const name = nameInputs[i].value.trim();
+        const code = codeInputs[i].value.trim();
+
+        if (name && code) {
+          divisions.push(name);
+          divisionCodes.push(code);
+        }
+      }
+
+      if (divisions.length === 0) {
+        alert('Please enter at least one division name and code.');
+        return;
+      }
+
+      divisionLabels[mapDivisionType] = 'Custom Division';
+    } else {
+      // Standard divisions
+      const customLabel = document.getElementById('divisionLabel').value.trim();
+      const numDivs = parseInt(document.getElementById('numDivisions').value);
+      const codeInputs = document.querySelectorAll('.divisionCode');
+
+      if (!numDivs || numDivs < 1) {
+        alert('Please enter the number of divisions.');
+        return;
+      }
+
+      if (codeInputs.length !== numDivs) {
+        alert('Please enter codes for all divisions.');
+        return;
+      }
+
+      // Generate division names and collect codes
+      const label = customLabel || mapDivisionType;
+      for (let i = 0; i < numDivs; i++) {
+        const code = codeInputs[i].value.trim();
+        if (!code) {
+          alert(`Please enter a code for ${label} ${i + 1}.`);
+          return;
+        }
+        divisions.push(`${label} ${i + 1}`);
+        divisionCodes.push(code);
+      }
+
+      divisionLabels[mapDivisionType] = customLabel || mapDivisionType;
+    }
+
+    // Store all the enhanced map division data
+    onboardingData.mapDivisionType = mapDivisionType;
+    onboardingData.mapDivisionLabels = divisionLabels;
+    onboardingData.divisions = divisions;
+    onboardingData.divisionCodes = divisionCodes;
+    onboardingData.barcodeDelimiter = barcodeDelimiter;
+    onboardingData.barcodeLevels = ["zone", "sublocation", "precisionlocation"]; // Standard levels
+    onboardingData.preciseScanEnabled = preciseLoc === "yes";
+    onboardingData.typingAllowed = scanOnly !== "yes";
+    onboardingData.reportFormat = reportFormat;
+    onboardingData.preciseLoc = preciseLoc;
+    onboardingData.scanOnly = scanOnly;
+
+    console.log('Map division data collected:', {
+      type: mapDivisionType,
+      labels: divisionLabels,
+      divisions: divisions,
+      codes: divisionCodes,
+      delimiter: barcodeDelimiter
+    });
+
+    showStep4();
+  };
+
+  document.getElementById('backTo2').onclick = function() { showStep2(); };
+}
+
+// ---- STEP 4: ASSET TYPES ----
+function showStep4() {
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 4: Asset Types</div>
+    <form id="step4Form">
+      <div class="form-row">
+        <label for="assetTypes">List all asset types to track</label>
+        <input type="text" id="assetTypes" name="assetTypes" maxlength="120" required placeholder="e.g., Extinguishers, Vehicles, Warehouses..." />
+        <div style="font-size:0.95em; color:#555; margin-top:6px;">
+          Don't forget vehicles, warehouses, trailers, etc.
+        </div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+      <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo3">Back</button>
+    </form>
+  `;
+  document.getElementById('backTo3').onclick = function() {
+    showStep3();
+  };
+  document.getElementById('step4Form').onsubmit = function(e) {
+    e.preventDefault();
+    const assetTypes = document.getElementById('assetTypes').value.trim();
+    if (!assetTypes) return alert('Please enter at least one asset type.');
+    let clean = assetTypes.replace(/\s+and\s+/ig, ', ');
+    onboardingData.assetTypes = clean.split(',').map(s => s.trim()).filter(Boolean);
+    showStep5();
+  };
+}
+
+// ---- STEP 5: ASSET FREQUENCIES ----
+function showStep5() {
+  const assetTypes = onboardingData.assetTypes || [];
+  onboardingData.assetFrequencies = onboardingData.assetFrequencies || {};
+  let current = 0;
+
+  function renderAssetFreq(idx) {
+    const type = assetTypes[idx];
+    let freqList = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'BiAnnually',  'Annually'];
+    let hydroList = [];
+    if (type.toLowerCase().includes('extinguisher')) {
+      hydroList = ['5yr Hydro', '10yr Hydro'];
+    }
+    const prevFreqs = onboardingData.assetFrequencies[type] || [];
+    onboardRight.innerHTML = `
+      <div class="step-label">Step 5: How often are these inspected?</div>
+      <div style="color:#fdd835; font-size:1.10em; margin-bottom:10px;">${type}</div>
+      <div id="freqBtns" style="margin-bottom:24px;">
+        ${freqList.map(f =>
+          `<button class="freq-btn${prevFreqs.includes(f) ? ' selected' : ''}" type="button" data-freq="${f}">${f}</button>`
+        ).join('')}
+        ${hydroList.map(h =>
+          `<button class="freq-btn selected hydro" type="button" data-freq="${h}" disabled>${h}</button>`
+        ).join('')}
+      </div>
+      <div style="display:flex;gap:15px;">
+        <button class="next-btn" type="button" id="prevAsset"${idx === 0 ? ' style="visibility:hidden;"' : ''}>Back</button>
+        <button class="next-btn" type="button" id="nextAsset">${idx < assetTypes.length - 1 ? 'Continue' : 'Done'}</button>
+      </div>
+    `;
+
+    // Toggle freq selection (not hydro)
+    document.querySelectorAll('.freq-btn:not(.hydro)').forEach(btn => {
+      btn.onclick = function() {
+        btn.classList.toggle('selected');
+      }
+    });
+
+    // Next/Done button
+    document.getElementById('nextAsset').onclick = function() {
+      // Save selected
+      const selected = [];
+      document.querySelectorAll('.freq-btn.selected').forEach(btn => {
+        selected.push(btn.getAttribute('data-freq'));
+      });
+      // Always add Hydro for extinguishers
+      if (hydroList.length) {
+        selected.push(...hydroList);
+      }
+      onboardingData.assetFrequencies[type] = selected;
+
+      if (idx < assetTypes.length - 1) {
+        renderAssetFreq(idx + 1);
+      } else {
+        showStep6(); // CSV Import comes next!
+      }
+    }
+    // Back button
+    document.getElementById('prevAsset').onclick = function() {
+      if (idx > 0) renderAssetFreq(idx - 1);
+    }
+  }
+  renderAssetFreq(0);
+}
+
+// ---- STEP 6: CSV IMPORT ----
+function showStep6() {
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 6: Import Asset List (CSV)</div>
+    <div style="color:#fdd835; font-size:1.08em; margin-bottom:10px;">
+      Optional: Import a CSV to quickly add assets. <br>
+      <span style="color:#ececec; font-size:0.96em;">
+        You can skip this and add assets manually after onboarding.
+      </span>
+    </div>
+    <a href="#" id="downloadCsv" style="color:#fdd835;font-size:1em;text-decoration:underline;cursor:pointer;display:inline-block;margin-bottom:17px;">Download CSV Template</a>
+    <form id="csvImportForm" enctype="multipart/form-data">
+      <div class="form-row">
+        <label for="assetCsv">Upload CSV File</label>
+        <input type="file" id="assetCsv" accept=".csv,text/csv" style="background:#18203a;color:#fff;" />
+        <div id="csvStatus" style="margin-top:7px;font-size:0.98em;"></div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+      <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo5">Back</button>
+    </form>
+  `;
+  document.getElementById('downloadCsv').onclick = function(e) {
+    e.preventDefault();
+    const csvTemplate = "Asset Name,Asset Type,Serial Number,Location,Notes\n";
+    const blob = new Blob([csvTemplate], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "nexus_asset_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  document.getElementById('backTo5').onclick = function() {
+    showStep5();
+  };
+  document.getElementById('assetCsv').onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const status = document.getElementById('csvStatus');
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const text = evt.target.result;
+      const lines = text.trim().split('\n');
+      if (lines.length < 2) {
+        status.textContent = "File is empty or missing data.";
+        status.style.color = "#ff5656";
+        return;
+      }
+      const columns = lines[0].split(',');
+      const required = ["Asset Name", "Asset Type", "Serial Number", "Location", "Notes"];
+      const missing = required.filter(col => !columns.includes(col));
+      if (missing.length) {
+        status.textContent = "Missing columns: " + missing.join(', ');
+        status.style.color = "#ff5656";
+        return;
+      }
+      status.textContent = "File looks good! " + (lines.length-1) + " assets detected.";
+      status.style.color = "#43ff7a";
+      onboardingData.assetCsv = text;
+    };
+    reader.readAsText(file);
+  };
+  document.getElementById('csvImportForm').onsubmit = function(e) {
+    e.preventDefault();
+    if (!onboardingData.assetCsv && document.getElementById('assetCsv').files.length > 0) {
+      document.getElementById('csvStatus').textContent = "Please upload a valid CSV template.";
+      document.getElementById('csvStatus').style.color = "#ff5656";
+      return;
+    }
+    showStep7();
+  };
+}
+
+// ---- STEP 7: CUSTOM QUESTIONS ----
+function showStep7() {
+  // Asset Types must be present!
+  if (!onboardingData.assetTypes || onboardingData.assetTypes.length === 0) {
+    alert("No asset types found. Please complete Step 4.");
+    showStep4();
+    return;
+  }
+
+  onboardingData.customQuestions = onboardingData.customQuestions || {};
+
+  // Build options for dropdown
+  const options = onboardingData.assetTypes
+    .map(type => `<option value="${type}">${type}</option>`)
+    .join('');
+
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 7: Add Custom Questions</div>
+    <div style="color:#fdd835; font-size:1.08em; margin-bottom:10px;">
+      Do you have any additional questions beyond the industry standard? <br>
+      <span style="color:#ececec; font-size:0.96em;">
+        Add them here, or skip and add questions later.
+      </span>
+    </div>
+    <form id="customQuestionForm" autocomplete="off" style="margin-bottom:18px;">
+      <div class="form-row">
+        <label for="questionAssetType">Asset Type</label>
+        <select id="questionAssetType" style="font-family:'Oswald';font-size:1.07em;padding:9px 12px;border-radius:7px;background:#203358;color:#e6e6f1;border:2px solid #1c3050;">
+          ${options}
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="customQuestion">Additional Question</label>
+        <input type="text" id="customQuestion" maxlength="90" placeholder="e.g., Is the serial number legible?" autocomplete="off" />
+      </div>
+      <button class="next-btn" type="submit" style="width:auto;max-width:130px;margin-bottom:0;">Add</button>
+    </form>
+    <div id="questionList" style="margin-bottom:20px;"></div>
+    <button class="next-btn" id="continueStep7">Continue</button>
+    <button class="next-btn" type="button" style="margin-top:13px;background:#ececec;color:#23263a;" id="backTo6">Back</button>
+  `;
+
+  // Render question list per asset type
+  function renderQuestions() {
+    const list = document.getElementById('questionList');
+    let html = '';
+    const q = onboardingData.customQuestions;
+    if (Object.keys(q).length === 0) {
+      list.innerHTML = `<div style="color:#ececec;font-size:0.99em;">No custom questions added yet.</div>`;
+      return;
+    }
+    for (const type in q) {
+      html += `<div style="margin-bottom:6px;">
+        <strong style="color:#fdd835">${type}:</strong><ul style="margin:3px 0 5px 12px;">`;
+      q[type].forEach((question, idx) => {
+        html += `<li style="color:#e6e6f1;">
+          ${question}
+          <button type="button" data-type="${type}" data-idx="${idx}" style="margin-left:8px;font-size:0.93em;background:#233358;border:none;color:#fdd835;border-radius:5px;padding:1px 8px;cursor:pointer;">Remove</button>
+        </li>`;
+      });
+      html += `</ul></div>`;
+    }
+    list.innerHTML = html;
+    // Remove buttons
+    document.querySelectorAll('#questionList button[data-type]').forEach(btn => {
+      btn.onclick = function() {
+        const type = btn.getAttribute('data-type');
+        const idx = +btn.getAttribute('data-idx');
+        onboardingData.customQuestions[type].splice(idx, 1);
+        if (onboardingData.customQuestions[type].length === 0) delete onboardingData.customQuestions[type];
+        renderQuestions();
+      };
+    });
+  }
+  renderQuestions();
+
+  // Add question
+  document.getElementById('customQuestionForm').onsubmit = function(e) {
+    e.preventDefault();
+    const type = document.getElementById('questionAssetType').value;
+    const question = document.getElementById('customQuestion').value.trim();
+    if (!question) {
+      alert('Please enter a question.');
+      return;
+    }
+    onboardingData.customQuestions[type] = onboardingData.customQuestions[type] || [];
+    onboardingData.customQuestions[type].push(question);
+    document.getElementById('customQuestion').value = '';
+    renderQuestions();
+  };
+
+  document.getElementById('continueStep7').onclick = function() {
+    showStep8();
+  };
+  document.getElementById('backTo6').onclick = function() {
+    showStep6();
+  };
+}
+
+// ---- STEP 8: REVIEW & CONFIRM ----
+function showStep8() {
+  // 1. Client Info
+  const clientName = onboardingData.clientName || '';
+  const clientLogo = onboardingData.clientLogo
+    ? `<img src="${onboardingData.clientLogo}" alt="Logo" style="height:48px;max-width:120px;display:block;background:#fff;padding:3px 9px;border-radius:8px;margin-bottom:8px;">`
+    : '';
+
+  // 2. Admin Account
+  const adminSection = `
+    <div style="margin-bottom:17px;">
+      <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Admin Account:</div>
+      <div style="color:#fff;font-size:1.09em;margin-bottom:2px;">
+        ${onboardingData.adminFirst || ''} ${onboardingData.adminLast || ''}<br>
+        <span style="color:#fdd835">${onboardingData.adminUsername || ''}</span>
+        <span style="color:#ccc;font-size:0.96em;display:block;">(Default password: ${onboardingData.adminPassword || ''})</span>
+      </div>
+    </div>
+  `;
+
+  // 3. Map & Scanning Setup (simplified)
+  let locationDetails = '';
+  if (onboardingData.divisions && onboardingData.divisions.length) {
+    locationDetails = `<div style="margin:8px 0 2px 0;"><span style="color:#fdd835;">Divisions to be created:</span><ul style="margin:2px 0 6px 18px;">` +
+      onboardingData.divisions.map(divName => `<li>${divName}</li>`).join('') + `</ul></div>`;
+  }
+  
+  const mapSection = `
+    <div style="margin-bottom:17px;">
+      <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Map/Location Setup:</div>
+      <div style="color:#fff;font-size:1.04em;">
+        <div><b>Division Type:</b> ${onboardingData.isCustomDivisions ? 'Custom Names' : onboardingData.mapDivide}</div>
+        ${onboardingData.numDivisions ? `<div><b>Number of ${onboardingData.mapDivide}s:</b> ${onboardingData.numDivisions}</div>` : ''}
+        <div><b>Total Divisions:</b> ${onboardingData.divisions ? onboardingData.divisions.length : 0}</div>
+        <div><b>Precise Scan Required:</b> ${onboardingData.preciseLoc === "yes" ? "Yes" : "No"}</div>
+        ${onboardingData.preciseLoc === "yes" ? `<div><b>Has Sub-location Naming:</b> ${onboardingData.hasNaming || 'Not specified'}</div>` : ""}
+        <div><b>Typing Allowed:</b> ${onboardingData.scanOnly === "no" ? "Yes" : "No"}</div>
+        ${locationDetails}
+        <div style="color:#93a7c6;font-size:0.9em;margin-top:8px;font-style:italic;">
+          Location management and codes will be configured after onboarding.
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 4. Asset Types
+  const assetTypes = onboardingData.assetTypes ? onboardingData.assetTypes.join(', ') : '';
+  // 5. Asset Frequencies
+  let freqSummary = '';
+  if (onboardingData.assetFrequencies && Object.keys(onboardingData.assetFrequencies).length) {
+    freqSummary = '<div style="margin-bottom:17px;"><div style="color:#ececec;font-weight:600;margin-bottom:2px;">Inspection Frequencies:</div>';
+    for (const [type, freqs] of Object.entries(onboardingData.assetFrequencies)) {
+      freqSummary += `<div style="margin-bottom:6px;">
+        <strong style="color:#fdd835">${type}:</strong>
+        <span style="color:#ececec;font-size:1em;">${(freqs || []).join(', ')}</span>
+      </div>`;
+    }
+    freqSummary += '</div>';
+  }
+  // 6. CSV Import
+  let assetTable = '<div style="color:#ccc;font-size:1em;">No CSV imported.</div>';
+  if (onboardingData.assetCsv) {
+    const rows = onboardingData.assetCsv.trim().split('\n');
+    const headers = rows[0].split(',');
+    assetTable = `<table style="border-collapse:collapse;margin-bottom:9px;font-size:0.98em;background:#203358;border-radius:9px;overflow:hidden;">
+      <tr>${headers.map(h => `<th style="padding:6px 11px;color:#fdd835;text-align:left;border-bottom:1.5px solid #1c3050;">${h}</th>`).join('')}</tr>`;
+    for (let i = 1; i < Math.min(6, rows.length); i++) {
+      const cells = rows[i].split(',');
+      assetTable += `<tr>${cells.map(c => `<td style="padding:6px 11px;color:#ececec;">${c}</td>`).join('')}</tr>`;
+    }
+    if (rows.length > 6) {
+      assetTable += `<tr><td colspan="${headers.length}" style="padding:6px 11px;color:#aaa;text-align:center;">...and ${rows.length - 6} more</td></tr>`;
+    }
+    assetTable += '</table>';
+  }
+
+  // 7. Custom Questions
+  let questionSummary = '<div style="color:#ccc;font-size:1em;">None added</div>';
+  if (onboardingData.customQuestions && Object.keys(onboardingData.customQuestions).length) {
+    questionSummary = '';
+    for (const [type, qs] of Object.entries(onboardingData.customQuestions)) {
+      questionSummary += `<div style="margin-bottom:8px;"><strong style="color:#fdd835">${type}:</strong><ul style="margin:4px 0 0 18px;">`;
+      for (const q of qs) questionSummary += `<li style="color:#ececec;font-size:0.99em;">${q}</li>`;
+      questionSummary += '</ul></div>';
+    }
+  }
+
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 8: Review & Confirm</div>
+    <div style="font-size:1.07em;color:#fdd835;margin-bottom:5px;">Review your onboarding details:</div>
+    <div style="background:#18203a;padding:23px 20px 13px 20px;border-radius:13px;margin-bottom:25px;box-shadow:0 2px 14px #0003;">
+      <div style="margin-bottom:17px;">
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Client Name:</div>
+        <div style="font-size:1.1em;color:#fff;font-weight:700;margin-bottom:2px;">${clientName}</div>
+        ${clientLogo}
+      </div>
+      ${adminSection}
+      ${mapSection}
+      <div style="margin-bottom:17px;">
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Asset Types:</div>
+        <div style="color:#fdd835;font-size:1.07em;font-weight:600;">${assetTypes}</div>
+      </div>
+      ${freqSummary}
+      <div style="margin-bottom:17px;">
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Imported Assets (CSV):</div>
+        ${assetTable}
+      </div>
+      <div>
+        <div style="color:#ececec;font-weight:600;margin-bottom:2px;">Custom Questions:</div>
+        ${questionSummary}
+      </div>
+    </div>
+    <button class="next-btn" id="finishBtn" style="background:#fdd835;color:#18203a;font-size:1.19em;font-weight:700;padding:14px 0;margin-bottom:8px;margin-top:10px;">Finish & Submit</button>
+    <button class="next-btn" type="button" style="background:#ececec;color:#23263a;" id="backTo7">Back</button>
+  `;
+document.getElementById('finishBtn').onclick = async function() {
+  document.getElementById('finishBtn').disabled = true;
+  document.getElementById('finishBtn').textContent = 'Submitting...';
+
+  const subdomain = onboardingData.clientName
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+
+  console.log('Starting onboarding submission for:', subdomain);
+  console.log('Onboarding data:', onboardingData);
+
+  let logoUrl = '';
+  try {
+    // 1. Check for existing client with same subdomain
+    const clientDoc = await getDoc(doc(db, 'clients', subdomain));
+    if (clientDoc.exists()) {
+      alert('A client with this name already exists. Please choose a different name.');
+      document.getElementById('finishBtn').disabled = false;
+      document.getElementById('finishBtn').textContent = 'Finish & Submit';
+      return;
+    }
+
+    // 2. Upload logo
+    if (onboardingData.logoFile) {
+      const ext = onboardingData.logoFile.name.split('.').pop();
+      const safeFileName = 'logo.' + ext;
+      const logoRef = ref(storage, `client_logos/${subdomain}/${safeFileName}`);
+      await uploadBytes(logoRef, onboardingData.logoFile);
+      logoUrl = await getDownloadURL(logoRef);
+    }
+
+    // 3. Save comprehensive client document in clients collection
+    await setDoc(doc(db, 'clients', subdomain), {
+      name: onboardingData.clientName,
+      logo_url: logoUrl,
+      subdomain: subdomain,
+      settings: {
+        barcodeDelimiter: onboardingData.barcodeDelimiter || "-",
+        barcodeLevels: onboardingData.barcodeLevels || ["zone", "sublocation", "precisionlocation"],
+        preciseScanEnabled: onboardingData.preciseScanEnabled || false,
+        reportFormat: onboardingData.reportFormat || "pdf",
+        typingAllowed: onboardingData.typingAllowed !== false,
+        mapDivisions: onboardingData.divisions || [],
+        mapDivisionType: onboardingData.mapDivisionType || "Zone",
+        mapDivisionLabels: onboardingData.mapDivisionLabels || {},
+        mapDivisionCodes: onboardingData.divisionCodes || [],
+        customAssetTypes: onboardingData.wantCustomAssetTypes === "yes",
+        customQuestions: onboardingData.wantCustomQuestions === "yes"
+      },
+      admin_username: onboardingData.adminUsername,
+      createdAt: new Date().toISOString(),
+      status: "active",
+      onboarding_completed: true
+    });
+
+    // 4. Create client-specific collections structure
+    const clientRef = doc(db, 'clients', subdomain);
+
+    // Create client-specific asset types (if custom types requested)
+    if (onboardingData.wantCustomAssetTypes === "yes" && onboardingData.assetTypes && onboardingData.assetTypes.length > 0) {
+      for (const assetType of onboardingData.assetTypes) {
+        const normalizedType = assetType.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+
+        await setDoc(doc(collection(clientRef, 'asset_types'), normalizedType), {
+          id: normalizedType,
+          name: assetType,
+          createdAt: new Date().toISOString(),
+          onboardingCreated: true
+        });
+        console.log(`Created client-specific asset type: ${normalizedType}`);
+      }
+    }
+
+    // Create client-specific question templates (if custom questions requested)
+    if (onboardingData.wantCustomQuestions === "yes" && onboardingData.customQuestions) {
+      await setDoc(doc(collection(clientRef, 'questionTemplates'), 'default'), {
+        questions: onboardingData.customQuestions,
+        createdAt: new Date().toISOString(),
+        onboardingCreated: true
+      });
+      console.log('Created client-specific question templates');
+    }
+
+    // 5. Create admin user in client-specific users collection
+    const adminUserId = onboardingData.adminUsername.replace('@', '_at_'); // Safe document ID
+
+    // Get bcrypt and hash password (with fallback)
+    const bcryptLib = getBcrypt();
+    let hashedPassword = onboardingData.adminPassword; // fallback to plain text
+
+    if (bcryptLib) {
+      try {
+        hashedPassword = bcryptLib.hashSync(onboardingData.adminPassword, 10);
+        console.log('Password hashed successfully');
+      } catch (e) {
+        console.warn('Failed to hash password, using plain text:', e);
+      }
+    } else {
+      console.warn('Bcrypt not available, using plain text password');
+    }
+
+    await setDoc(doc(collection(clientRef, 'users'), adminUserId), {
+      firstName: onboardingData.adminFirst,
+      lastName: onboardingData.adminLast,
+      username: onboardingData.adminUsername,
+      hashedPassword: hashedPassword,
+      role: "Admin", // Capitalized role for API compatibility
+      active: true,
+      soft_deleted: false,
+      must_change_password: true,
+      createdAt: new Date().toISOString(),
+      onboardingCreated: true,
+      user_type: "admin",
+      permissions: ["read", "write", "delete", "manage_users"],
+      last_login: null,
+      login_count: 0
+    });
+    console.log(`Created admin user in client-specific collection: ${adminUserId}`);
+
+    // 6. Create default locations (required for all clients)
+    const defaultLocations = [
+      {
+        id: 'newly_added',
+        name: 'Newly Added',
+        code: '001',
+        level: 0,
+        isDefault: true,
+        description: 'Default location for newly created assets'
+      },
+      {
+        id: 'out_of_service',
+        name: 'Out of Service',
+        code: '002',
+        level: 0,
+        isDefault: true,
+        description: 'Location for assets that are out of service'
+      },
+      {
+        id: 'offsite',
+        name: 'Offsite',
+        code: '000',
+        level: 0,
+        isDefault: true,
+        description: 'Location for assets that are offsite'
+      }
+    ];
+
+    // Create default locations first
+    for (const defaultLoc of defaultLocations) {
+      await setDoc(doc(collection(clientRef, 'locations'), defaultLoc.id), {
+        name: defaultLoc.name,
+        code: defaultLoc.code,
+        level: defaultLoc.level,
+        isDefault: defaultLoc.isDefault,
+        description: defaultLoc.description,
+        divisionType: 'System',
+        preciseScanEnabled: onboardingData.preciseScanEnabled,
+        created: new Date().toISOString(),
+        onboardingCreated: true,
+        hasSubLocations: false
+      });
+
+      // Create sublocation for each default location
+      await setDoc(doc(collection(clientRef, 'locations'), `${defaultLoc.id}_sub`), {
+        name: defaultLoc.name,
+        code: defaultLoc.code,
+        level: 1,
+        parentId: defaultLoc.id,
+        parentCode: defaultLoc.code,
+        isDefault: true,
+        divisionType: 'System',
+        preciseScanEnabled: onboardingData.preciseScanEnabled,
+        created: new Date().toISOString(),
+        onboardingCreated: true,
+        hasSubLocations: false
+      });
+
+      // Create precision location for each default location
+      await setDoc(doc(collection(clientRef, 'locations'), `${defaultLoc.id}_precision`), {
+        name: defaultLoc.name,
+        code: defaultLoc.code,
+        level: 2,
+        parentId: `${defaultLoc.id}_sub`,
+        parentCode: defaultLoc.code,
+        isDefault: true,
+        divisionType: 'System',
+        preciseScanEnabled: onboardingData.preciseScanEnabled,
+        created: new Date().toISOString(),
+        onboardingCreated: true,
+        hasSubLocations: false
+      });
+
+      console.log(`Created default location: ${defaultLoc.name} with full hierarchy`);
+    }
+
+    // 7. Create custom locations from onboarding data
+    if (onboardingData.divisions && onboardingData.divisions.length) {
+      for (let i = 0; i < onboardingData.divisions.length; i++) {
+        const divisionName = onboardingData.divisions[i];
+        const divisionCode = onboardingData.divisionCodes ? onboardingData.divisionCodes[i] : String(i + 100).padStart(3, '0');
+        const locationId = divisionName.toLowerCase().replace(/\s+/g, '_');
+
+        await setDoc(doc(collection(clientRef, 'locations'), locationId), {
+          name: divisionName,
+          code: divisionCode,
+          level: 0, // Top level location
+          divisionType: onboardingData.mapDivisionType || "Zone",
+          divisionLabel: onboardingData.mapDivisionLabels ? onboardingData.mapDivisionLabels[onboardingData.mapDivisionType] : onboardingData.mapDivisionType,
+          isCustom: onboardingData.mapDivisionType === 'Custom',
+          preciseScanEnabled: onboardingData.preciseScanEnabled,
+          created: new Date().toISOString(),
+          onboardingCreated: true,
+          hasSubLocations: false,
+          isDefault: false
+        });
+        console.log(`Created custom location: ${divisionName} (${divisionCode})`);
+      }
+    }
+
+    // 7. Create required empty collections with initial documents
+
+    // Create assets collection (empty, ready for assets to be added)
+    await setDoc(doc(collection(clientRef, 'assets'), '_placeholder'), {
+      _placeholder: true,
+      created: new Date().toISOString(),
+      note: "This document will be removed when first real asset is added"
+    });
+
+    // Create assignments collection (empty, ready for assignments)
+    await setDoc(doc(collection(clientRef, 'assignments'), '_placeholder'), {
+      _placeholder: true,
+      created: new Date().toISOString(),
+      note: "This document will be removed when first assignment is created"
+    });
+
+    // Create inspectionRecords collection (empty, ready for inspection records)
+    await setDoc(doc(collection(clientRef, 'inspectionRecords'), '_placeholder'), {
+      _placeholder: true,
+      created: new Date().toISOString(),
+      note: "This document will be removed when first inspection is recorded"
+    });
+
+    // Create logs collection with initial onboarding log
+    await setDoc(doc(collection(clientRef, 'logs'), 'onboarding'), {
+      action: "client_onboarded",
+      message: `Client ${onboardingData.clientName} successfully onboarded`,
+      timestamp: new Date().toISOString(),
+      user: onboardingData.adminUsername,
+      details: {
+        subdomain: subdomain,
+        admin_user: onboardingData.adminUsername,
+        locations_created: onboardingData.divisions ? onboardingData.divisions.length : 0,
+        custom_asset_types: onboardingData.wantCustomAssetTypes === "yes",
+        custom_questions: onboardingData.wantCustomQuestions === "yes"
+      }
+    });
+
+    // Success! Show completion message
+    console.log('✅ Onboarding completed successfully!');
+    console.log('✅ Client created in clients collection:', subdomain);
+    console.log('✅ Admin user created in client-specific users collection:', onboardingData.adminUsername);
+    console.log('✅ All required collections created for client:', subdomain);
+    showOnboardingSuccess(subdomain);
+
+  } catch (err) {
+    console.error('❌ Onboarding error:', err);
+    console.error('❌ Error details:', err.message, err.stack);
+    
+    // Try to get a more specific error message
+    let errorMessage = err.message;
+    if (err.code) {
+      errorMessage = `Firebase Error (${err.code}): ${err.message}`;
+    }
+    
+    alert("Error saving to Firebase: " + errorMessage);
+    
+    // Re-enable button only if elements still exist
+    const finishBtn = document.getElementById('finishBtn');
+    if (finishBtn) {
+      finishBtn.disabled = false;
+      finishBtn.textContent = 'Finish & Submit';
+    }
+  }
+};
+
+document.getElementById('backTo7').onclick = function() {
+  showStep7();
+};
+}
+
+function showStep1(isBack = false) {
+  onboardRight.innerHTML = `
+    <div class="step-label">Step 1: Client Details</div>
+    <form id="step1Form" autocomplete="off">
+      <div class="form-row">
+        <label for="clientName">Client Name</label>
+        <input type="text" id="clientName" name="clientName" maxlength="48" required autocomplete="off" placeholder="Enter client name..." value="${onboardingData.clientName || ''}" />
+      </div>
+      <div class="form-row">
+        <label for="clientLogo">Upload Client Logo</label>
+        <input type="file" id="clientLogo" name="clientLogo" accept="image/*" ${!isBack ? 'required' : ''} />
+        <div style="font-size:0.9em;color:#555; margin-top:5px;">SVG or PNG recommended, max 1MB.</div>
+      </div>
+      <button class="next-btn" type="submit">Continue</button>
+    </form>
+  `;
+  
+  const step1Form = document.getElementById('step1Form');
+  step1Form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const clientName = document.getElementById('clientName').value.trim();
+    const clientLogoFile = document.getElementById('clientLogo').files[0];
+    if (!clientName) return alert('Please enter a client name.');
+    if (!clientLogoFile && !onboardingData.logoFile) return alert('Please upload a client logo.');
+    
+    onboardingData.clientName = clientName;
+    if (clientLogoFile) {
+      onboardingData.logoFile = clientLogoFile;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        onboardingData.clientLogo = evt.target.result;
+        showStep2();
+      };
+      reader.readAsDataURL(clientLogoFile);
+    } else {
+      showStep2();
+    }
+  });
+}
+
+// Success completion screen
+function showOnboardingSuccess(subdomain) {
+  onboardRight.innerHTML = `
+    <div style="text-align: center; padding: 3rem 2rem;">
+      <div style="font-size: 4rem; color: #28e640; margin-bottom: 1.5rem;">✅</div>
+      <div style="font-size: 2rem; font-weight: 700; color: #fdd835; margin-bottom: 1rem;">
+        Onboarding Complete!
+      </div>
+      <div style="font-size: 1.2rem; color: #ececec; margin-bottom: 1rem; line-height: 1.5;">
+        Your client "${onboardingData.clientName}" has been successfully created and configured.
+      </div>
+      <div style="font-size: 1rem; color: #aaa; margin-bottom: 2.5rem;">
+        Subdomain: <strong style="color: #fdd835;">${subdomain}.nexusresq.com</strong>
+      </div>
+      
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <button onclick="window.location.href='login.html'" 
+                style="background: #fdd835; color: #18203a; border: none; padding: 1rem 2rem; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+          Login to Nexus Res-Q
+        </button>
+        <button onclick="window.location.href='https://www.nexusresq.com'" 
+                style="background: transparent; color: #fdd835; border: 2px solid #fdd835; padding: 1rem 2rem; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+          Return to Homepage
+        </button>
+      </div>
+      
+      <div style="margin-top: 2rem; padding: 1rem; background: rgba(253, 216, 53, 0.1); border-radius: 8px; border-left: 4px solid #fdd835;">
+        <div style="font-size: 1rem; color: #fdd835; font-weight: 600; margin-bottom: 0.5rem;">Data Successfully Saved:</div>
+        <div style="font-size: 0.9rem; color: #ccc; line-height: 1.4;">
+          ✅ <strong>Client Data:</strong> Saved to <code>clients/${subdomain}</code><br>
+          ✅ <strong>Admin User:</strong> Created in <code>users/${onboardingData.adminUsername}</code><br>
+          ✅ <strong>Asset Configuration:</strong> Stored with client data<br>
+          ✅ <strong>Location Setup:</strong> Prepared for configuration<br>
+          ✅ <strong>Custom Questions:</strong> Ready for inspections
+        </div>
+      </div>
+      
+      <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(40, 230, 64, 0.1); border-radius: 8px; border-left: 4px solid #28e640;">
+        <div style="font-size: 1rem; color: #28e640; font-weight: 600; margin-bottom: 0.5rem;">Next Steps:</div>
+        <div style="font-size: 0.9rem; color: #ccc; line-height: 1.4;">
+          • Use the admin credentials you created to log in<br>
+          • Complete your asset inventory setup<br>
+          • Configure inspection schedules<br>
+          • Add additional users as needed
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Note: No need to hide finishBtn since it's replaced by the success content
+}
+
+</script>
+</body>
+</html>
