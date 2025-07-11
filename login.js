@@ -206,7 +206,7 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
 
   try {
     // Process username for multi-tenant structure
-    let processedUsername = username.trim();
+    let processedUsername = username;
     if (processedUsername.includes('@')) {
       const [baseUsername, clientId] = processedUsername.split('@');
       if (clientId !== subdomain) {
