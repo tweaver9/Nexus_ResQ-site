@@ -902,6 +902,40 @@
       <div class="stat-label">Assets Complete</div>
     </div>
   </section>
+
+  </div>
+  </header>
+  <!-- Client Selector (Nexus only) -->
+  <div class="client-selector" id="client-selector" style="display: none;">
+    <label style="color: var(--nexus-muted); font-size: 0.875rem; margin-bottom: 0.5rem; display: block;">Select Client to Manage:</label>
+    <select class="client-dropdown" id="client-dropdown">
+      <option value="">Select Client...</option>
+    </select>
+  </div>
+  <!-- Summary Stats -->
+  <section class="summary-stats">
+    <div class="stat-card overdue">
+      <div class="stat-number" id="overdue-count">0</div>
+      <div class="stat-label">Assets Overdue</div>
+    </div>
+    <div class="stat-card due-soon">
+      <div class="stat-number" id="due-soon-count">0</div>
+      <div class="stat-label">Due Soon</div>
+    </div>
+    <div class="stat-card complete">
+      <div class="stat-number" id="complete-count">0</div>
+      <div class="stat-label">Assets Complete</div>
+    </div>
+  </section>
+
+  <div id="assetTypesContainer"></div>
+<div id="assetListContainer"></div>
+  
+  <!-- === STICKY FILTER BAR (NEW) === -->
+  <div id="sticky-filters" style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
+    <input id="asset-search" type="search" placeholder="Search assets..." style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:200px;">
+    <!-- Dropdown removed as requested -->
+    <button class="premium-add-btn" id="add-as
   <!-- === STICKY FILTER BAR (NEW) === -->
   <div id="sticky-filters" style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
     <input id="asset-search" type="search" placeholder="Search assets..." style="background:var(--nexus-card);color:var(--nexus-light);border:1px solid var(--nexus-border);border-radius:8px;padding:0.5rem 1rem;min-width:200px;">
