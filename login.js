@@ -42,14 +42,28 @@ document.querySelector(".login-form").addEventListener("submit", async (e) => {
 
     const clientData = clientDoc.data();
 
+    // Process username for multi-tenant structure
+    // If username contains @clientId, strip it to get the base username
+    let processedUsername = username;
+    if (username.includes('@')) {
+      const [baseUsername, clientId] = username.split('@');
+      if (clientId === subdomain) {
+        processedUsername = baseUsername;
+        console.log("Stripped client suffix from username:", processedUsername); // Debug log
+      } else {
+        showError("Username domain doesn't match current client subdomain.");
+        return;
+      }
+    }
+
     // Backend will handle user lookup and validation
 
     // Call your Firebase Cloud Function for authentication
     console.log("Calling backend for authentication..."); // Debug log
-    console.log("Sending to backend:", { username, subdomain, passwordLength: password.length }); // Debug log
+    console.log("Sending to backend:", { username: processedUsername, subdomain, passwordLength: password.length }); // Debug log
 
     const requestBody = {
-      username: username,
+      username: processedUsername,
       password: password,
       subdomain: subdomain
     };
@@ -195,6 +209,18 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
   }
 
   try {
+    // Process username for multi-tenant structure
+    let processedUsername = username.trim();
+    if (processedUsername.includes('@')) {
+      const [baseUsername, clientId] = processedUsername.split('@');
+      if (clientId === subdomain) {
+        processedUsername = baseUsername;
+      } else {
+        showError("Username domain doesn't match current client subdomain.");
+        return;
+      }
+    }
+
     // Call backend to reset password
     const defaultPassword = subdomain; // Use subdomain as default password
 
@@ -204,7 +230,7 @@ document.getElementById('forgot-password-btn').addEventListener('click', async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: username.trim(),
+        username: processedUsername,
         code: 'forgot_password', // You might want to implement a proper reset code system
         newPassword: defaultPassword,
         clientName: subdomain
