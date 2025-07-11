@@ -606,23 +606,34 @@ function getAssetStatus(asset) {
 // ========== EVENT LISTENERS ==========
 function setupEventListeners() {
   // Back button
-  document.getElementById('back-to-types-btn').addEventListener('click', backToTypes);
-  
+  const backBtn = document.getElementById('back-to-types-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', backToTypes);
+  }
   // Modal close buttons
-  document.getElementById('asset-detail-close').addEventListener('click', () => {
-    document.getElementById('asset-detail-modal').classList.remove('active');
-  });
-  
-  document.getElementById('add-asset-modal-close').addEventListener('click', () => {
-    document.getElementById('add-asset-modal').classList.remove('active');
-  });
-  
+  const assetDetailClose = document.getElementById('asset-detail-close');
+  if (assetDetailClose) {
+    assetDetailClose.addEventListener('click', () => {
+      document.getElementById('asset-detail-modal').classList.remove('active');
+    });
+  }
+  const addAssetModalClose = document.getElementById('add-asset-modal-close');
+  if (addAssetModalClose) {
+    addAssetModalClose.addEventListener('click', () => {
+      document.getElementById('add-asset-modal').classList.remove('active');
+    });
+  }
   // Search and sort
   setupSearchAndSort();
-  
   // Add asset buttons
-  document.getElementById('add-asset-btn').addEventListener('click', showAddAssetModal);
-  document.getElementById('add-asset-btn-main').addEventListener('click', showAddAssetModal);
+  const addAssetBtn = document.getElementById('add-asset-btn');
+  if (addAssetBtn) {
+    addAssetBtn.addEventListener('click', showAddAssetModal);
+  }
+  const addAssetBtnMain = document.getElementById('add-asset-btn-main');
+  if (addAssetBtnMain) {
+    addAssetBtnMain.addEventListener('click', showAddAssetModal);
+  }
 }
 
 // ========== UTILITY FUNCTIONS ==========
