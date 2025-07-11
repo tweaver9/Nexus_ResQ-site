@@ -679,13 +679,13 @@ body {
   }
 }
 
-/* === ADD ASSET MODAL (LOGIN THEME) === */
+/* === ADD ASSET MODAL (MATCH ADD USER MODAL) === */
 #add-asset-modal .modal {
   background: var(--primary-mid);
-  border-radius: 14px;
+  border-radius: 22px;
   box-shadow: var(--box-shadow);
-  padding: 40px 38px 30px 38px;
-  max-width: 420px;
+  padding: 32px 22px 24px 22px;
+  max-width: 250px;
   width: 100%;
   margin: 48px auto 0 auto;
   text-align: left;
@@ -698,12 +698,12 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 #add-asset-modal .modal-title {
   font-family: 'Oswald', 'Inter', Arial, sans-serif;
-  font-size: 1.42em;
-  font-weight: 600;
+  font-size: 1.32em;
+  font-weight: 700;
   color: var(--primary-light);
   letter-spacing: 0.03em;
   margin-bottom: 0;
@@ -712,18 +712,18 @@ body {
   background: none;
   border: none;
   color: var(--primary-light);
-  font-size: 1.7rem;
+  font-size: 1.5rem;
   cursor: pointer;
   border-radius: 50%;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s, color 0.2s;
-  margin-left: 12px;
-  margin-top: -8px;
-  margin-bottom: -8px;
+  margin-left: 10px;
+  margin-top: -6px;
+  margin-bottom: -6px;
 }
 #add-asset-modal .modal-close:hover {
   background: var(--nexus-border);
@@ -732,13 +732,13 @@ body {
 #add-asset-modal .modal-content form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.1rem;
 }
 #add-asset-modal label {
   font-weight: 600;
   color: var(--nexus-light);
-  font-size: 1.08rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.01rem;
+  margin-bottom: 0.4rem;
   letter-spacing: 0.01em;
 }
 #add-asset-modal input[type="text"],
@@ -748,11 +748,11 @@ body {
   color: #fff;
   border: 1.6px solid var(--input-border);
   border-radius: 8px;
-  padding: 13px 12px;
-  font-size: 1.07em;
+  padding: 11px 10px;
+  font-size: 1em;
   font-family: 'Inter', Arial, sans-serif;
-  margin-top: 0.15rem;
-  margin-bottom: 0.5rem;
+  margin-top: 0.12rem;
+  margin-bottom: 0.4rem;
   transition: border 0.19s;
   outline: none;
   box-shadow: none;
@@ -773,12 +773,12 @@ body {
   color: var(--button-text);
   border: none;
   border-radius: 8px;
-  padding: 14px;
-  font-size: 1.13em;
+  padding: 12px;
+  font-size: 1.09em;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.16s, color 0.16s;
-  margin-top: 10px;
+  margin-top: 8px;
   box-shadow: 0 1.5px 6px rgba(12,22,44,0.09);
 }
 #add-asset-modal button[type="submit"]:hover,
@@ -792,9 +792,9 @@ body {
   font-weight: 600;
   border: none;
   border-radius: 8px;
-  padding: 14px;
-  font-size: 1.13em;
-  margin-top: 10px;
+  padding: 12px;
+  font-size: 1.09em;
+  margin-top: 8px;
   cursor: pointer;
   text-decoration: underline;
   transition: color 0.16s, background 0.16s;
@@ -811,18 +811,18 @@ body {
 @media (max-width: 600px) {
   #add-asset-modal .modal {
     max-width: 97vw;
-    padding: 18px 2vw 16px 2vw;
+    padding: 12px 2vw 10px 2vw;
     border-radius: 12px;
   }
   #add-asset-modal .modal-title {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
   #add-asset-modal label {
-    font-size: 1rem;
+    font-size: 0.97rem;
   }
   #add-asset-modal input,
   #add-asset-modal select {
-    font-size: 0.98rem;
-    padding: 0.7rem 0.7rem;
+    font-size: 0.97rem;
+    padding: 0.6rem 0.6rem;
   }
 }
