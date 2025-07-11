@@ -18,6 +18,18 @@
   --glow-success: 0 0 16px rgba(16, 185, 129, 0.4);
   --glow-warning: 0 0 16px rgba(245, 158, 11, 0.4);
   --glow-error: 0 0 16px rgba(239, 68, 68, 0.4);
+  
+  /* Legacy compatibility - these will be replaced by modern variables */
+  --primary-dark: var(--nexus-bg);
+  --primary-mid: var(--nexus-card);
+  --primary-light: var(--nexus-yellow);
+  --button-bg: var(--nexus-card);
+  --button-hover: var(--nexus-yellow);
+  --button-text: var(--nexus-light);
+  --button-hover-text: var(--nexus-dark);
+  --input-bg: var(--nexus-card);
+  --input-border: var(--nexus-border);
+  --box-shadow: var(--shadow-card);
 }
 
 * { 

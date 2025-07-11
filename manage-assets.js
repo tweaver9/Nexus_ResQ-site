@@ -721,6 +721,17 @@ function setupEventListeners() {
       document.getElementById('add-asset-modal').classList.remove('active');
     });
   }
+  
+  // Add Asset Modal: Click outside to close
+  const addAssetModalOverlay = document.getElementById('add-asset-modal');
+  if (addAssetModalOverlay) {
+    addAssetModalOverlay.addEventListener('click', (e) => {
+      // Only close if clicking the overlay itself, not the modal content
+      if (e.target === addAssetModalOverlay) {
+        addAssetModalOverlay.classList.remove('active');
+      }
+    });
+  }
   // Search and sort
   setupSearchAndSort();
   // Add asset buttons
