@@ -490,11 +490,18 @@ async function fetchSublocations(locationId) {
   return sublocations;
 }
 
-function showAddAssetModal() {
+async function showAddAssetModal() {
   const content = document.getElementById('add-asset-modal-content');
-  renderAddAssetForm(content);
   document.getElementById('add-asset-modal').classList.add('active');
-  setupAddAssetFormListeners();
+  
+  try {
+    await renderAddAssetForm(content);
+    setupAddAssetFormListeners();
+  } catch (error) {
+    console.error('Error rendering add asset form:', error);
+    showToast('Error loading asset form. Please try again.', { type: 'error' });
+    document.getElementById('add-asset-modal').classList.remove('active');
+  }
 }
 
 async function renderAddAssetForm(content) {
@@ -602,6 +609,7 @@ async function renderAddAssetForm(content) {
 }
 
 function setupAddAssetFormListeners() {
+  // Get all required elements with defensive checks
   const typeSelect = document.getElementById('asset-type-select');
   const customTypeContainer = document.getElementById('custom-type-container');
   const customTypeInput = document.getElementById('custom-asset-type');
@@ -617,6 +625,28 @@ function setupAddAssetFormListeners() {
   const submitBtn = document.getElementById('submit-add-asset');
   const assetIdInput = document.getElementById('asset-id');
   const serialNoInput = document.getElementById('serial-no');
+
+  // Verify all critical elements exist
+  const requiredElements = {
+    'asset-type-select': typeSelect,
+    'sub-type': subTypeInput,
+    'asset-id': assetIdInput,
+    'location-select': locationSelect,
+    'sublocation-select': sublocationSelect,
+    'add-asset-form': form,
+    'cancel-add-asset': cancelBtn,
+    'submit-add-asset': submitBtn
+  };
+
+  const missingElements = Object.entries(requiredElements)
+    .filter(([id, element]) => !element)
+    .map(([id]) => id);
+
+  if (missingElements.length > 0) {
+    console.error('Missing required form elements:', missingElements);
+    console.error('Form may not have rendered properly. Cannot setup listeners.');
+    return;
+  }
 
   // Form validation state
   let formState = {
@@ -663,7 +693,10 @@ function setupAddAssetFormListeners() {
     const field = formState[fieldName];
     const inputElement = document.getElementById(getInputId(fieldName));
     
-    if (!inputElement) return;
+    if (!inputElement) {
+      console.warn(`Input element for field '${fieldName}' not found`);
+      return;
+    }
     
     // Remove existing validation classes
     inputElement.classList.remove('field-error', 'field-success');
@@ -690,6 +723,8 @@ function setupAddAssetFormListeners() {
 
   // Update sub-type placeholder based on asset type
   function updateSubTypePlaceholder(assetType) {
+    if (!subTypeInput) return;
+    
     if (!assetType) {
       subTypeInput.placeholder = 'What kind of Asset Type?';
       return;
@@ -702,15 +737,17 @@ function setupAddAssetFormListeners() {
   // Asset type custom logic with slug preview
   typeSelect.addEventListener('change', () => {
     if (typeSelect.value === '__custom__') {
-      customTypeContainer.style.display = 'block';
-      customTypeInput.focus();
+      if (customTypeContainer) customTypeContainer.style.display = 'block';
+      if (customTypeInput) customTypeInput.focus();
       updateFieldState('assetType', '');
       updateSubTypePlaceholder('');
     } else {
-      customTypeContainer.style.display = 'none';
-      customTypeInput.value = '';
-      slugPreview.textContent = '';
-      slugPreview.classList.remove('has-content');
+      if (customTypeContainer) customTypeContainer.style.display = 'none';
+      if (customTypeInput) customTypeInput.value = '';
+      if (slugPreview) {
+        slugPreview.textContent = '';
+        slugPreview.classList.remove('has-content');
+      }
       updateFieldState('assetType', typeSelect.value);
       updateSubTypePlaceholder(typeSelect.value);
     }
@@ -718,22 +755,24 @@ function setupAddAssetFormListeners() {
   });
 
   // Custom type input with slug preview
-  customTypeInput.addEventListener('input', (e) => {
-    const value = e.target.value.trim();
-    updateFieldState('assetType', value);
-    updateSubTypePlaceholder(value);
-    updateHydroDueVisibility();
-    
-    // Update slug preview
-    if (value) {
-      const slug = createSlug(value);
-      slugPreview.textContent = `Slug: ${slug}`;
-      slugPreview.classList.add('has-content');
-    } else {
-      slugPreview.textContent = '';
-      slugPreview.classList.remove('has-content');
-    }
-  });
+  if (customTypeInput) {
+    customTypeInput.addEventListener('input', (e) => {
+      const value = e.target.value.trim();
+      updateFieldState('assetType', value);
+      updateSubTypePlaceholder(value);
+      updateHydroDueVisibility();
+      
+      // Update slug preview
+      if (value && slugPreview) {
+        const slug = createSlug(value);
+        slugPreview.textContent = `Slug: ${slug}`;
+        slugPreview.classList.add('has-content');
+      } else if (slugPreview) {
+        slugPreview.textContent = '';
+        slugPreview.classList.remove('has-content');
+      }
+    });
+  }
 
   // Sub-type input validation
   subTypeInput.addEventListener('input', (e) => {
@@ -741,17 +780,21 @@ function setupAddAssetFormListeners() {
   });
 
   function updateHydroDueVisibility() {
-    let assetType = typeSelect.value === '__custom__' ? customTypeInput.value : typeSelect.value;
+    let assetType = typeSelect.value === '__custom__' ? (customTypeInput ? customTypeInput.value : '') : typeSelect.value;
     if (shouldShowHydroDue(assetType)) {
-      hydroDueField.style.display = 'block';
+      if (hydroDueField) hydroDueField.style.display = 'block';
       const hydroDueInput = document.getElementById('hydro-due');
-      hydroDueInput.required = true;
-      updateFieldState('hydroDue', hydroDueInput.value);
+      if (hydroDueInput) {
+        hydroDueInput.required = true;
+        updateFieldState('hydroDue', hydroDueInput.value);
+      }
     } else {
-      hydroDueField.style.display = 'none';
+      if (hydroDueField) hydroDueField.style.display = 'none';
       const hydroDueInput = document.getElementById('hydro-due');
-      hydroDueInput.required = false;
-      updateFieldState('hydroDue', '');
+      if (hydroDueInput) {
+        hydroDueInput.required = false;
+        updateFieldState('hydroDue', '');
+      }
     }
   }
 
@@ -768,14 +811,14 @@ function setupAddAssetFormListeners() {
   // Location custom logic
   locationSelect.addEventListener('change', async () => {
     if (locationSelect.value === '__custom__') {
-      customLocationInput.style.display = 'block';
-      customLocationInput.focus();
+      if (customLocationInput) customLocationInput.style.display = 'block';
+      if (customLocationInput) customLocationInput.focus();
       sublocationSelect.innerHTML = '<option value="">Enter custom location first</option>';
       updateFieldState('location', '');
       updateFieldState('sublocation', '');
     } else {
-      customLocationInput.style.display = 'none';
-      customLocationInput.value = '';
+      if (customLocationInput) customLocationInput.style.display = 'none';
+      if (customLocationInput) customLocationInput.value = '';
       updateFieldState('location', locationSelect.value);
       
       // Load sublocations for selected location
@@ -792,32 +835,38 @@ function setupAddAssetFormListeners() {
     }
   });
 
-  customLocationInput.addEventListener('input', (e) => {
-    updateFieldState('location', e.target.value);
-  });
+  if (customLocationInput) {
+    customLocationInput.addEventListener('input', (e) => {
+      updateFieldState('location', e.target.value);
+    });
+  }
 
   // Sublocation custom logic
   sublocationSelect.addEventListener('change', () => {
     if (sublocationSelect.value === '__custom__') {
-      customSublocationInput.style.display = 'block';
-      customSublocationInput.focus();
+      if (customSublocationInput) customSublocationInput.style.display = 'block';
+      if (customSublocationInput) customSublocationInput.focus();
       updateFieldState('sublocation', '');
     } else {
-      customSublocationInput.style.display = 'none';
-      customSublocationInput.value = '';
+      if (customSublocationInput) customSublocationInput.style.display = 'none';
+      if (customSublocationInput) customSublocationInput.value = '';
       updateFieldState('sublocation', sublocationSelect.value);
     }
   });
 
-  customSublocationInput.addEventListener('input', (e) => {
-    updateFieldState('sublocation', e.target.value);
-  });
+  if (customSublocationInput) {
+    customSublocationInput.addEventListener('input', (e) => {
+      updateFieldState('sublocation', e.target.value);
+    });
+  }
 
   // Hydro due validation
   const hydroDueInput = document.getElementById('hydro-due');
-  hydroDueInput.addEventListener('input', (e) => {
-    updateFieldState('hydroDue', e.target.value);
-  });
+  if (hydroDueInput) {
+    hydroDueInput.addEventListener('input', (e) => {
+      updateFieldState('hydroDue', e.target.value);
+    });
+  }
 
   // Cancel button
   cancelBtn.addEventListener('click', () => {
