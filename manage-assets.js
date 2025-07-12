@@ -464,15 +464,15 @@ async function fetchLocations() {
     const snapshot = await db.collection('clients').doc(currentClientId).collection('locations').get();
     snapshot.forEach(doc => {
       const data = doc.data();
-      // Fallback: if level is missing, assume it's a top-level location
-      if (data.level === 0 || data.level === undefined) {
-        locations.push({ id: doc.id, name: data.name, ...data });
+      // Only include documents with valid name property and level 0 (top-level locations)
+      if (data.name && data.name.trim() && (data.level === 0 || data.level === undefined)) {
+        locations.push({ id: doc.id, name: data.name.trim(), ...data });
       }
     });
     
     // If no locations found, log a helpful message
     if (locations.length === 0) {
-      console.warn('No locations found for client. User may need to complete onboarding or create locations.');
+      console.warn('No valid locations found for client. User may need to complete onboarding or create locations.');
     }
   } catch (err) {
     console.error('Error fetching locations:', err);
@@ -486,8 +486,9 @@ async function fetchSublocations(locationId) {
     const snapshot = await db.collection('clients').doc(currentClientId).collection('locations').get();
     snapshot.forEach(doc => {
       const data = doc.data();
-      if (data.level === 1 && data.parentId === locationId) {
-        sublocations.push({ id: doc.id, name: data.name, ...data });
+      // Only include documents with valid name property, level 1, and matching parentId
+      if (data.name && data.name.trim() && data.level === 1 && data.parentId === locationId) {
+        sublocations.push({ id: doc.id, name: data.name.trim(), ...data });
       }
     });
   } catch (err) {
@@ -517,11 +518,21 @@ async function createLocation(name, level = 0, parentId = null) {
 async function refreshLocationDropdown(locationSelect, includeCustomOption = true) {
   try {
     const locations = await fetchLocations();
-    let locationOptions = locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
-    if (includeCustomOption) {
-      locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+    let locationOptions = '';
+    
+    if (locations.length > 0) {
+      locationOptions = locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
+      if (includeCustomOption) {
+        locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+      }
+    } else {
+      locationOptions = '<option value="" disabled>No locations found</option>';
+      if (includeCustomOption) {
+        locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+      }
     }
-    locationSelect.innerHTML = locationOptions || '<option value="">No locations found</option>';
+    
+    locationSelect.innerHTML = locationOptions;
     return locations;
   } catch (error) {
     console.error('Error refreshing location dropdown:', error);
@@ -532,11 +543,21 @@ async function refreshLocationDropdown(locationSelect, includeCustomOption = tru
 async function refreshSublocationDropdown(sublocationSelect, locationId, includeCustomOption = true) {
   try {
     const sublocations = await fetchSublocations(locationId);
-    let subOptions = sublocations.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
-    if (includeCustomOption) {
-      subOptions += '<option value="__custom__">+ Add Custom Sub-Location</option>';
+    let subOptions = '';
+    
+    if (sublocations.length > 0) {
+      subOptions = sublocations.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
+      if (includeCustomOption) {
+        subOptions += '<option value="__custom__">+ Add Custom Sub-Location</option>';
+      }
+    } else {
+      subOptions = '<option value="" disabled>No sub-locations found</option>';
+      if (includeCustomOption) {
+        subOptions += '<option value="__custom__">+ Add Custom Sub-Location</option>';
+      }
     }
-    sublocationSelect.innerHTML = subOptions || '<option value="">No sub-locations found</option>';
+    
+    sublocationSelect.innerHTML = subOptions;
     return sublocations;
   } catch (error) {
     console.error('Error refreshing sublocation dropdown:', error);
@@ -1141,14 +1162,10 @@ async function addAsset() {
       if (!locationName) {
         throw new Error('Location is required');
       }
-      // Add new location to Firestore
-      const newLocRef = db.collection('clients').doc(currentClientId).collection('locations').doc();
-      await newLocRef.set({ 
-        name: locationName, 
-        level: 0, 
-        created: new Date().toISOString() 
-      });
-      locationId = newLocRef.id;
+      // Create new location using the existing function
+      const newLocation = await createLocation(locationName, 0);
+      locationId = newLocation.id;
+      locationName = newLocation.name;
     } else {
       locationName = locationSelect.options[locationSelect.selectedIndex].text;
     }
@@ -1164,15 +1181,10 @@ async function addAsset() {
       if (!sublocationName) {
         throw new Error('Sub-location is required');
       }
-      // Add new sublocation to Firestore
-      const newSubRef = db.collection('clients').doc(currentClientId).collection('locations').doc();
-      await newSubRef.set({ 
-        name: sublocationName, 
-        level: 1, 
-        parentId: locationId, 
-        created: new Date().toISOString() 
-      });
-      sublocationId = newSubRef.id;
+      // Create new sublocation using the existing function
+      const newSublocation = await createLocation(sublocationName, 1, locationId);
+      sublocationId = newSublocation.id;
+      sublocationName = newSublocation.name;
     } else {
       sublocationName = sublocationSelect.options[sublocationSelect.selectedIndex] ? 
         sublocationSelect.options[sublocationSelect.selectedIndex].text : '';
