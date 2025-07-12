@@ -483,14 +483,25 @@ async function fetchLocations() {
 async function fetchSublocations(locationId) {
   const sublocations = [];
   try {
-    const snapshot = await db.collection('clients').doc(currentClientId).collection('locations').get();
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      // Only include documents with valid name property, level 1, and matching parentId
-      if (data.name && data.name.trim() && data.level === 1 && data.parentId === locationId) {
-        sublocations.push({ id: doc.id, name: data.name.trim(), ...data });
-      }
-    });
+    // Fetch the parent location document to get its sublocations field
+    const locationDoc = await db.collection('clients').doc(currentClientId).collection('locations').doc(locationId).get();
+    
+    if (locationDoc.exists) {
+      const locationData = locationDoc.data();
+      const sublocationsMap = locationData.sublocations || {};
+      
+      // Convert the sublocations map to an array of objects
+      Object.entries(sublocationsMap).forEach(([key, sublocationData]) => {
+        // Only include sublocations with valid user-facing names
+        if (sublocationData && sublocationData.name && sublocationData.name.trim()) {
+          sublocations.push({
+            id: key, // Use the map key as the unique identifier
+            name: sublocationData.name.trim(),
+            ...sublocationData
+          });
+        }
+      });
+    }
   } catch (err) {
     console.error('Error fetching sublocations:', err);
   }
@@ -511,6 +522,31 @@ async function createLocation(name, level = 0, parentId = null) {
     return { id: docRef.id, name: name.trim(), ...locationData };
   } catch (error) {
     console.error('Error creating location:', error);
+    throw error;
+  }
+}
+
+async function addSublocationToLocation(locationId, sublocationName) {
+  try {
+    // Generate a unique key for the sublocation
+    const sublocationKey = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Create the sublocation data
+    const sublocationData = {
+      name: sublocationName.trim(),
+      created: new Date().toISOString()
+    };
+    
+    // Add the sublocation to the parent location's sublocations map
+    const locationRef = db.collection('clients').doc(currentClientId).collection('locations').doc(locationId);
+    await locationRef.update({
+      [`sublocations.${sublocationKey}`]: sublocationData
+    });
+    
+    console.log(`Added sublocation: ${sublocationName} with key: ${sublocationKey} to location: ${locationId}`);
+    return { id: sublocationKey, name: sublocationName.trim(), ...sublocationData };
+  } catch (error) {
+    console.error('Error adding sublocation to location:', error);
     throw error;
   }
 }
@@ -960,7 +996,7 @@ function setupAddAssetFormListeners() {
     
     try {
       const sublocationName = customSublocationInput.value.trim();
-      const newSublocation = await createLocation(sublocationName, 1, locationSelect.value);
+      const newSublocation = await addSublocationToLocation(locationSelect.value, sublocationName);
       
       // Refresh sublocation dropdown and select the new sublocation
       await refreshSublocationDropdown(sublocationSelect, locationSelect.value);
@@ -1181,8 +1217,8 @@ async function addAsset() {
       if (!sublocationName) {
         throw new Error('Sub-location is required');
       }
-      // Create new sublocation using the existing function
-      const newSublocation = await createLocation(sublocationName, 1, locationId);
+      // Create new sublocation using the new function that adds to parent location's sublocations map
+      const newSublocation = await addSublocationToLocation(locationId, sublocationName);
       sublocationId = newSublocation.id;
       sublocationName = newSublocation.name;
     } else {
@@ -1492,7 +1528,7 @@ function setupMoveAssetFormListeners() {
     
     try {
       const sublocationName = customSublocationInput.value.trim();
-      const newSublocation = await createLocation(sublocationName, 1, locationSelect.value);
+      const newSublocation = await addSublocationToLocation(locationSelect.value, sublocationName);
       
       // Refresh sublocation dropdown and select the new sublocation
       await refreshSublocationDropdown(sublocationSelect, locationSelect.value);
@@ -1662,15 +1698,10 @@ async function moveAsset() {
       if (!sublocationName) {
         throw new Error('Sub-location is required');
       }
-      // Add new sublocation to Firestore
-      const newSubRef = db.collection('clients').doc(currentClientId).collection('locations').doc();
-      await newSubRef.set({ 
-        name: sublocationName, 
-        level: 1, 
-        parentId: locationId, 
-        created: new Date().toISOString() 
-      });
-      sublocationId = newSubRef.id;
+      // Create new sublocation using the new function that adds to parent location's sublocations map
+      const newSublocation = await addSublocationToLocation(locationId, sublocationName);
+      sublocationId = newSublocation.id;
+      sublocationName = newSublocation.name;
     } else {
       sublocationName = sublocationSelect.options[sublocationSelect.selectedIndex].text;
     }
