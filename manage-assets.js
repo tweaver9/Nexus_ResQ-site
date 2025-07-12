@@ -464,10 +464,16 @@ async function fetchLocations() {
     const snapshot = await db.collection('clients').doc(currentClientId).collection('locations').get();
     snapshot.forEach(doc => {
       const data = doc.data();
-      if (data.level === 0) {
+      // Fallback: if level is missing, assume it's a top-level location
+      if (data.level === 0 || data.level === undefined) {
         locations.push({ id: doc.id, name: data.name, ...data });
       }
     });
+    
+    // If no locations found, log a helpful message
+    if (locations.length === 0) {
+      console.warn('No locations found for client. User may need to complete onboarding or create locations.');
+    }
   } catch (err) {
     console.error('Error fetching locations:', err);
   }
@@ -488,6 +494,54 @@ async function fetchSublocations(locationId) {
     console.error('Error fetching sublocations:', err);
   }
   return sublocations;
+}
+
+async function createLocation(name, level = 0, parentId = null) {
+  try {
+    const locationData = {
+      name: name.trim(),
+      level: level,
+      created: new Date(),
+      ...(parentId && { parentId: parentId })
+    };
+    
+    const docRef = await db.collection('clients').doc(currentClientId).collection('locations').add(locationData);
+    console.log(`Created location: ${name} with ID: ${docRef.id}`);
+    return { id: docRef.id, name: name.trim(), ...locationData };
+  } catch (error) {
+    console.error('Error creating location:', error);
+    throw error;
+  }
+}
+
+async function refreshLocationDropdown(locationSelect, includeCustomOption = true) {
+  try {
+    const locations = await fetchLocations();
+    let locationOptions = locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
+    if (includeCustomOption) {
+      locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+    }
+    locationSelect.innerHTML = locationOptions || '<option value="">No locations found</option>';
+    return locations;
+  } catch (error) {
+    console.error('Error refreshing location dropdown:', error);
+    locationSelect.innerHTML = '<option value="">Error loading locations</option>';
+  }
+}
+
+async function refreshSublocationDropdown(sublocationSelect, locationId, includeCustomOption = true) {
+  try {
+    const sublocations = await fetchSublocations(locationId);
+    let subOptions = sublocations.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
+    if (includeCustomOption) {
+      subOptions += '<option value="__custom__">+ Add Custom Sub-Location</option>';
+    }
+    sublocationSelect.innerHTML = subOptions || '<option value="">No sub-locations found</option>';
+    return sublocations;
+  } catch (error) {
+    console.error('Error refreshing sublocation dropdown:', error);
+    sublocationSelect.innerHTML = '<option value="">Error loading sub-locations</option>';
+  }
 }
 
 async function showAddAssetModal() {
@@ -513,18 +567,21 @@ async function renderAddAssetForm(content) {
   let typeOptions = types.map(type => `<option value="${type}">${type}</option>`).join('');
   typeOptions += '<option value="__custom__">+ Add Custom Type</option>';
   
-  // Build location options
-  let locationOptions = locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
-  locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+  // Build location options with fallback for empty locations
+  let locationOptions = '';
+  if (locations.length > 0) {
+    locationOptions = locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
+    locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+  } else {
+    locationOptions = '<option value="">No locations found. Please add a location first.</option>';
+    locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+  }
   
   content.innerHTML = `
     <form id="add-asset-form">
       <!-- Asset Information Section -->
       <div class="form-section">
         <div class="form-section-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-          </svg>
           Asset Information
         </div>
         
@@ -564,10 +621,6 @@ async function renderAddAssetForm(content) {
       <!-- Location Information Section -->
       <div class="form-section">
         <div class="form-section-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-            <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
           Location Information
         </div>
         
@@ -823,10 +876,7 @@ function setupAddAssetFormListeners() {
       
       // Load sublocations for selected location
       try {
-        const sublocations = await fetchSublocations(locationSelect.value);
-        let subOptions = sublocations.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
-        subOptions += '<option value="__custom__">+ Add Custom Sub-Location</option>';
-        sublocationSelect.innerHTML = subOptions || '<option value="">No sub-locations found</option>';
+        await refreshSublocationDropdown(sublocationSelect, locationSelect.value);
         updateFieldState('sublocation', '');
       } catch (error) {
         console.error('Error loading sublocations:', error);
@@ -839,6 +889,72 @@ function setupAddAssetFormListeners() {
     customLocationInput.addEventListener('input', (e) => {
       updateFieldState('location', e.target.value);
     });
+    
+    // Create location when user presses Enter or loses focus
+    customLocationInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' && customLocationInput.value.trim()) {
+        e.preventDefault();
+        await createCustomLocation();
+      }
+    });
+    
+    customLocationInput.addEventListener('blur', async () => {
+      if (customLocationInput.value.trim()) {
+        await createCustomLocation();
+      }
+    });
+  }
+
+  // Helper function to create custom location
+  async function createCustomLocation() {
+    if (!customLocationInput || !customLocationInput.value.trim()) return;
+    
+    try {
+      const locationName = customLocationInput.value.trim();
+      const newLocation = await createLocation(locationName, 0);
+      
+      // Refresh location dropdown and select the new location
+      await refreshLocationDropdown(locationSelect);
+      locationSelect.value = newLocation.id;
+      
+      // Hide custom input and update form state
+      customLocationInput.style.display = 'none';
+      customLocationInput.value = '';
+      updateFieldState('location', newLocation.id);
+      
+      // Load sublocations for the new location
+      await refreshSublocationDropdown(sublocationSelect, newLocation.id);
+      updateFieldState('sublocation', '');
+      
+      showToast(`Location "${locationName}" created successfully!`, { type: 'success' });
+    } catch (error) {
+      console.error('Error creating custom location:', error);
+      showToast('Error creating location. Please try again.', { type: 'error' });
+    }
+  }
+
+  // Helper function to create custom sublocation
+  async function createCustomSublocation() {
+    if (!customSublocationInput || !customSublocationInput.value.trim() || !locationSelect.value || locationSelect.value === '__custom__') return;
+    
+    try {
+      const sublocationName = customSublocationInput.value.trim();
+      const newSublocation = await createLocation(sublocationName, 1, locationSelect.value);
+      
+      // Refresh sublocation dropdown and select the new sublocation
+      await refreshSublocationDropdown(sublocationSelect, locationSelect.value);
+      sublocationSelect.value = newSublocation.id;
+      
+      // Hide custom input and update form state
+      customSublocationInput.style.display = 'none';
+      customSublocationInput.value = '';
+      updateFieldState('sublocation', newSublocation.id);
+      
+      showToast(`Sub-location "${sublocationName}" created successfully!`, { type: 'success' });
+    } catch (error) {
+      console.error('Error creating custom sublocation:', error);
+      showToast('Error creating sub-location. Please try again.', { type: 'error' });
+    }
   }
 
   // Sublocation custom logic
@@ -857,6 +973,20 @@ function setupAddAssetFormListeners() {
   if (customSublocationInput) {
     customSublocationInput.addEventListener('input', (e) => {
       updateFieldState('sublocation', e.target.value);
+    });
+    
+    // Create sublocation when user presses Enter or loses focus
+    customSublocationInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' && customSublocationInput.value.trim()) {
+        e.preventDefault();
+        await createCustomSublocation();
+      }
+    });
+    
+    customSublocationInput.addEventListener('blur', async () => {
+      if (customSublocationInput.value.trim()) {
+        await createCustomSublocation();
+      }
     });
   }
 
@@ -938,12 +1068,16 @@ function showModalSuccess() {
 
 // Close modal function
 function closeAddAssetModal() {
-  document.getElementById('add-asset-modal').classList.remove('active');
-  // Reset form after a short delay to allow animation
-  setTimeout(() => {
+  const modal = document.getElementById('add-asset-modal');
+  if (modal) {
+    modal.classList.remove('active');
+    // Reset modal content
     const content = document.getElementById('add-asset-modal-content');
-    content.innerHTML = '';
-  }, 300);
+    if (content) content.innerHTML = '';
+    // Remove loading overlays
+    const loadingOverlay = modal.querySelector('.loading-overlay');
+    if (loadingOverlay) loadingOverlay.remove();
+  }
 }
 
 async function addAsset() {
@@ -1125,9 +1259,15 @@ async function renderMoveAssetForm(content) {
   // Fetch locations
   const locations = await fetchLocations();
   
-  // Build location options
-  let locationOptions = locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
-  locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+  // Build location options with fallback for empty locations
+  let locationOptions = '';
+  if (locations.length > 0) {
+    locationOptions = locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
+    locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+  } else {
+    locationOptions = '<option value="">No locations found. Please add a location first.</option>';
+    locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+  }
   
   content.innerHTML = `
     <form id="move-asset-form">
@@ -1140,10 +1280,6 @@ async function renderMoveAssetForm(content) {
       <!-- New Location Selection -->
       <div class="form-section">
         <div class="form-section-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-            <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
           New Location
         </div>
         
@@ -1192,6 +1328,25 @@ function setupMoveAssetFormListeners() {
   const form = document.getElementById('move-asset-form');
   const cancelBtn = document.getElementById('cancel-move-asset');
   const submitBtn = document.getElementById('submit-move-asset');
+
+  // Verify all critical elements exist
+  const requiredElements = {
+    'move-location-select': locationSelect,
+    'move-sublocation-select': sublocationSelect,
+    'move-asset-form': form,
+    'cancel-move-asset': cancelBtn,
+    'submit-move-asset': submitBtn
+  };
+
+  const missingElements = Object.entries(requiredElements)
+    .filter(([id, element]) => !element)
+    .map(([id]) => id);
+
+  if (missingElements.length > 0) {
+    console.error('Missing required move form elements:', missingElements);
+    console.error('Move form may not have rendered properly. Cannot setup listeners.');
+    return;
+  }
 
   // Form validation state
   let moveFormState = {
@@ -1250,22 +1405,19 @@ function setupMoveAssetFormListeners() {
   // Location custom logic
   locationSelect.addEventListener('change', async () => {
     if (locationSelect.value === '__custom__') {
-      customLocationInput.style.display = 'block';
-      customLocationInput.focus();
+      if (customLocationInput) customLocationInput.style.display = 'block';
+      if (customLocationInput) customLocationInput.focus();
       sublocationSelect.innerHTML = '<option value="">Enter custom location first</option>';
       updateMoveFieldState('location', '');
       updateMoveFieldState('sublocation', '');
     } else {
-      customLocationInput.style.display = 'none';
-      customLocationInput.value = '';
+      if (customLocationInput) customLocationInput.style.display = 'none';
+      if (customLocationInput) customLocationInput.value = '';
       updateMoveFieldState('location', locationSelect.value);
       
       // Load sublocations for selected location
       try {
-        const sublocations = await fetchSublocations(locationSelect.value);
-        let subOptions = sublocations.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
-        subOptions += '<option value="__custom__">+ Add Custom Sub-Location</option>';
-        sublocationSelect.innerHTML = subOptions || '<option value="">No sub-locations found</option>';
+        await refreshSublocationDropdown(sublocationSelect, locationSelect.value);
         updateMoveFieldState('sublocation', '');
       } catch (error) {
         console.error('Error loading sublocations:', error);
@@ -1274,26 +1426,110 @@ function setupMoveAssetFormListeners() {
     }
   });
 
-  customLocationInput.addEventListener('input', (e) => {
-    updateMoveFieldState('location', e.target.value);
-  });
+  if (customLocationInput) {
+    customLocationInput.addEventListener('input', (e) => {
+      updateMoveFieldState('location', e.target.value);
+    });
+    
+    // Create location when user presses Enter or loses focus
+    customLocationInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' && customLocationInput.value.trim()) {
+        e.preventDefault();
+        await createMoveCustomLocation();
+      }
+    });
+    
+    customLocationInput.addEventListener('blur', async () => {
+      if (customLocationInput.value.trim()) {
+        await createMoveCustomLocation();
+      }
+    });
+  }
+
+  // Helper function to create custom location for move modal
+  async function createMoveCustomLocation() {
+    if (!customLocationInput || !customLocationInput.value.trim()) return;
+    
+    try {
+      const locationName = customLocationInput.value.trim();
+      const newLocation = await createLocation(locationName, 0);
+      
+      // Refresh location dropdown and select the new location
+      await refreshLocationDropdown(locationSelect);
+      locationSelect.value = newLocation.id;
+      
+      // Hide custom input and update form state
+      customLocationInput.style.display = 'none';
+      customLocationInput.value = '';
+      updateMoveFieldState('location', newLocation.id);
+      
+      // Load sublocations for the new location
+      await refreshSublocationDropdown(sublocationSelect, newLocation.id);
+      updateMoveFieldState('sublocation', '');
+      
+      showToast(`Location "${locationName}" created successfully!`, { type: 'success' });
+    } catch (error) {
+      console.error('Error creating custom location:', error);
+      showToast('Error creating location. Please try again.', { type: 'error' });
+    }
+  }
+
+  // Helper function to create custom sublocation for move modal
+  async function createMoveCustomSublocation() {
+    if (!customSublocationInput || !customSublocationInput.value.trim() || !locationSelect.value || locationSelect.value === '__custom__') return;
+    
+    try {
+      const sublocationName = customSublocationInput.value.trim();
+      const newSublocation = await createLocation(sublocationName, 1, locationSelect.value);
+      
+      // Refresh sublocation dropdown and select the new sublocation
+      await refreshSublocationDropdown(sublocationSelect, locationSelect.value);
+      sublocationSelect.value = newSublocation.id;
+      
+      // Hide custom input and update form state
+      customSublocationInput.style.display = 'none';
+      customSublocationInput.value = '';
+      updateMoveFieldState('sublocation', newSublocation.id);
+      
+      showToast(`Sub-location "${sublocationName}" created successfully!`, { type: 'success' });
+    } catch (error) {
+      console.error('Error creating custom sublocation:', error);
+      showToast('Error creating sub-location. Please try again.', { type: 'error' });
+    }
+  }
 
   // Sublocation custom logic
   sublocationSelect.addEventListener('change', () => {
     if (sublocationSelect.value === '__custom__') {
-      customSublocationInput.style.display = 'block';
-      customSublocationInput.focus();
+      if (customSublocationInput) customSublocationInput.style.display = 'block';
+      if (customSublocationInput) customSublocationInput.focus();
       updateMoveFieldState('sublocation', '');
     } else {
-      customSublocationInput.style.display = 'none';
-      customSublocationInput.value = '';
+      if (customSublocationInput) customSublocationInput.style.display = 'none';
+      if (customSublocationInput) customSublocationInput.value = '';
       updateMoveFieldState('sublocation', sublocationSelect.value);
     }
   });
 
-  customSublocationInput.addEventListener('input', (e) => {
-    updateMoveFieldState('sublocation', e.target.value);
-  });
+  if (customSublocationInput) {
+    customSublocationInput.addEventListener('input', (e) => {
+      updateMoveFieldState('sublocation', e.target.value);
+    });
+    
+    // Create sublocation when user presses Enter or loses focus
+    customSublocationInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' && customSublocationInput.value.trim()) {
+        e.preventDefault();
+        await createMoveCustomSublocation();
+      }
+    });
+    
+    customSublocationInput.addEventListener('blur', async () => {
+      if (customSublocationInput.value.trim()) {
+        await createMoveCustomSublocation();
+      }
+    });
+  }
 
   // Cancel button
   cancelBtn.addEventListener('click', () => {
