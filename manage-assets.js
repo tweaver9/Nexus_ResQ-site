@@ -108,6 +108,115 @@ function formatInspectionDate(dateStr) {
   }
 }
 
+// Location document ID formatting (no slugging, prettified for Firestore)
+function formatLocationDocId(name) {
+  return name
+    .trim()
+    .replace(/\s+/g, '_') // Convert spaces to underscores
+    .replace(/[^a-zA-Z0-9_-]/g, '') // Remove invalid Firestore characters
+    .toLowerCase(); // Enforce lowercase for consistency
+}
+
+// Get client code pattern settings
+async function getClientCodePattern() {
+  try {
+    const clientDoc = await db.collection('clients').doc(currentClientId).get();
+    if (clientDoc.exists) {
+      const clientData = clientDoc.data();
+      return clientData.codePattern || {
+        prefix: 'LOC',
+        length: 6,
+        numeric: true,
+        separator: '-'
+      };
+    }
+  } catch (error) {
+    console.error('Error fetching client code pattern:', error);
+  }
+  
+  // Default pattern if none exists
+  return {
+    prefix: 'LOC',
+    length: 6,
+    numeric: true,
+    separator: '-'
+  };
+}
+
+// Generate unique code for location/sublocation
+async function generateUniqueCode(level = 0) {
+  try {
+    const pattern = await getClientCodePattern();
+    const locations = await fetchLocations();
+    
+    // Get existing codes at this level
+    const existingCodes = locations
+      .filter(loc => loc.level === level)
+      .map(loc => loc.code)
+      .filter(code => code && code.startsWith(pattern.prefix));
+    
+    // Find the highest numeric value
+    let maxNumber = 0;
+    existingCodes.forEach(code => {
+      const match = code.match(new RegExp(`${pattern.prefix}${pattern.separator}(\\d+)`));
+      if (match) {
+        const num = parseInt(match[1]);
+        if (num > maxNumber) maxNumber = num;
+      }
+    });
+    
+    // Generate next code
+    const nextNumber = maxNumber + 1;
+    const numericPart = nextNumber.toString().padStart(pattern.length - pattern.prefix.length - pattern.separator.length, '0');
+    
+    return `${pattern.prefix}${pattern.separator}${numericPart}`;
+  } catch (error) {
+    console.error('Error generating unique code:', error);
+    // Fallback code
+    return `LOC-${Date.now().toString().slice(-4)}`;
+  }
+}
+
+// Check if location document ID is unique
+async function isLocationDocIdUnique(docId, level = 0) {
+  try {
+    const locations = await fetchLocations();
+    return !locations.some(loc => loc.id === docId && loc.level === level);
+  } catch (error) {
+    console.error('Error checking location doc ID uniqueness:', error);
+    return false;
+  }
+}
+
+// Save client code pattern
+async function saveClientCodePattern(pattern) {
+  try {
+    await db.collection('clients').doc(currentClientId).update({
+      codePattern: pattern
+    });
+    console.log('Client code pattern saved:', pattern);
+  } catch (error) {
+    console.error('Error saving client code pattern:', error);
+    throw error;
+  }
+}
+
+// Prompt for first sublocation after creating a new location
+async function promptForFirstSublocation(locationId, locationName) {
+  try {
+    const sublocationName = prompt(`Please enter the first sublocation for "${locationName}":`);
+    if (sublocationName && sublocationName.trim()) {
+      const newSublocation = await addSublocationToLocation(locationId, sublocationName.trim());
+      showToast(`First sublocation "${sublocationName}" created successfully!`, { type: 'success' });
+      return newSublocation;
+    }
+  } catch (error) {
+    console.error('Error creating first sublocation:', error);
+    showToast('Error creating first sublocation. You can add it later.', { type: 'error' });
+  }
+  return null;
+}
+
 // ========== INITIALIZATION ==========
 window.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -483,25 +592,20 @@ async function fetchLocations() {
 async function fetchSublocations(locationId) {
   const sublocations = [];
   try {
-    // Fetch the parent location document to get its sublocations field
-    const locationDoc = await db.collection('clients').doc(currentClientId).collection('locations').doc(locationId).get();
-    
-    if (locationDoc.exists) {
-      const locationData = locationDoc.data();
-      const sublocationsMap = locationData.sublocations || {};
-      
-      // Convert the sublocations map to an array of objects
-      Object.entries(sublocationsMap).forEach(([key, sublocationData]) => {
-        // Only include sublocations with valid user-facing names
-        if (sublocationData && sublocationData.name && sublocationData.name.trim()) {
-          sublocations.push({
-            id: key, // Use the map key as the unique identifier
-            name: sublocationData.name.trim(),
-            ...sublocationData
-          });
-        }
-      });
-    }
+    // Fetch all sublocation documents that belong to this parent location
+    const snapshot = await db.collection('clients').doc(currentClientId).collection('locations').get();
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      // Only include documents with valid name property, level 1, and matching parentId
+      if (data.name && data.name.trim() && data.level === 1 && data.parentId === locationId) {
+        sublocations.push({
+          id: doc.id, // Use the document ID
+          name: data.name.trim(),
+          code: data.code,
+          ...data
+        });
+      }
+    });
   } catch (err) {
     console.error('Error fetching sublocations:', err);
   }
@@ -510,16 +614,37 @@ async function fetchSublocations(locationId) {
 
 async function createLocation(name, level = 0, parentId = null) {
   try {
+    // Format the name for use as document ID
+    const docId = formatLocationDocId(name);
+    
+    // Check if document ID is unique at this level
+    const isUnique = await isLocationDocIdUnique(docId, level);
+    if (!isUnique) {
+      throw new Error(`A location with the name "${name}" already exists at this level`);
+    }
+    
+    // Generate unique code for this location
+    const code = await generateUniqueCode(level);
+    
+    // Create location data
     const locationData = {
       name: name.trim(),
+      code: code,
       level: level,
-      created: new Date(),
+      created: new Date().toISOString(),
       ...(parentId && { parentId: parentId })
     };
     
-    const docRef = await db.collection('clients').doc(currentClientId).collection('locations').add(locationData);
-    console.log(`Created location: ${name} with ID: ${docRef.id}`);
-    return { id: docRef.id, name: name.trim(), ...locationData };
+    // Create document with prettified ID
+    const docRef = db.collection('clients').doc(currentClientId).collection('locations').doc(docId);
+    await docRef.set(locationData);
+    
+    console.log(`Created location: ${name} with ID: ${docId} and code: ${code}`);
+    
+    // Log for audit
+    console.log(`Location creation logged - Name: ${name}, DocID: ${docId}, Code: ${code}, Level: ${level}, Created: ${new Date().toISOString()}`);
+    
+    return { id: docId, name: name.trim(), code: code, ...locationData };
   } catch (error) {
     console.error('Error creating location:', error);
     throw error;
@@ -528,23 +653,37 @@ async function createLocation(name, level = 0, parentId = null) {
 
 async function addSublocationToLocation(locationId, sublocationName) {
   try {
-    // Generate a unique key for the sublocation
-    const sublocationKey = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Format the sublocation name for use as document ID
+    const sublocationDocId = formatLocationDocId(sublocationName);
+    
+    // Check if sublocation document ID is unique at level 1
+    const isUnique = await isLocationDocIdUnique(sublocationDocId, 1);
+    if (!isUnique) {
+      throw new Error(`A sublocation with the name "${sublocationName}" already exists`);
+    }
+    
+    // Generate unique code for this sublocation (level 1)
+    const code = await generateUniqueCode(1);
     
     // Create the sublocation data
     const sublocationData = {
       name: sublocationName.trim(),
+      code: code,
+      level: 1,
+      parentId: locationId,
       created: new Date().toISOString()
     };
     
-    // Add the sublocation to the parent location's sublocations map
-    const locationRef = db.collection('clients').doc(currentClientId).collection('locations').doc(locationId);
-    await locationRef.update({
-      [`sublocations.${sublocationKey}`]: sublocationData
-    });
+    // Create sublocation as a separate document with prettified ID
+    const sublocationRef = db.collection('clients').doc(currentClientId).collection('locations').doc(sublocationDocId);
+    await sublocationRef.set(sublocationData);
     
-    console.log(`Added sublocation: ${sublocationName} with key: ${sublocationKey} to location: ${locationId}`);
-    return { id: sublocationKey, name: sublocationName.trim(), ...sublocationData };
+    console.log(`Added sublocation: ${sublocationName} with ID: ${sublocationDocId} and code: ${code} to location: ${locationId}`);
+    
+    // Log for audit
+    console.log(`Sublocation creation logged - Name: ${sublocationName}, DocID: ${sublocationDocId}, Code: ${code}, Parent: ${locationId}, Created: ${new Date().toISOString()}`);
+    
+    return { id: sublocationDocId, name: sublocationName.trim(), code: code, ...sublocationData };
   } catch (error) {
     console.error('Error adding sublocation to location:', error);
     throw error;
@@ -984,6 +1123,12 @@ function setupAddAssetFormListeners() {
       updateFieldState('sublocation', '');
       
       showToast(`Location "${locationName}" created successfully!`, { type: 'success' });
+      
+      // Prompt for first sublocation
+      await promptForFirstSublocation(newLocation.id, locationName);
+      
+      // Refresh sublocation dropdown again to show the new sublocation
+      await refreshSublocationDropdown(sublocationSelect, newLocation.id);
     } catch (error) {
       console.error('Error creating custom location:', error);
       showToast('Error creating location. Please try again.', { type: 'error' });
@@ -1198,7 +1343,7 @@ async function addAsset() {
       if (!locationName) {
         throw new Error('Location is required');
       }
-      // Create new location using the existing function
+      // Create new location using the new function with prettified doc ID
       const newLocation = await createLocation(locationName, 0);
       locationId = newLocation.id;
       locationName = newLocation.name;
@@ -1217,7 +1362,7 @@ async function addAsset() {
       if (!sublocationName) {
         throw new Error('Sub-location is required');
       }
-      // Create new sublocation using the new function that adds to parent location's sublocations map
+      // Create new sublocation using the new function with prettified doc ID
       const newSublocation = await addSublocationToLocation(locationId, sublocationName);
       sublocationId = newSublocation.id;
       sublocationName = newSublocation.name;
@@ -1516,6 +1661,12 @@ function setupMoveAssetFormListeners() {
       updateMoveFieldState('sublocation', '');
       
       showToast(`Location "${locationName}" created successfully!`, { type: 'success' });
+      
+      // Prompt for first sublocation
+      await promptForFirstSublocation(newLocation.id, locationName);
+      
+      // Refresh sublocation dropdown again to show the new sublocation
+      await refreshSublocationDropdown(sublocationSelect, newLocation.id);
     } catch (error) {
       console.error('Error creating custom location:', error);
       showToast('Error creating location. Please try again.', { type: 'error' });
@@ -1680,14 +1831,10 @@ async function moveAsset() {
       if (!locationName) {
         throw new Error('Location is required');
       }
-      // Add new location to Firestore
-      const newLocRef = db.collection('clients').doc(currentClientId).collection('locations').doc();
-      await newLocRef.set({ 
-        name: locationName, 
-        level: 0, 
-        created: new Date().toISOString() 
-      });
-      locationId = newLocRef.id;
+      // Create new location using the new function with prettified doc ID
+      const newLocation = await createLocation(locationName, 0);
+      locationId = newLocation.id;
+      locationName = newLocation.name;
     } else {
       locationName = locationSelect.options[locationSelect.selectedIndex].text;
     }
@@ -1698,7 +1845,7 @@ async function moveAsset() {
       if (!sublocationName) {
         throw new Error('Sub-location is required');
       }
-      // Create new sublocation using the new function that adds to parent location's sublocations map
+      // Create new sublocation using the new function with prettified doc ID
       const newSublocation = await addSublocationToLocation(locationId, sublocationName);
       sublocationId = newSublocation.id;
       sublocationName = newSublocation.name;
