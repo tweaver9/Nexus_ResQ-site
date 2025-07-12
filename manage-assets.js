@@ -21,7 +21,33 @@ let filteredAssets = [];
 
 // ========== UTILITY FUNCTIONS ==========
 
-// Pretty casing for asset types
+// Convert text to slug format (e.g., "SCBA Cylinder" → "scba_cylinder")
+function createSlug(text) {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .replace(/_+/g, '_') // Replace multiple underscores with single
+    .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+}
+
+// Format Hydro Due Date as MM/YYYY
+function formatHydroDue(hydroDue) {
+  if (!hydroDue) return 'Not set';
+  try {
+    const date = new Date(hydroDue);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    const mm = (date.getMonth() + 1).toString().padStart(2, '0');
+    const yyyy = date.getFullYear();
+    return `${mm}/${yyyy}`;
+  } catch {
+    return 'Invalid date';
+  }
+}
+
+// Pretty casing for asset types (for display purposes)
 function formatAssetType(assetType) {
   if (!assetType) return 'Unknown';
   
@@ -41,28 +67,30 @@ function formatAssetType(assetType) {
     .join(' ');
 }
 
-// Format hydro due date from ISO to MM/YY
-function formatHydroDue(hydroDue) {
-  if (!hydroDue) return 'N/A';
-  
-  try {
-    const date = new Date(hydroDue);
-    if (isNaN(date.getTime())) return 'N/A';
-    
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear().toString().slice(-2);
-    return `${month}/${year}`;
-  } catch (error) {
-    console.error('Error formatting hydro due date:', error);
-    return 'N/A';
-  }
+// Format asset type to pretty display format (for custom types)
+function formatAssetTypePretty(text) {
+  if (!text) return '';
+  return text
+    .trim()
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 }
 
-// Utility: Check if asset type should show Hydro Due
+// Enhanced hydro due logic - check for extinguisher, cylinder, scba in slug or pretty format
 function shouldShowHydroDue(assetType) {
   if (!assetType) return false;
   const type = assetType.toString().toLowerCase();
-  return type === 'fire extinguisher' || type === 'scba';
+  const slug = createSlug(type);
+  const pretty = formatAssetType(type);
+  
+  // Check for keywords in both slug and pretty format
+  const keywords = ['extinguisher', 'cylinder', 'scba'];
+  return keywords.some(keyword => 
+    type.includes(keyword) || 
+    slug.includes(keyword) || 
+    pretty.toLowerCase().includes(keyword)
+  );
 }
 
 // Format Last Monthly Inspection as MM/DD/YYYY
@@ -499,7 +527,15 @@ async function renderAddAssetForm(content) {
             <option value="">Select Asset Type</option>
             ${typeOptions}
           </select>
-          <input type="text" id="custom-asset-type" placeholder="Enter custom asset type..." class="custom-input" style="display:none;" />
+          <div id="custom-type-container" class="custom-input" style="display:none;">
+            <input type="text" id="custom-asset-type" placeholder="Enter custom asset type..." />
+            <div id="slug-preview" class="slug-preview"></div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="sub-type" class="required-field">Sub Type</label>
+          <input type="text" id="sub-type" placeholder="What kind of Asset Type?" required />
         </div>
         
         <div class="form-group">
@@ -508,7 +544,7 @@ async function renderAddAssetForm(content) {
         </div>
         
         <div class="form-group" id="hydro-due-field" style="display:none;">
-          <label for="hydro-due" class="required-field">Hydro Due Date</label>
+          <label for="hydro-due" class="required-field">Hydrostatic Test Due Date</label>
           <input type="month" id="hydro-due" placeholder="MM/YYYY" />
         </div>
         
@@ -567,7 +603,10 @@ async function renderAddAssetForm(content) {
 
 function setupAddAssetFormListeners() {
   const typeSelect = document.getElementById('asset-type-select');
+  const customTypeContainer = document.getElementById('custom-type-container');
   const customTypeInput = document.getElementById('custom-asset-type');
+  const slugPreview = document.getElementById('slug-preview');
+  const subTypeInput = document.getElementById('sub-type');
   const hydroDueField = document.getElementById('hydro-due-field');
   const locationSelect = document.getElementById('location-select');
   const customLocationInput = document.getElementById('custom-location');
@@ -582,6 +621,7 @@ function setupAddAssetFormListeners() {
   // Form validation state
   let formState = {
     assetType: { valid: false, value: '' },
+    subType: { valid: false, value: '' },
     assetId: { valid: false, value: '' },
     location: { valid: false, value: '' },
     sublocation: { valid: false, value: '' },
@@ -592,6 +632,8 @@ function setupAddAssetFormListeners() {
   function validateField(fieldName, value) {
     switch (fieldName) {
       case 'assetType':
+        return value && value.trim().length > 0;
+      case 'subType':
         return value && value.trim().length > 0;
       case 'assetId':
         return value && value.trim().length > 0;
@@ -637,6 +679,7 @@ function setupAddAssetFormListeners() {
   function getInputId(fieldName) {
     const idMap = {
       'assetType': 'asset-type-select',
+      'subType': 'sub-type',
       'assetId': 'asset-id',
       'location': 'location-select',
       'sublocation': 'sublocation-select',
@@ -645,23 +688,56 @@ function setupAddAssetFormListeners() {
     return idMap[fieldName];
   }
 
-  // Asset type custom logic
+  // Update sub-type placeholder based on asset type
+  function updateSubTypePlaceholder(assetType) {
+    if (!assetType) {
+      subTypeInput.placeholder = 'What kind of Asset Type?';
+      return;
+    }
+    
+    const prettyType = formatAssetTypePretty(assetType) || formatAssetType(assetType);
+    subTypeInput.placeholder = `What kind of ${prettyType}?`;
+  }
+
+  // Asset type custom logic with slug preview
   typeSelect.addEventListener('change', () => {
     if (typeSelect.value === '__custom__') {
-      customTypeInput.style.display = 'block';
+      customTypeContainer.style.display = 'block';
       customTypeInput.focus();
       updateFieldState('assetType', '');
+      updateSubTypePlaceholder('');
     } else {
-      customTypeInput.style.display = 'none';
+      customTypeContainer.style.display = 'none';
       customTypeInput.value = '';
+      slugPreview.textContent = '';
+      slugPreview.classList.remove('has-content');
       updateFieldState('assetType', typeSelect.value);
+      updateSubTypePlaceholder(typeSelect.value);
     }
     updateHydroDueVisibility();
   });
 
+  // Custom type input with slug preview
   customTypeInput.addEventListener('input', (e) => {
-    updateFieldState('assetType', e.target.value);
+    const value = e.target.value.trim();
+    updateFieldState('assetType', value);
+    updateSubTypePlaceholder(value);
     updateHydroDueVisibility();
+    
+    // Update slug preview
+    if (value) {
+      const slug = createSlug(value);
+      slugPreview.textContent = `Slug: ${slug}`;
+      slugPreview.classList.add('has-content');
+    } else {
+      slugPreview.textContent = '';
+      slugPreview.classList.remove('has-content');
+    }
+  });
+
+  // Sub-type input validation
+  subTypeInput.addEventListener('input', (e) => {
+    updateFieldState('subType', e.target.value);
   });
 
   function updateHydroDueVisibility() {
@@ -825,12 +901,15 @@ async function addAsset() {
   try {
     const typeSelect = document.getElementById('asset-type-select');
     const customTypeInput = document.getElementById('custom-asset-type');
+    const subTypeInput = document.getElementById('sub-type');
     const assetId = document.getElementById('asset-id').value.trim();
+    const subType = subTypeInput.value.trim();
+    
     let assetType = typeSelect.value === '__custom__' ? customTypeInput.value.trim() : typeSelect.value;
     
     // Validate required fields
-    if (!assetType || !assetId) {
-      throw new Error('Asset type and ID are required');
+    if (!assetType || !assetId || !subType) {
+      throw new Error('Asset type, sub-type, and ID are required');
     }
 
     // Check if asset ID already exists
@@ -839,21 +918,33 @@ async function addAsset() {
       throw new Error(`Asset with ID "${assetId}" already exists`);
     }
 
-    // Update types_in_use if custom type
-    if (typeSelect.value === '__custom__' && assetType) {
+    // Handle custom asset type formatting
+    let prettyType = assetType;
+    let slugType = assetType;
+    
+    if (typeSelect.value === '__custom__') {
+      // Format custom type properly
+      prettyType = formatAssetTypePretty(assetType);
+      slugType = createSlug(assetType);
+      
+      if (!prettyType || !slugType) {
+        throw new Error('Invalid asset type format');
+      }
+      
+      // Update types_in_use if custom type (use pretty format for display)
       const typesDocRef = db.collection('clients').doc(currentClientId).collection('asset_types').doc('types_in_use');
       const typesDoc = await typesDocRef.get();
       let names = (typesDoc.exists && typesDoc.data().name) ? typesDoc.data().name : [];
-      if (!names.map(n => n.toLowerCase()).includes(assetType.toLowerCase())) {
-        names.push(assetType);
+      if (!names.map(n => n.toLowerCase()).includes(prettyType.toLowerCase())) {
+        names.push(prettyType);
         await typesDocRef.set({ name: names }, { merge: true });
       }
     }
 
-    // Hydro Due
+    // Hydro Due validation
     const hydroDue = shouldShowHydroDue(assetType) ? document.getElementById('hydro-due').value : null;
     if (shouldShowHydroDue(assetType) && !hydroDue) {
-      throw new Error('Hydro due date is required for this asset type');
+      throw new Error('Hydrostatic test due date is required for this asset type');
     }
 
     // Location
@@ -912,7 +1003,8 @@ async function addAsset() {
 
     // Build asset data
     const assetData = {
-      type: assetType,
+      type: slugType, // Use slug for Firestore
+      subType: subType, // Add sub-type field
       id: assetId,
       location_id: locationId,
       location_name: locationName,
@@ -939,10 +1031,12 @@ async function addAsset() {
     assetData.id = assetId;
     allAssets.push(assetData);
     
-    if (!assetTypeStats[assetType]) {
-      assetTypeStats[assetType] = { total: 0, failed: 0 };
+    // Update stats using pretty type for display
+    const displayType = typeSelect.value === '__custom__' ? prettyType : formatAssetType(assetType);
+    if (!assetTypeStats[displayType]) {
+      assetTypeStats[displayType] = { total: 0, failed: 0 };
     }
-    assetTypeStats[assetType].total++;
+    assetTypeStats[displayType].total++;
 
     // Update UI
     renderAssetTypeCards();

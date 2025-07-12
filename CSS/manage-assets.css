@@ -864,6 +864,34 @@ body {
   animation: slideDown 0.3s ease;
 }
 
+#add-asset-modal .custom-type-container {
+  position: relative;
+}
+
+#add-asset-modal .slug-preview {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--nexus-dark);
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--radius-sm);
+  color: var(--nexus-muted);
+  font-size: 0.875rem;
+  font-family: 'Courier New', monospace;
+  min-height: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+#add-asset-modal .slug-preview:empty {
+  display: none;
+}
+
+#add-asset-modal .slug-preview.has-content {
+  color: var(--nexus-yellow);
+  border-color: var(--nexus-yellow);
+  background: rgba(253, 216, 53, 0.05);
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;
