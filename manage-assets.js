@@ -259,9 +259,20 @@ function createAssetCard(asset) {
         Monthly: ${monthlyStatus.checkMark}
       </div>
     </div>
+    
+    <button class="move-asset-btn" onclick="showMoveAssetModal('${asset.id}')" title="Move Asset">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M8 9l3 3-3 3m5 0h3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+      </svg>
+      Move
+    </button>
   `;
 
-  card.addEventListener('click', () => {
+  card.addEventListener('click', (e) => {
+    // Don't trigger asset details if clicking the move button
+    if (e.target.closest('.move-asset-btn')) {
+      return;
+    }
     showAssetDetails(asset);
   });
 
@@ -462,44 +473,93 @@ async function renderAddAssetForm(content) {
   // Fetch types and locations
   const types = await fetchNormalizedAssetTypes();
   const locations = await fetchLocations();
+  
   // Build type options
   let typeOptions = types.map(type => `<option value="${type}">${type}</option>`).join('');
-  typeOptions += '<option value="__custom__">+ Custom</option>';
+  typeOptions += '<option value="__custom__">+ Add Custom Type</option>';
+  
   // Build location options
   let locationOptions = locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
-  locationOptions += '<option value="__custom__">+ Custom</option>';
+  locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+  
   content.innerHTML = `
     <form id="add-asset-form">
-      <div style="margin-bottom: 1.5rem;">
-        <label>Asset Type:</label>
-        <select id="asset-type-select">${typeOptions}</select>
-        <input type="text" id="custom-asset-type" placeholder="Enter custom asset type..." style="display:none; margin-top:0.5rem;" />
+      <!-- Asset Information Section -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+          Asset Information
+        </div>
+        
+        <div class="form-group">
+          <label for="asset-type-select" class="required-field">Asset Type</label>
+          <select id="asset-type-select" required>
+            <option value="">Select Asset Type</option>
+            ${typeOptions}
+          </select>
+          <input type="text" id="custom-asset-type" placeholder="Enter custom asset type..." class="custom-input" style="display:none;" />
+        </div>
+        
+        <div class="form-group">
+          <label for="asset-id" class="required-field">Asset ID</label>
+          <input type="text" id="asset-id" placeholder="Enter unique asset identifier" required />
+        </div>
+        
+        <div class="form-group" id="hydro-due-field" style="display:none;">
+          <label for="hydro-due" class="required-field">Hydro Due Date</label>
+          <input type="month" id="hydro-due" placeholder="MM/YYYY" />
+        </div>
+        
+        <div class="form-group">
+          <label for="serial-no">Serial Number</label>
+          <input type="text" id="serial-no" placeholder="Enter serial number (optional)" />
+        </div>
       </div>
-      <div style="margin-bottom: 1.5rem;">
-        <label>Asset ID:</label>
-        <input type="text" id="asset-id" required />
+      
+      <!-- Location Information Section -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Location Information
+        </div>
+        
+        <div class="form-group">
+          <label for="location-select" class="required-field">Location</label>
+          <select id="location-select" required>
+            <option value="">Select Location</option>
+            ${locationOptions}
+          </select>
+          <input type="text" id="custom-location" placeholder="Enter custom location name..." class="custom-input" style="display:none;" />
+        </div>
+        
+        <div class="form-group">
+          <label for="sublocation-select" class="required-field">Sub-Location</label>
+          <select id="sublocation-select" required>
+            <option value="">Select Location First</option>
+          </select>
+          <input type="text" id="custom-sublocation" placeholder="Enter custom sub-location name..." class="custom-input" style="display:none;" />
+        </div>
       </div>
-      <div style="margin-bottom: 1.5rem; display:none;" id="hydro-due-field">
-        <label>Hydro Due (MM/YY):</label>
-        <input type="month" id="hydro-due" />
-      </div>
-      <div style="margin-bottom: 1.5rem;">
-        <label>Location:</label>
-        <select id="location-select">${locationOptions}</select>
-        <input type="text" id="custom-location" placeholder="Enter custom location..." style="display:none; margin-top:0.5rem;" />
-      </div>
-      <div style="margin-bottom: 1.5rem;">
-        <label>SubLocation:</label>
-        <select id="sublocation-select"><option value="">Select Location First</option></select>
-        <input type="text" id="custom-sublocation" placeholder="Enter custom sublocation..." style="display:none; margin-top:0.5rem;" />
-      </div>
-      <div style="margin-bottom: 1.5rem;">
-        <label>Serial Number (optional):</label>
-        <input type="text" id="serial-no" />
-      </div>
-      <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-        <button type="button" id="cancel-add-asset">Cancel</button>
-        <button type="submit">Add Asset</button>
+      
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" id="cancel-add-asset" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+          Cancel
+        </button>
+        <button type="submit" id="submit-add-asset" class="btn btn-primary" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Add Asset
+        </button>
       </div>
     </form>
   `;
@@ -515,66 +575,250 @@ function setupAddAssetFormListeners() {
   const customSublocationInput = document.getElementById('custom-sublocation');
   const form = document.getElementById('add-asset-form');
   const cancelBtn = document.getElementById('cancel-add-asset');
+  const submitBtn = document.getElementById('submit-add-asset');
+  const assetIdInput = document.getElementById('asset-id');
+  const serialNoInput = document.getElementById('serial-no');
+
+  // Form validation state
+  let formState = {
+    assetType: { valid: false, value: '' },
+    assetId: { valid: false, value: '' },
+    location: { valid: false, value: '' },
+    sublocation: { valid: false, value: '' },
+    hydroDue: { valid: true, value: '' }
+  };
+
+  // Validation functions
+  function validateField(fieldName, value) {
+    switch (fieldName) {
+      case 'assetType':
+        return value && value.trim().length > 0;
+      case 'assetId':
+        return value && value.trim().length > 0;
+      case 'location':
+        return value && value !== '';
+      case 'sublocation':
+        return value && value !== '';
+      case 'hydroDue':
+        return !shouldShowHydroDue(formState.assetType.value) || (value && value.trim().length > 0);
+      default:
+        return true;
+    }
+  }
+
+  function updateFieldState(fieldName, value) {
+    formState[fieldName] = { valid: validateField(fieldName, value), value: value };
+    updateSubmitButton();
+    updateFieldValidation(fieldName);
+  }
+
+  function updateSubmitButton() {
+    const allValid = Object.values(formState).every(field => field.valid);
+    submitBtn.disabled = !allValid;
+  }
+
+  function updateFieldValidation(fieldName) {
+    const field = formState[fieldName];
+    const inputElement = document.getElementById(getInputId(fieldName));
+    
+    if (!inputElement) return;
+    
+    // Remove existing validation classes
+    inputElement.classList.remove('field-error', 'field-success');
+    
+    // Add appropriate validation class
+    if (field.value && field.valid) {
+      inputElement.classList.add('field-success');
+    } else if (field.value && !field.valid) {
+      inputElement.classList.add('field-error');
+    }
+  }
+
+  function getInputId(fieldName) {
+    const idMap = {
+      'assetType': 'asset-type-select',
+      'assetId': 'asset-id',
+      'location': 'location-select',
+      'sublocation': 'sublocation-select',
+      'hydroDue': 'hydro-due'
+    };
+    return idMap[fieldName];
+  }
 
   // Asset type custom logic
   typeSelect.addEventListener('change', () => {
     if (typeSelect.value === '__custom__') {
       customTypeInput.style.display = 'block';
       customTypeInput.focus();
+      updateFieldState('assetType', '');
     } else {
       customTypeInput.style.display = 'none';
       customTypeInput.value = '';
+      updateFieldState('assetType', typeSelect.value);
     }
     updateHydroDueVisibility();
   });
-  customTypeInput.addEventListener('input', updateHydroDueVisibility);
+
+  customTypeInput.addEventListener('input', (e) => {
+    updateFieldState('assetType', e.target.value);
+    updateHydroDueVisibility();
+  });
+
   function updateHydroDueVisibility() {
     let assetType = typeSelect.value === '__custom__' ? customTypeInput.value : typeSelect.value;
     if (shouldShowHydroDue(assetType)) {
       hydroDueField.style.display = 'block';
-      document.getElementById('hydro-due').required = true;
+      const hydroDueInput = document.getElementById('hydro-due');
+      hydroDueInput.required = true;
+      updateFieldState('hydroDue', hydroDueInput.value);
     } else {
       hydroDueField.style.display = 'none';
-      document.getElementById('hydro-due').required = false;
+      const hydroDueInput = document.getElementById('hydro-due');
+      hydroDueInput.required = false;
+      updateFieldState('hydroDue', '');
     }
   }
+
+  // Asset ID validation
+  assetIdInput.addEventListener('input', (e) => {
+    updateFieldState('assetId', e.target.value);
+  });
+
+  // Serial number (optional)
+  serialNoInput.addEventListener('input', (e) => {
+    // Serial number is optional, no validation needed
+  });
+
   // Location custom logic
   locationSelect.addEventListener('change', async () => {
     if (locationSelect.value === '__custom__') {
       customLocationInput.style.display = 'block';
       customLocationInput.focus();
       sublocationSelect.innerHTML = '<option value="">Enter custom location first</option>';
+      updateFieldState('location', '');
+      updateFieldState('sublocation', '');
     } else {
       customLocationInput.style.display = 'none';
       customLocationInput.value = '';
+      updateFieldState('location', locationSelect.value);
+      
       // Load sublocations for selected location
-      const sublocations = await fetchSublocations(locationSelect.value);
-      let subOptions = sublocations.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
-      subOptions += '<option value="__custom__">+ Custom</option>';
-      sublocationSelect.innerHTML = subOptions || '<option value="">No sublocations found</option>';
+      try {
+        const sublocations = await fetchSublocations(locationSelect.value);
+        let subOptions = sublocations.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
+        subOptions += '<option value="__custom__">+ Add Custom Sub-Location</option>';
+        sublocationSelect.innerHTML = subOptions || '<option value="">No sub-locations found</option>';
+        updateFieldState('sublocation', '');
+      } catch (error) {
+        console.error('Error loading sublocations:', error);
+        sublocationSelect.innerHTML = '<option value="">Error loading sub-locations</option>';
+      }
     }
   });
+
+  customLocationInput.addEventListener('input', (e) => {
+    updateFieldState('location', e.target.value);
+  });
+
   // Sublocation custom logic
   sublocationSelect.addEventListener('change', () => {
     if (sublocationSelect.value === '__custom__') {
       customSublocationInput.style.display = 'block';
       customSublocationInput.focus();
+      updateFieldState('sublocation', '');
     } else {
       customSublocationInput.style.display = 'none';
       customSublocationInput.value = '';
+      updateFieldState('sublocation', sublocationSelect.value);
     }
   });
+
+  customSublocationInput.addEventListener('input', (e) => {
+    updateFieldState('sublocation', e.target.value);
+  });
+
+  // Hydro due validation
+  const hydroDueInput = document.getElementById('hydro-due');
+  hydroDueInput.addEventListener('input', (e) => {
+    updateFieldState('hydroDue', e.target.value);
+  });
+
   // Cancel button
   cancelBtn.addEventListener('click', () => {
     document.getElementById('add-asset-modal').classList.remove('active');
   });
-  // Form submit
+
+  // Form submit with loading state
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    await addAsset();
+    
+    // Show loading state
+    showModalLoading(true);
+    
+    try {
+      await addAsset();
+      showModalSuccess();
+    } catch (error) {
+      console.error('Error adding asset:', error);
+      showToast('Error adding asset. Please try again.', { type: 'error' });
+    } finally {
+      showModalLoading(false);
+    }
   });
-  // Initial hydro due visibility
+
+  // Initial setup
   updateHydroDueVisibility();
+  updateSubmitButton();
+}
+
+// Modal loading state management
+function showModalLoading(show) {
+  const modal = document.getElementById('add-asset-modal');
+  
+  if (show) {
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'loading-overlay';
+    loadingOverlay.innerHTML = `
+      <div style="text-align: center;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Adding Asset...</div>
+      </div>
+    `;
+    modal.querySelector('.modal').appendChild(loadingOverlay);
+  } else {
+    const loadingOverlay = modal.querySelector('.loading-overlay');
+    if (loadingOverlay) {
+      loadingOverlay.remove();
+    }
+  }
+}
+
+// Modal success state
+function showModalSuccess() {
+  const content = document.getElementById('add-asset-modal-content');
+  content.innerHTML = `
+    <div class="success-state">
+      <div class="success-icon">✓</div>
+      <div class="success-title">Asset Added Successfully!</div>
+      <div class="success-message">The asset has been created and is now available in your asset management system.</div>
+      <button type="button" class="btn btn-primary" onclick="closeAddAssetModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M5 13l4 4L19 7"/>
+        </svg>
+        Continue
+      </button>
+    </div>
+  `;
+}
+
+// Close modal function
+function closeAddAssetModal() {
+  document.getElementById('add-asset-modal').classList.remove('active');
+  // Reset form after a short delay to allow animation
+  setTimeout(() => {
+    const content = document.getElementById('add-asset-modal-content');
+    content.innerHTML = '';
+  }, 300);
 }
 
 async function addAsset() {
@@ -583,10 +827,18 @@ async function addAsset() {
     const customTypeInput = document.getElementById('custom-asset-type');
     const assetId = document.getElementById('asset-id').value.trim();
     let assetType = typeSelect.value === '__custom__' ? customTypeInput.value.trim() : typeSelect.value;
+    
+    // Validate required fields
     if (!assetType || !assetId) {
-      showToast('Asset type and ID are required', { type: 'error' });
-      return;
+      throw new Error('Asset type and ID are required');
     }
+
+    // Check if asset ID already exists
+    const existingAsset = allAssets.find(asset => asset.id === assetId);
+    if (existingAsset) {
+      throw new Error(`Asset with ID "${assetId}" already exists`);
+    }
+
     // Update types_in_use if custom type
     if (typeSelect.value === '__custom__' && assetType) {
       const typesDocRef = db.collection('clients').doc(currentClientId).collection('asset_types').doc('types_in_use');
@@ -597,48 +849,67 @@ async function addAsset() {
         await typesDocRef.set({ name: names }, { merge: true });
       }
     }
+
     // Hydro Due
     const hydroDue = shouldShowHydroDue(assetType) ? document.getElementById('hydro-due').value : null;
+    if (shouldShowHydroDue(assetType) && !hydroDue) {
+      throw new Error('Hydro due date is required for this asset type');
+    }
+
     // Location
     const locationSelect = document.getElementById('location-select');
     const customLocationInput = document.getElementById('custom-location');
     let locationId = locationSelect.value;
     let locationName = '';
+    
     if (locationId === '__custom__') {
       locationName = customLocationInput.value.trim();
       if (!locationName) {
-        showToast('Location is required', { type: 'error' });
-        return;
+        throw new Error('Location is required');
       }
       // Add new location to Firestore
       const newLocRef = db.collection('clients').doc(currentClientId).collection('locations').doc();
-      await newLocRef.set({ name: locationName, level: 0, created: new Date().toISOString() });
+      await newLocRef.set({ 
+        name: locationName, 
+        level: 0, 
+        created: new Date().toISOString() 
+      });
       locationId = newLocRef.id;
     } else {
       locationName = locationSelect.options[locationSelect.selectedIndex].text;
     }
+
     // Sublocation
     const sublocationSelect = document.getElementById('sublocation-select');
     const customSublocationInput = document.getElementById('custom-sublocation');
     let sublocationId = sublocationSelect.value;
     let sublocationName = '';
+    
     if (sublocationId === '__custom__') {
       sublocationName = customSublocationInput.value.trim();
       if (!sublocationName) {
-        showToast('Sublocation is required', { type: 'error' });
-        return;
+        throw new Error('Sub-location is required');
       }
       // Add new sublocation to Firestore
       const newSubRef = db.collection('clients').doc(currentClientId).collection('locations').doc();
-      await newSubRef.set({ name: sublocationName, level: 1, parentId: locationId, created: new Date().toISOString() });
+      await newSubRef.set({ 
+        name: sublocationName, 
+        level: 1, 
+        parentId: locationId, 
+        created: new Date().toISOString() 
+      });
       sublocationId = newSubRef.id;
     } else {
-      sublocationName = sublocationSelect.options[sublocationSelect.selectedIndex] ? sublocationSelect.options[sublocationSelect.selectedIndex].text : '';
+      sublocationName = sublocationSelect.options[sublocationSelect.selectedIndex] ? 
+        sublocationSelect.options[sublocationSelect.selectedIndex].text : '';
     }
+
     // Serial number
     const serialNo = document.getElementById('serial-no').value.trim();
+    
     // Created by
-    const createdBy = sessionStorage.getItem('username') || 'unknown'; // TODO: Use SessionData() if available
+    const createdBy = sessionStorage.getItem('username') || 'unknown';
+
     // Build asset data
     const assetData = {
       type: assetType,
@@ -652,28 +923,408 @@ async function addAsset() {
       created_at: new Date().toISOString(),
       created_by: createdBy
     };
+
     if (shouldShowHydroDue(assetType)) {
       assetData.hydro_due = hydroDue || null;
     }
+
     if (serialNo) {
       assetData.serial_no = serialNo;
     }
+
     // Add to Firestore with provided assetId as doc ID
     await db.collection('clients').doc(currentClientId).collection('assets').doc(assetId).set(assetData);
+
     // Update local state and UI
     assetData.id = assetId;
     allAssets.push(assetData);
+    
     if (!assetTypeStats[assetType]) {
       assetTypeStats[assetType] = { total: 0, failed: 0 };
     }
     assetTypeStats[assetType].total++;
-    document.getElementById('add-asset-modal').classList.remove('active');
+
+    // Update UI
     renderAssetTypeCards();
     updateStats();
+    
+    // Show success message
     showToast('Asset added successfully', { type: 'success' });
+    
+    return assetData;
   } catch (error) {
     console.error('Error adding asset:', error);
-    showToast('Error adding asset', { type: 'error' });
+    showToast(error.message || 'Error adding asset', { type: 'error' });
+    throw error; // Re-throw for loading state management
+  }
+}
+
+// ========== MOVE ASSET FUNCTIONALITY ==========
+
+// Global variable to track the asset being moved
+let assetToMove = null;
+
+function showMoveAssetModal(assetId) {
+  // Find the asset
+  assetToMove = allAssets.find(asset => asset.id === assetId);
+  if (!assetToMove) {
+    showToast('Asset not found', { type: 'error' });
+    return;
+  }
+
+  const content = document.getElementById('move-asset-modal-content');
+  renderMoveAssetForm(content);
+  document.getElementById('move-asset-modal').classList.add('active');
+  setupMoveAssetFormListeners();
+}
+
+async function renderMoveAssetForm(content) {
+  // Fetch locations
+  const locations = await fetchLocations();
+  
+  // Build location options
+  let locationOptions = locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
+  locationOptions += '<option value="__custom__">+ Add Custom Location</option>';
+  
+  content.innerHTML = `
+    <form id="move-asset-form">
+      <!-- Current Location Display -->
+      <div class="current-location">
+        <div class="current-location-label">Current Location</div>
+        <div class="current-location-value">${assetToMove.location_name} → ${assetToMove.sublocation_name}</div>
+      </div>
+      
+      <!-- New Location Selection -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          New Location
+        </div>
+        
+        <div class="form-group">
+          <label for="move-location-select" class="required-field">Location</label>
+          <select id="move-location-select" required>
+            <option value="">Select Location</option>
+            ${locationOptions}
+          </select>
+          <input type="text" id="move-custom-location" placeholder="Enter custom location name..." class="custom-input" style="display:none;" />
+        </div>
+        
+        <div class="form-group">
+          <label for="move-sublocation-select" class="required-field">Sub-Location</label>
+          <select id="move-sublocation-select" required>
+            <option value="">Select Location First</option>
+          </select>
+          <input type="text" id="move-custom-sublocation" placeholder="Enter custom sub-location name..." class="custom-input" style="display:none;" />
+        </div>
+      </div>
+      
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" id="cancel-move-asset" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+          Cancel
+        </button>
+        <button type="submit" id="submit-move-asset" class="btn btn-primary" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M8 9l3 3-3 3m5 0h3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          Move Asset
+        </button>
+      </div>
+    </form>
+  `;
+}
+
+function setupMoveAssetFormListeners() {
+  const locationSelect = document.getElementById('move-location-select');
+  const customLocationInput = document.getElementById('move-custom-location');
+  const sublocationSelect = document.getElementById('move-sublocation-select');
+  const customSublocationInput = document.getElementById('move-custom-sublocation');
+  const form = document.getElementById('move-asset-form');
+  const cancelBtn = document.getElementById('cancel-move-asset');
+  const submitBtn = document.getElementById('submit-move-asset');
+
+  // Form validation state
+  let moveFormState = {
+    location: { valid: false, value: '' },
+    sublocation: { valid: false, value: '' }
+  };
+
+  // Validation functions
+  function validateMoveField(fieldName, value) {
+    switch (fieldName) {
+      case 'location':
+        return value && value !== '';
+      case 'sublocation':
+        return value && value !== '';
+      default:
+        return true;
+    }
+  }
+
+  function updateMoveFieldState(fieldName, value) {
+    moveFormState[fieldName] = { valid: validateMoveField(fieldName, value), value: value };
+    updateMoveSubmitButton();
+    updateMoveFieldValidation(fieldName);
+  }
+
+  function updateMoveSubmitButton() {
+    const allValid = Object.values(moveFormState).every(field => field.valid);
+    submitBtn.disabled = !allValid;
+  }
+
+  function updateMoveFieldValidation(fieldName) {
+    const field = moveFormState[fieldName];
+    const inputElement = document.getElementById(`move-${getMoveInputId(fieldName)}`);
+    
+    if (!inputElement) return;
+    
+    // Remove existing validation classes
+    inputElement.classList.remove('field-error', 'field-success');
+    
+    // Add appropriate validation class
+    if (field.value && field.valid) {
+      inputElement.classList.add('field-success');
+    } else if (field.value && !field.valid) {
+      inputElement.classList.add('field-error');
+    }
+  }
+
+  function getMoveInputId(fieldName) {
+    const idMap = {
+      'location': 'location-select',
+      'sublocation': 'sublocation-select'
+    };
+    return idMap[fieldName];
+  }
+
+  // Location custom logic
+  locationSelect.addEventListener('change', async () => {
+    if (locationSelect.value === '__custom__') {
+      customLocationInput.style.display = 'block';
+      customLocationInput.focus();
+      sublocationSelect.innerHTML = '<option value="">Enter custom location first</option>';
+      updateMoveFieldState('location', '');
+      updateMoveFieldState('sublocation', '');
+    } else {
+      customLocationInput.style.display = 'none';
+      customLocationInput.value = '';
+      updateMoveFieldState('location', locationSelect.value);
+      
+      // Load sublocations for selected location
+      try {
+        const sublocations = await fetchSublocations(locationSelect.value);
+        let subOptions = sublocations.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
+        subOptions += '<option value="__custom__">+ Add Custom Sub-Location</option>';
+        sublocationSelect.innerHTML = subOptions || '<option value="">No sub-locations found</option>';
+        updateMoveFieldState('sublocation', '');
+      } catch (error) {
+        console.error('Error loading sublocations:', error);
+        sublocationSelect.innerHTML = '<option value="">Error loading sub-locations</option>';
+      }
+    }
+  });
+
+  customLocationInput.addEventListener('input', (e) => {
+    updateMoveFieldState('location', e.target.value);
+  });
+
+  // Sublocation custom logic
+  sublocationSelect.addEventListener('change', () => {
+    if (sublocationSelect.value === '__custom__') {
+      customSublocationInput.style.display = 'block';
+      customSublocationInput.focus();
+      updateMoveFieldState('sublocation', '');
+    } else {
+      customSublocationInput.style.display = 'none';
+      customSublocationInput.value = '';
+      updateMoveFieldState('sublocation', sublocationSelect.value);
+    }
+  });
+
+  customSublocationInput.addEventListener('input', (e) => {
+    updateMoveFieldState('sublocation', e.target.value);
+  });
+
+  // Cancel button
+  cancelBtn.addEventListener('click', () => {
+    document.getElementById('move-asset-modal').classList.remove('active');
+    assetToMove = null;
+  });
+
+  // Form submit with loading state
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Show loading state
+    showMoveModalLoading(true);
+    
+    try {
+      await moveAsset();
+      showMoveModalSuccess();
+    } catch (error) {
+      console.error('Error moving asset:', error);
+      showToast('Error moving asset. Please try again.', { type: 'error' });
+    } finally {
+      showMoveModalLoading(false);
+    }
+  });
+
+  // Initial setup
+  updateMoveSubmitButton();
+}
+
+// Move modal loading state management
+function showMoveModalLoading(show) {
+  const modal = document.getElementById('move-asset-modal');
+  
+  if (show) {
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'loading-overlay';
+    loadingOverlay.innerHTML = `
+      <div style="text-align: center;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Moving Asset...</div>
+      </div>
+    `;
+    modal.querySelector('.modal').appendChild(loadingOverlay);
+  } else {
+    const loadingOverlay = modal.querySelector('.loading-overlay');
+    if (loadingOverlay) {
+      loadingOverlay.remove();
+    }
+  }
+}
+
+// Move modal success state
+function showMoveModalSuccess() {
+  const content = document.getElementById('move-asset-modal-content');
+  content.innerHTML = `
+    <div class="success-state">
+      <div class="success-icon">✓</div>
+      <div class="success-title">Asset Moved Successfully!</div>
+      <div class="success-message">The asset has been moved to its new location.</div>
+      <button type="button" class="btn btn-primary" onclick="closeMoveAssetModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M5 13l4 4L19 7"/>
+        </svg>
+        Continue
+      </button>
+    </div>
+  `;
+}
+
+// Close move modal function
+function closeMoveAssetModal() {
+  document.getElementById('move-asset-modal').classList.remove('active');
+  assetToMove = null;
+  // Reset form after a short delay to allow animation
+  setTimeout(() => {
+    const content = document.getElementById('move-asset-modal-content');
+    content.innerHTML = '';
+  }, 300);
+}
+
+async function moveAsset() {
+  try {
+    if (!assetToMove) {
+      throw new Error('No asset selected for move');
+    }
+
+    const locationSelect = document.getElementById('move-location-select');
+    const customLocationInput = document.getElementById('move-custom-location');
+    const sublocationSelect = document.getElementById('move-sublocation-select');
+    const customSublocationInput = document.getElementById('move-custom-sublocation');
+
+    let locationId = locationSelect.value;
+    let locationName = '';
+    let sublocationId = sublocationSelect.value;
+    let sublocationName = '';
+
+    // Handle custom location
+    if (locationId === '__custom__') {
+      locationName = customLocationInput.value.trim();
+      if (!locationName) {
+        throw new Error('Location is required');
+      }
+      // Add new location to Firestore
+      const newLocRef = db.collection('clients').doc(currentClientId).collection('locations').doc();
+      await newLocRef.set({ 
+        name: locationName, 
+        level: 0, 
+        created: new Date().toISOString() 
+      });
+      locationId = newLocRef.id;
+    } else {
+      locationName = locationSelect.options[locationSelect.selectedIndex].text;
+    }
+
+    // Handle custom sublocation
+    if (sublocationId === '__custom__') {
+      sublocationName = customSublocationInput.value.trim();
+      if (!sublocationName) {
+        throw new Error('Sub-location is required');
+      }
+      // Add new sublocation to Firestore
+      const newSubRef = db.collection('clients').doc(currentClientId).collection('locations').doc();
+      await newSubRef.set({ 
+        name: sublocationName, 
+        level: 1, 
+        parentId: locationId, 
+        created: new Date().toISOString() 
+      });
+      sublocationId = newSubRef.id;
+    } else {
+      sublocationName = sublocationSelect.options[sublocationSelect.selectedIndex].text;
+    }
+
+    // Check if moving to same location
+    if (assetToMove.location_id === locationId && assetToMove.sublocation_id === sublocationId) {
+      throw new Error('Asset is already at the selected location');
+    }
+
+    // Update asset in Firestore
+    const assetRef = db.collection('clients').doc(currentClientId).collection('assets').doc(assetToMove.id);
+    await assetRef.update({
+      location_id: locationId,
+      location_name: locationName,
+      sublocation_id: sublocationId,
+      sublocation_name: sublocationName,
+      moved_at: new Date().toISOString(),
+      moved_by: sessionStorage.getItem('username') || 'unknown'
+    });
+
+    // Update local state
+    const assetIndex = allAssets.findIndex(asset => asset.id === assetToMove.id);
+    if (assetIndex !== -1) {
+      allAssets[assetIndex] = {
+        ...allAssets[assetIndex],
+        location_id: locationId,
+        location_name: locationName,
+        sublocation_id: sublocationId,
+        sublocation_name: sublocationName,
+        moved_at: new Date().toISOString(),
+        moved_by: sessionStorage.getItem('username') || 'unknown'
+      };
+    }
+
+    // Update UI
+    renderAssetCards();
+    
+    // Show success message
+    showToast(`Asset moved to ${locationName} → ${sublocationName}`, { type: 'success' });
+    
+    return true;
+  } catch (error) {
+    console.error('Error moving asset:', error);
+    showToast(error.message || 'Error moving asset', { type: 'error' });
+    throw error;
   }
 }
 
@@ -722,6 +1373,13 @@ function setupEventListeners() {
     });
   }
   
+  const moveAssetModalClose = document.getElementById('move-asset-modal-close');
+  if (moveAssetModalClose) {
+    moveAssetModalClose.addEventListener('click', () => {
+      document.getElementById('move-asset-modal').classList.remove('active');
+      assetToMove = null;
+    });
+  }
   // Add Asset Modal: Click outside to close
   const addAssetModalOverlay = document.getElementById('add-asset-modal');
   if (addAssetModalOverlay) {
@@ -729,6 +1387,18 @@ function setupEventListeners() {
       // Only close if clicking the overlay itself, not the modal content
       if (e.target === addAssetModalOverlay) {
         addAssetModalOverlay.classList.remove('active');
+      }
+    });
+  }
+
+  // Move Asset Modal: Click outside to close
+  const moveAssetModalOverlay = document.getElementById('move-asset-modal');
+  if (moveAssetModalOverlay) {
+    moveAssetModalOverlay.addEventListener('click', (e) => {
+      // Only close if clicking the overlay itself, not the modal content
+      if (e.target === moveAssetModalOverlay) {
+        moveAssetModalOverlay.classList.remove('active');
+        assetToMove = null;
       }
     });
   }
