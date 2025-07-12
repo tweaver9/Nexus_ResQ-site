@@ -108,13 +108,14 @@ function formatInspectionDate(dateStr) {
   }
 }
 
-// Location document ID formatting (no slugging, prettified for Firestore)
+// Location document ID formatting (prettified for Firestore, no slugging)
 function formatLocationDocId(name) {
   return name
     .trim()
-    .replace(/\s+/g, '_') // Convert spaces to underscores
-    .replace(/[^a-zA-Z0-9_-]/g, '') // Remove invalid Firestore characters
-    .toLowerCase(); // Enforce lowercase for consistency
+    .replace(/\s+/g, ' ') // Collapse multiple spaces to single space
+    .replace(/[\/\.\[\]#]/g, '') // Remove invalid characters but keep spaces
+    .replace(/\s+/g, ' ') // Collapse spaces again after character removal
+    .trim(); // Trim leading/trailing spaces
 }
 
 // Get client code pattern settings
@@ -144,16 +145,24 @@ async function getClientCodePattern() {
 }
 
 // Generate unique code for location/sublocation
-async function generateUniqueCode(level = 0) {
+async function generateUniqueCode(level = 0, parentId = null) {
   try {
     const pattern = await getClientCodePattern();
     const locations = await fetchLocations();
     
     // Get existing codes at this level
-    const existingCodes = locations
+    let existingCodes = locations
       .filter(loc => loc.level === level)
       .map(loc => loc.code)
       .filter(code => code && code.startsWith(pattern.prefix));
+    
+    // For sublocations (level 1), only consider codes from the same parent location
+    if (level === 1 && parentId) {
+      existingCodes = locations
+        .filter(loc => loc.level === level && loc.parentId === parentId)
+        .map(loc => loc.code)
+        .filter(code => code && code.startsWith(pattern.prefix));
+    }
     
     // Find the highest numeric value
     let maxNumber = 0;
@@ -178,10 +187,21 @@ async function generateUniqueCode(level = 0) {
 }
 
 // Check if location document ID is unique
-async function isLocationDocIdUnique(docId, level = 0) {
+async function isLocationDocIdUnique(docId, level = 0, parentId = null) {
   try {
     const locations = await fetchLocations();
-    return !locations.some(loc => loc.id === docId && loc.level === level);
+    
+    // For level 0 (locations), check against all level 0 locations
+    if (level === 0) {
+      return !locations.some(loc => loc.id === docId && loc.level === 0);
+    }
+    
+    // For level 1 (sublocations), check against all level 1 locations with the same parent
+    if (level === 1) {
+      return !locations.some(loc => loc.id === docId && loc.level === 1 && loc.parentId === parentId);
+    }
+    
+    return true;
   } catch (error) {
     console.error('Error checking location doc ID uniqueness:', error);
     return false;
@@ -618,13 +638,13 @@ async function createLocation(name, level = 0, parentId = null) {
     const docId = formatLocationDocId(name);
     
     // Check if document ID is unique at this level
-    const isUnique = await isLocationDocIdUnique(docId, level);
+    const isUnique = await isLocationDocIdUnique(docId, level, parentId);
     if (!isUnique) {
       throw new Error(`A location with the name "${name}" already exists at this level`);
     }
     
     // Generate unique code for this location
-    const code = await generateUniqueCode(level);
+    const code = await generateUniqueCode(level, parentId);
     
     // Create location data
     const locationData = {
@@ -653,17 +673,17 @@ async function createLocation(name, level = 0, parentId = null) {
 
 async function addSublocationToLocation(locationId, sublocationName) {
   try {
-    // Format the sublocation name for use as document ID
+    // Format the sublocation name for use as document ID (prettified, not slugged)
     const sublocationDocId = formatLocationDocId(sublocationName);
     
-    // Check if sublocation document ID is unique at level 1
-    const isUnique = await isLocationDocIdUnique(sublocationDocId, 1);
+    // Check if sublocation document ID is unique at level 1 within this parent location
+    const isUnique = await isLocationDocIdUnique(sublocationDocId, 1, locationId);
     if (!isUnique) {
-      throw new Error(`A sublocation with the name "${sublocationName}" already exists`);
+      throw new Error(`A sublocation with the name "${sublocationName}" already exists in this location`);
     }
     
-    // Generate unique code for this sublocation (level 1)
-    const code = await generateUniqueCode(1);
+    // Generate unique code for this sublocation (level 1) within this parent location
+    const code = await generateUniqueCode(1, locationId);
     
     // Create the sublocation data
     const sublocationData = {
@@ -726,9 +746,9 @@ async function refreshSublocationDropdown(sublocationSelect, locationId, include
         subOptions += '<option value="__custom__">+ Add Custom Sub-Location</option>';
       }
     } else {
-      subOptions = '<option value="" disabled>No sub-locations found</option>';
+      // Don't show "No sub-locations found" as a selectable option - just show the custom option
       if (includeCustomOption) {
-        subOptions += '<option value="__custom__">+ Add Custom Sub-Location</option>';
+        subOptions = '<option value="__custom__">+ Add Custom Sub-Location</option>';
       }
     }
     
@@ -1141,6 +1161,13 @@ function setupAddAssetFormListeners() {
     
     try {
       const sublocationName = customSublocationInput.value.trim();
+      
+      // Validate sublocation name
+      if (sublocationName.length < 2) {
+        showToast('Sub-location name must be at least 2 characters long.', { type: 'error' });
+        return;
+      }
+      
       const newSublocation = await addSublocationToLocation(locationSelect.value, sublocationName);
       
       // Refresh sublocation dropdown and select the new sublocation
@@ -1155,26 +1182,31 @@ function setupAddAssetFormListeners() {
       showToast(`Sub-location "${sublocationName}" created successfully!`, { type: 'success' });
     } catch (error) {
       console.error('Error creating custom sublocation:', error);
-      showToast('Error creating sub-location. Please try again.', { type: 'error' });
+      showToast(error.message || 'Error creating sub-location. Please try again.', { type: 'error' });
     }
   }
 
   // Sublocation custom logic
   sublocationSelect.addEventListener('change', () => {
     if (sublocationSelect.value === '__custom__') {
-      if (customSublocationInput) customSublocationInput.style.display = 'block';
-      if (customSublocationInput) customSublocationInput.focus();
+      if (customSublocationInput) {
+        customSublocationInput.style.display = 'block';
+        customSublocationInput.focus();
+      }
       updateFieldState('sublocation', '');
     } else {
-      if (customSublocationInput) customSublocationInput.style.display = 'none';
-      if (customSublocationInput) customSublocationInput.value = '';
+      if (customSublocationInput) {
+        customSublocationInput.style.display = 'none';
+        customSublocationInput.value = '';
+      }
       updateFieldState('sublocation', sublocationSelect.value);
     }
   });
 
   if (customSublocationInput) {
     customSublocationInput.addEventListener('input', (e) => {
-      updateFieldState('sublocation', e.target.value);
+      const value = e.target.value.trim();
+      updateFieldState('sublocation', value);
     });
     
     // Create sublocation when user presses Enter or loses focus
@@ -1679,6 +1711,13 @@ function setupMoveAssetFormListeners() {
     
     try {
       const sublocationName = customSublocationInput.value.trim();
+      
+      // Validate sublocation name
+      if (sublocationName.length < 2) {
+        showToast('Sub-location name must be at least 2 characters long.', { type: 'error' });
+        return;
+      }
+      
       const newSublocation = await addSublocationToLocation(locationSelect.value, sublocationName);
       
       // Refresh sublocation dropdown and select the new sublocation
@@ -1693,26 +1732,31 @@ function setupMoveAssetFormListeners() {
       showToast(`Sub-location "${sublocationName}" created successfully!`, { type: 'success' });
     } catch (error) {
       console.error('Error creating custom sublocation:', error);
-      showToast('Error creating sub-location. Please try again.', { type: 'error' });
+      showToast(error.message || 'Error creating sub-location. Please try again.', { type: 'error' });
     }
   }
 
   // Sublocation custom logic
   sublocationSelect.addEventListener('change', () => {
     if (sublocationSelect.value === '__custom__') {
-      if (customSublocationInput) customSublocationInput.style.display = 'block';
-      if (customSublocationInput) customSublocationInput.focus();
+      if (customSublocationInput) {
+        customSublocationInput.style.display = 'block';
+        customSublocationInput.focus();
+      }
       updateMoveFieldState('sublocation', '');
     } else {
-      if (customSublocationInput) customSublocationInput.style.display = 'none';
-      if (customSublocationInput) customSublocationInput.value = '';
+      if (customSublocationInput) {
+        customSublocationInput.style.display = 'none';
+        customSublocationInput.value = '';
+      }
       updateMoveFieldState('sublocation', sublocationSelect.value);
     }
   });
 
   if (customSublocationInput) {
     customSublocationInput.addEventListener('input', (e) => {
-      updateMoveFieldState('sublocation', e.target.value);
+      const value = e.target.value.trim();
+      updateMoveFieldState('sublocation', value);
     });
     
     // Create sublocation when user presses Enter or loses focus
