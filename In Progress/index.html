@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexus Res-Q | Asset Inspection Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --nexus-yellow: #fdd835;
+      --nexus-bg: #0a0e1a;
+      --nexus-card: #151b2e;
+      --nexus-card-hover: #1a2138;
+      --nexus-dark: #0f1419;
+      --nexus-border: #2a3441;
+      --nexus-light: #ffffff;
+      --nexus-muted: #8792a3;
+      --nexus-success: #10b981;
+      --nexus-warning: #f59e0b;
+      --nexus-error: #ef4444;
+      --nexus-info: #3b82f6;
+      --radius: 16px;
+      --radius-sm: 8px;
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%);
+      color: var(--nexus-light);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .site-header {
+      background: linear-gradient(135deg, var(--nexus-dark) 0%, var(--nexus-card) 100%);
+      border-bottom: 1px solid var(--nexus-border);
+      box-shadow: var(--shadow-card);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .site-logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-img {
+      height: 48px;
+      border-radius: var(--radius-sm);
+    }
+
+    .site-title {
+      color: var(--nexus-yellow);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      text-shadow: 0 2px 8px rgba(253, 216, 53, 0.3);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: var(--nexus-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .nav-link:hover {
+      color: var(--nexus-yellow);
+      background: rgba(253, 216, 53, 0.1);
+    }
+
+    .portal-btn {
+      background: linear-gradient(135deg, var(--nexus-yellow), #f59e0b);
+      color: var(--nexus-dark);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .portal-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(253, 216, 53, 0.3);
+    }
+
+    /* Hero Section */
+    .hero {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 6rem 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .hero-content h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, var(--nexus-light), var(--nexus-yellow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-content p {
+      font-size: 1.25rem;
+      color: var(--nexus-muted);
+      margin-bottom: 2.5rem;
+      line-height: 1.6;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 1rem 2rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--nexus-yellow), #f59e0b);
+      color: var(--nexus-dark);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(253, 216, 53, 0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--nexus-light);
+      border: 2px solid var(--nexus-border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--nexus-yellow);
+      color: var(--nexus-yellow);
+    }
+
+    .hero-visual {
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      padding: 3rem;
+      border: 1px solid var(--nexus-border);
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+    }
+
+    .hero-visual-content {
+      text-align: center;
+      color: var(--nexus-muted);
+    }
+
+    .hero-visual-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Features Section */
+    .features {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 6rem 2rem;
+    }
+
+    .features-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .features-header h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .features-header p {
+      font-size: 1.125rem;
+      color: var(--nexus-muted);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .feature-card {
+      background: var(--nexus-card);
+      border-radius: var(--radius);
+      padding: 2rem;
+      border: 1px solid var(--nexus-border);
+      box-shadow: var(--shadow-card);
+      transition: all 0.2s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-heavy);
+      border-color: var(--nexus-yellow);
+    }
+
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .feature-card h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--nexus-light);
+    }
+
+    .feature-card p {
+      color: var(--nexus-muted);
+      line-height: 1.6;
+    }
+
+    /* CTA Section */
+    .cta {
+      background: var(--nexus-card);
+      border-top: 1px solid var(--nexus-border);
+      border-bottom: 1px solid var(--nexus-border);
+      padding: 6rem 2rem;
+      text-align: center;
+    }
+
+    .cta-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .cta h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .cta p {
+      font-size: 1.125rem;
+      color: var(--nexus-muted);
+      margin-bottom: 2rem;
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--nexus-dark);
+      padding: 4rem 2rem 2rem;
+    }
+
+    .footer-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h4 {
+      color: var(--nexus-light);
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .footer-section a {
+      color: var(--nexus-muted);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 0.5rem;
+      transition: color 0.2s ease;
+    }
+
+    .footer-section a:hover {
+      color: var(--nexus-yellow);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--nexus-border);
+      padding-top: 2rem;
+      text-align: center;
+      color: var(--nexus-muted);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 3rem 1rem;
+        gap: 2rem;
+      }
+
+      .hero-content h1 {
+        font-size: 2.5rem;
+      }
+
+      .features {
+        padding: 3rem 1rem;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cta {
+        padding: 3rem 1rem;
+      }
+
+      .cta h2 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <div class="site-logo">
+        <img src="/logos/nexusresq.jpg" alt="Nexus Res-Q Logo" class="logo-img" />
+        <h1 class="site-title">Nexus Res-Q</h1>
+      </div>
+      <nav class="nav-links">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#contact" class="nav-link">Contact</a>
+        <a href="client-portal.html" class="portal-btn">Client Portal</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Asset inspections.<br>Guaranteed compliance.</h1>
+      <p>Streamline inspections with barcode scanning, automated tracking, and NFPA-compliant reporting for industrial assets. Built for enterprise security and scalability.</p>
+      <div class="hero-buttons">
+        <a href="#contact" class="btn btn-primary">Request Demo</a>
+        <a href="#features" class="btn btn-secondary">See Features</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-visual-content">
+        <div class="hero-visual-icon">📊</div>
+        <h3>Enterprise Asset Management</h3>
+        <p>Secure, scalable, and compliant</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="features-header">
+      <h2>Built for Enterprise</h2>
+      <p>Everything you need for comprehensive asset inspection and compliance management</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🔒</span>
+        <h3>Enterprise Security</h3>
+        <p>Multi-tenant architecture with role-based access control, audit logging, and complete data isolation between clients.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📱</span>
+        <h3>Mobile-First Design</h3>
+        <p>Responsive interface optimized for field work with barcode scanning, offline capability, and rugged device support.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🧠</span>
+        <h3>Intelligent Workflows</h3>
+        <p>Smart asset lifecycle management, automated compliance tracking, and predictive maintenance scheduling.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <h3>Advanced Reporting</h3>
+        <p>Real-time dashboards, automated compliance reports, and comprehensive audit trails for regulatory requirements.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💬</span>
+        <h3>Direct Support</h3>
+        <p>Built-in messaging portal for instant communication with Nexus support team and comprehensive help resources.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">⚡</span>
+        <h3>High Performance</h3>
+        <p>Optimized for scale with efficient data loading, smart caching, and enterprise-grade infrastructure.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta" id="contact">
+    <div class="cta-container">
+      <h2>Ready to transform your asset management?</h2>
+      <p>Join industry leaders who trust Nexus Res-Q for mission-critical compliance and asset inspection workflows.</p>
+      <a href="mailto:sales@nexusresq.com" class="btn btn-primary">Get Started Today</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#security">Security</a>
+          <a href="#integrations">Integrations</a>
+        </div>
+        <div class="footer-section">
+          <h4>Company</h4>
+          <a href="#about">About</a>
+          <a href="#careers">Careers</a>
+          <a href="#contact">Contact</a>
+          <a href="#blog">Blog</a>
+        </div>
+        <div class="footer-section">
+          <h4>Resources</h4>
+          <a href="#documentation">Documentation</a>
+          <a href="#support">Support</a>
+          <a href="#status">Status</a>
+          <a href="#api">API</a>
+        </div>
+        <div class="footer-section">
+          <h4>Legal</h4>
+          <a href="#privacy">Privacy Policy</a>
+          <a href="#terms">Terms of Service</a>
+          <a href="#compliance">Compliance</a>
+          <a href="#gdpr">GDPR</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 Nexus Res-Q. All rights reserved. | Enterprise Asset Inspection Platform</p>
+      </div>
+    </div>
+  </footer>
+
+
+</body>
+</html>

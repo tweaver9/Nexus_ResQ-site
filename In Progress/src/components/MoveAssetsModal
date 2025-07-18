@@ -1,0 +1,89 @@
+import React, { useState } from "react";
+import { moveAsset } from "../hooks/moveAsset"; // adjust path as needed
+import { useClientStore } from "../stores/useClientStore"; // adjust if needed
+import { useUserStore } from "../stores/useUserStore";
+import { useLocationsStore } from "../stores/useLocationsStore";
+import { useAssets } from "../hooks/useAssets";
+
+export default function MoveAssetsModal({ asset, onMoved, onClose }) {
+  const { clientId } = useClientStore();
+  const { adminUsername } = useUserStore();
+  const { locations } = useLocationsStore();
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const { data: assets } = useAssets({ clientId });
+
+  // Optional: only show modal if asset is passed in
+  if (!asset) return null;
+
+  return (
+    <div style={{
+      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+      background: "rgba(0,0,0,0.65)", zIndex: 9999, display: "flex",
+      alignItems: "center", justifyContent: "center"
+    }}>
+      <div style={{
+        background: "#23263a", color: "#ffd700", padding: "2rem",
+        borderRadius: 12, minWidth: 320
+      }}>
+        <h2>Move Asset</h2>
+        <div style={{ margin: "1em 0" }}>
+          <div>Asset: <b>{asset.id}</b></div>
+          <select
+            value={selectedLocation}
+            onChange={e => setSelectedLocation(e.target.value)}
+            style={{
+              width: "100%", padding: "0.5em", marginTop: "1em",
+              borderRadius: 7, border: "1px solid #ffd700"
+            }}
+          >
+            <option value="">Select new location…</option>
+            {locations && locations.map(loc => (
+              <option key={loc.id} value={loc.id}>
+                {loc.name || loc.id}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <button onClick={onClose}
+            style={{ background: "#23263a", color: "#fff", border: "1px solid #ffd700", borderRadius: 7, padding: "8px 20px", cursor: "pointer" }}>
+            Cancel
+          </button>
+          <button
+            disabled={!selectedLocation}
+            onClick={async () => {
+              const selectedLoc = locations.find(l => l.id === selectedLocation);
+              if (!selectedLoc) return;
+              const newLocation = {
+                locationId: selectedLoc.id,
+                locationName: selectedLoc.name,
+                locationCode: selectedLoc.code || "",
+                sublocationId: null,
+                sublocationName: "",
+                sublocationCode: "",
+                precisionId: null,
+                precisionName: "",
+                precisionCode: ""
+              };
+              await moveAsset({
+                db,
+                clientId,
+                assetId: asset.id,
+                newLocation,
+                adminUsername,
+              });
+              onMoved && onMoved();
+            }}
+            style={{
+              background: "#ffd700", color: "#23263a", border: "none",
+              borderRadius: 7, padding: "8px 20px", fontWeight: 700,
+              cursor: selectedLocation ? "pointer" : "not-allowed"
+            }}
+          >
+            Move
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
