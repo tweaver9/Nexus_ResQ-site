@@ -5,25 +5,28 @@
   <title>Nexus Res-Q | Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="CSS/nexus-modern.css">
   <link rel="stylesheet" href="CSS/dashboard.css">
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f6fa;
-      color: #23263a;
+      background: linear-gradient(135deg, #0a0e1a 0%, #0f1419 100%);
+      color: #f2f2f2;
       min-height: 100vh;
       display: flex;
     }
     .sidebar {
       width: 220px;
-      background: linear-gradient(180deg, #181b24, #23263a);
+      background: rgba(24, 27, 36, 0.3);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid rgba(253, 216, 53, 0.1);
       color: #fff;
       display: flex;
       flex-direction: column;
       align-items: stretch;
       min-height: 100vh;
-      box-shadow: 2px 0 12px #0002;
+      box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
       z-index: 2;
     }
     .sidebar-header {
@@ -64,16 +67,19 @@
       border-radius: 7px;
       margin-bottom: 2px;
       cursor: pointer;
-      transition: background 0.13s, color 0.13s;
+      transition: color 0.3s ease, font-weight 0.3s ease;
       outline: none;
       white-space: normal;
       word-wrap: break-word;
       line-height: 1.2;
       min-height: auto;
     }
-    .sidebar-btn.active, .sidebar-btn:hover {
-      background: linear-gradient(90deg, #fdd835 60%, #ffe45e 100%);
-      color: #23263a;
+    .sidebar-btn:hover {
+      color: #fdd835;
+      font-weight: 600;
+    }
+    .sidebar-btn.active {
+      color: #fdd835;
       font-weight: 700;
     }
     .sidebar-footer {
@@ -90,7 +96,7 @@
       display: flex;
       flex-direction: row;
       min-height: 100vh;
-      background: #f5f6fa;
+      background: transparent;
     }
     .dashboard-center {
       flex: 2;
@@ -100,9 +106,11 @@
       gap: 24px;
     }
     .dashboard-header-card {
-      background: var(--primary-mid); /* was #fff */
+      background: rgba(21, 27, 46, 0.4);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(253, 216, 53, 0.1);
       border-radius: 16px;
-      box-shadow: 0 2px 14px #0001;
+      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.2);
       padding: 28px 32px;
       display: flex;
       align-items: center;
@@ -134,9 +142,11 @@
     .dashboard-card {
       flex: 1 1 220px;
       min-width: 220px;
-      background: var(--primary-mid); /* was #fff */
+      background: rgba(21, 27, 46, 0.4);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(253, 216, 53, 0.1);
       border-radius: 16px;
-      box-shadow: 0 2px 14px #0001;
+      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.2);
       padding: 22px 18px 18px 18px;
       display: flex;
       flex-direction: column;

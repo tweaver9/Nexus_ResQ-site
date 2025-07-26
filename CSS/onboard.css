@@ -1,8 +1,9 @@
 body {
   margin: 0;
   font-family: 'Oswald', Arial, sans-serif;
-  background: #f5f6fa;
-  color: #23263a;
+  background: linear-gradient(135deg, #0a0e1a 0%, #0f1419 100%) !important;
+  background-attachment: fixed !important;
+  color: #f2f2f2;
   min-height: 100vh;
   padding: 20px;
 }
@@ -10,7 +11,9 @@ body {
 .onboard-container {
   max-width: 800px;
   margin: 0 auto;
-  background: #fff;
+  background: rgba(21, 27, 46, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(253, 216, 53, 0.1);
   border-radius: 16px;
   box-shadow: 0 2px 14px #0001;
   overflow: hidden;

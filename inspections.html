@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <title>Inspections | Nexus Res-Q</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="CSS/nexus-modern.css">
   <style>
     :root {
       --nexus-yellow: #fdd835;
@@ -26,37 +27,113 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--nexus-bg); color: var(--nexus-light);
+      background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%) !important;
+      background-attachment: fixed !important;
+      color: var(--nexus-light);
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       line-height: 1.6; min-height: 100vh;
+      display: flex;
     }
-    .site-header {
-      background: linear-gradient(135deg, var(--nexus-dark) 0%, var(--nexus-card) 100%);
-      border-bottom: 1px solid var(--nexus-border);
+    .sidebar {
+      width: 220px;
+      background: rgba(24, 27, 36, 0.3);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid rgba(253, 216, 53, 0.1);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      min-height: 100vh;
+      box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+      z-index: 2;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 28px 24px 18px 24px;
+      border-bottom: 1px solid #23263a;
+    }
+    .sidebar-logo {
+      height: 40px;
+      border-radius: 7px;
+      background: #fff;
+      padding: 2px 8px;
+    }
+    .sidebar-title {
+      font-size: 1.25em;
+      font-weight: 700;
+      color: #fdd835;
+      letter-spacing: 1px;
+    }
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 30px;
+      padding: 0 12px;
+    }
+    .sidebar-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      text-align: left;
+      font-size: 1.08em;
+      font-family: 'Oswald', Arial, sans-serif;
+      font-weight: 500;
+      padding: 12px 18px;
+      border-radius: 7px;
+      margin-bottom: 2px;
+      cursor: pointer;
+      transition: color 0.3s ease, font-weight 0.3s ease;
+      outline: none;
+      white-space: normal;
+      word-wrap: break-word;
+      line-height: 1.2;
+      min-height: auto;
+      text-decoration: none;
+      display: block;
+    }
+    .sidebar-btn:hover {
+      color: #fdd835;
+      font-weight: 600;
+    }
+    .sidebar-btn.active {
+      color: #fdd835;
+      font-weight: 700;
+    }
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 18px 24px;
+      font-size: 0.97em;
+      color: #fdd835;
+      cursor: pointer;
+      text-align: left;
+      border-top: 1px solid #23263a;
+    }
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .content-header {
+      background: rgba(15, 20, 25, 0.4);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(253, 216, 53, 0.1);
+      padding: 1.5rem 2rem;
       box-shadow: var(--shadow-card);
-      position: sticky; top: 0; z-index: 100;
     }
-    .header-container {
-      max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .site-title {
+    .content-title {
       color: var(--nexus-yellow);
       font-size: 2.25rem; font-weight: 700; letter-spacing: -0.025em;
       text-shadow: 0 2px 8px rgba(253, 216, 53, 0.3);
-    }
-    .nav-links {
-      display: flex; gap: 2rem; align-items: center;
-    }
-    .nav-link {
-      color: var(--nexus-muted); text-decoration: none; font-weight: 500;
-      transition: color 0.2s ease; padding: 0.5rem 1rem; border-radius: var(--radius-sm);
-    }
-    .nav-link:hover, .nav-link.active {
-      color: var(--nexus-yellow); background: rgba(253, 216, 53, 0.1);
+      margin: 0;
     }
     .main-container {
-      max-width: 1400px; margin: 0 auto; padding: 2rem;
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
     }
     .page-header {
       margin-bottom: 2rem;
@@ -179,20 +256,30 @@
   </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="header-container">
-      <h1 class="site-title">Nexus Res-Q</h1>
-      <nav class="nav-links">
-        <a href="dashboard.html" class="nav-link">Dashboard</a>
-        <a href="manage-assets.html" class="nav-link">Assets</a>
-        <a href="manage-users.html" class="nav-link">Users</a>
-        <a href="inspections.html" class="nav-link active">Inspections</a>
-        <a href="login.html" class="nav-link">Logout</a>
-      </nav>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <img src="logos/nexusresq.jpg" alt="Logo" class="sidebar-logo" />
+      <div class="sidebar-title">NEXUS RES-Q</div>
     </div>
-  </header>
+    <nav class="sidebar-nav">
+             <a href="dashboard-preview.html" class="sidebar-btn">Home</a>
+      <a href="manage-assets.html" class="sidebar-btn">Assets</a>
+      <a href="manage-users.html" class="sidebar-btn">Users</a>
+      <a href="inspections.html" class="sidebar-btn active">Inspections</a>
+      <a href="#" class="sidebar-btn">Logs</a>
+      <a href="#" class="sidebar-btn">Analytics</a>
+      <a href="#" class="sidebar-btn">Site Settings</a>
+      <a href="#" class="sidebar-btn">Help</a>
+    </nav>
+    <div class="sidebar-footer">Inspections</div>
+  </aside>
 
-  <main class="main-container">
+  <div class="main-content">
+    <header class="content-header">
+      <h1 class="content-title">Inspections</h1>
+    </header>
+
+    <main class="main-container">
     <div class="page-header">
       <h1 class="page-title">Inspections</h1>
       <p class="page-subtitle">View and manage all inspection records</p>
@@ -256,7 +343,8 @@
         </table>
       </div>
     </div>
-  </main>
+      </main>
+  </div>
 
   <script type="module" src="inspections.js"></script>
   <script type="module" src="messaging-ui.js"></script>

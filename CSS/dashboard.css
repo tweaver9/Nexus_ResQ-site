@@ -20,7 +20,8 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: 'Oswald', Arial, sans-serif;
-  background: var(--primary-dark);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #0f1419 100%) !important;
+  background-attachment: fixed !important;
   color: #f2f2f2;
   min-height: 100vh;
   display: flex;
@@ -183,7 +184,7 @@ html, body {
   display: flex;
   flex-direction: row;
   min-height: 100vh;
-  background: var(--primary-dark);
+  background: transparent;
   width: 100vw;
   max-width: 100vw;
   box-sizing: border-box;
@@ -538,7 +539,7 @@ html, body {
 }
 
 body, .dashboard-main, .dashboard-center {
-  background: #0d1b2a !important;
+  background: transparent !important;
 }
 
 .dashboard-panel,

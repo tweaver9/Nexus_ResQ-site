@@ -5,6 +5,7 @@
   <title>Team Management | Nexus Res-Q</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="CSS/nexus-modern.css">
   <style>
     :root {
       --nexus-yellow: #fdd835;
@@ -1078,7 +1079,7 @@
   <header class="site-header">
     <div class="header-container">
       <h1 class="site-title">User Management</h1>
-      <a href="dashboard.html" class="back-nav">
+      <a href="dashboard-preview.html" class="back-nav">
         ← Back to Dashboard
       </a>
     </div>
@@ -1238,19 +1239,25 @@
 
     // Wait for DOM to load
     document.addEventListener('DOMContentLoaded', function() {
-      // Session check and initialization
-      clientId = sessionStorage.getItem('tenant_id');
-      username = sessionStorage.getItem('username');
-      role = sessionStorage.getItem('role');
+      // Session check and initialization - TEMPORARILY DISABLED FOR PREVIEW
+      clientId = sessionStorage.getItem('tenant_id') || 'preview-client';
+      username = sessionStorage.getItem('username') || 'Preview User';
+      role = sessionStorage.getItem('role') || 'admin';
+
+      // Set dummy values for preview if not already set
+      if (!sessionStorage.getItem('tenant_id')) sessionStorage.setItem('tenant_id', 'preview-client');
+      if (!sessionStorage.getItem('username')) sessionStorage.setItem('username', 'Preview User');
+      if (!sessionStorage.getItem('role')) sessionStorage.setItem('role', 'admin');
 
       // Debug logging to see actual values
       console.log('Session values:', { clientId, username, role });
 
-      if (!clientId || !username || !role) {
-        console.log('Missing session data, redirecting to login');
-        window.location.href = "login.html";
-        return;
-      }
+      // TEMPORARILY DISABLED FOR PREVIEW
+      // if (!clientId || !username || !role) {
+      //   console.log('Missing session data, redirecting to login');
+      //   window.location.href = "login.html";
+      //   return;
+      // }
 
       // Show client selector for Nexus users (check both role and client ID)
       const isNexusUser = (role && role.toLowerCase() === 'nexus') ||

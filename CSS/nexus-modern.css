@@ -38,11 +38,18 @@
 }
 
 body {
-  background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%);
+  background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%) !important;
+  background-attachment: fixed !important;
   color: var(--nexus-light);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.6;
   min-height: 100vh;
+}
+
+/* Global override to ensure background is always visible */
+html {
+  background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%) !important;
+  background-attachment: fixed !important;
 }
 
 /* Header Styles */

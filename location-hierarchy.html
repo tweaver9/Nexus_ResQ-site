@@ -272,7 +272,7 @@
 <div class="container">
   <div class="header">
     <h1>Location Hierarchy Management</h1>
-    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+            <a href="dashboard-preview.html" class="back-btn">← Back to Dashboard</a>
   </div>
 
   <div class="info-panel">
@@ -374,12 +374,12 @@ const userRole = sessionStorage.getItem('role');
 const clientSubdomain = sessionStorage.getItem('clientSubdomain');
 
 if (userRole !== 'admin' && userRole !== 'nexus') {
-  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">Access Denied<br><br>This feature requires admin privileges.<br><br><a href="dashboard.html" style="color:#fdd835;">Return to Dashboard</a></div>';
+  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">Access Denied<br><br>This feature requires admin privileges.<br><br><a href="dashboard-preview.html" style="color:#fdd835;">Return to Dashboard</a></div>';
   throw new Error("Unauthorized Access");
 }
 
 if (!clientSubdomain) {
-  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">No Client Selected<br><br>Please return to dashboard and select a client.<br><br><a href="dashboard.html" style="color:#fdd835;">Return to Dashboard</a></div>';
+  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">No Client Selected<br><br>Please return to dashboard and select a client.<br><br><a href="dashboard-preview.html" style="color:#fdd835;">Return to Dashboard</a></div>';
   throw new Error("No client subdomain");
 }
 
@@ -423,7 +423,7 @@ async function loadCurrentLocations() {
     document.getElementById('loadingState').innerHTML = `
       <div style="color: #ff5656;">
         Error loading locations: ${error.message}<br>
-        <a href="dashboard.html" style="color: #fdd835;">Return to Dashboard</a>
+                    <a href="dashboard-preview.html" style="color: #fdd835;">Return to Dashboard</a>
       </div>
     `;
   }
