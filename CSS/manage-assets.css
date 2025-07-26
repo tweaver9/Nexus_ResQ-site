@@ -39,7 +39,8 @@
 }
 
 body {
-  background: var(--nexus-bg); 
+  background: linear-gradient(135deg, var(--nexus-bg) 0%, var(--nexus-dark) 100%) !important;
+  background-attachment: fixed !important;
   color: var(--nexus-light);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.6; 
@@ -48,8 +49,9 @@ body {
 
 /* === HEADER === */
 .site-header {
-  background: linear-gradient(135deg, var(--nexus-dark) 0%, var(--nexus-card) 100%);
-  border-bottom: 1px solid var(--nexus-border);
+  background: rgba(15, 20, 25, 0.4);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(253, 216, 53, 0.1);
   box-shadow: var(--shadow-card);
   position: sticky; 
   top: 0; 

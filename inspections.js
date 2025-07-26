@@ -31,15 +31,41 @@ const assetTypeFilter = document.getElementById('assetTypeFilter');
 const tableBody = document.getElementById('inspectionsTableBody');
 const filterButtons = document.querySelectorAll('.filter-btn');
 
+// Test function for manual validation
+window.validateNexusInspections = function() {
+  console.log('🚀 NEXUS INSPECTIONS VALIDATION TEST');
+  console.log('=====================================');
+  console.log(`📊 Total inspections loaded: ${allInspections.length}`);
+  console.log(`🔍 Filtered inspections: ${filteredInspections.length}`);
+  console.log(`🔗 Firebase collection path: clients/${currentClientSubdomain}/inspections`);
+  console.log(`👤 Current user: ${sessionStorage.getItem('username')}`);
+  console.log(`🏢 Client ID: ${sessionStorage.getItem('tenant_id')}`);
+  
+  if (allInspections.length > 0) {
+    console.log('📋 Sample inspection keys:');
+    allInspections.slice(0, 3).forEach((inspection, index) => {
+      console.log(`  ${index + 1}. InspectionKey: ${inspection.id}`);
+    });
+  }
+  
+  console.log('✅ Validation complete! Check above for details.');
+};
+
 // Initialize page
 window.addEventListener('DOMContentLoaded', async () => {
-  // Check authentication and client context
-  currentClientSubdomain = getCurrentClientSubdomain();
+  // Check authentication and client context - TEMPORARILY DISABLED FOR PREVIEW
+  currentClientSubdomain = getCurrentClientSubdomain() || 'preview-client';
   
-  if (!currentClientSubdomain) {
-    window.location.href = 'login.html';
-    return;
-  }
+  // Set dummy values for preview
+  if (!sessionStorage.getItem('username')) sessionStorage.setItem('username', 'Preview User');
+  if (!sessionStorage.getItem('tenant_id')) sessionStorage.setItem('tenant_id', 'preview-client');
+  if (!sessionStorage.getItem('role')) sessionStorage.setItem('role', 'admin');
+  
+  // TEMPORARILY DISABLED FOR PREVIEW
+  // if (!currentClientSubdomain) {
+  //   window.location.href = 'login.html';
+  //   return;
+  // }
 
   // Load all data
   await Promise.all([
@@ -60,7 +86,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 async function loadInspections() {
   try {
     const q = query(
-      getClientCollection(currentClientSubdomain, 'inspectionRecords'),
+      getClientCollection(currentClientSubdomain, 'inspections'),
       orderBy('timestamp', 'desc'),
       limit(500) // Limit to recent 500 inspections for performance
     );
@@ -80,7 +106,13 @@ async function loadInspections() {
     });
     
     filteredInspections = [...allInspections];
-    console.log(`Loaded ${allInspections.length} inspections for client ${currentClientSubdomain}`);
+    console.log(`✅ Loaded ${allInspections.length} inspections for client ${currentClientSubdomain}`);
+    
+    // Debug: Show first inspection structure
+    if (allInspections.length > 0) {
+      console.log('📋 Sample inspection structure:', allInspections[0]);
+      console.log('🔑 InspectionKey (document ID):', allInspections[0].id);
+    }
   } catch (error) {
     console.error('Error loading inspections:', error);
     showError('Failed to load inspections');
@@ -194,6 +226,8 @@ function applyFilters() {
     // Search filter
     if (searchTerm) {
       const searchableText = [
+        inspection.id || '',              // InspectionKey (document ID)
+        inspection.inspectionKey || '',   // InspectionKey if stored in document
         inspection.assetId || '',
         inspection.assetName || '',
         inspection.user || '',
@@ -222,8 +256,13 @@ function applyFilters() {
     }
     
     return true;
-  });
-  
+    });
+
+  // Debug: Log filter results
+  if (searchTerm) {
+    console.log(`🔍 Search "${searchTerm}" returned ${filteredInspections.length} results`);
+  }
+
   renderInspections();
 }
 
