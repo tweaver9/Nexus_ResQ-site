@@ -315,7 +315,7 @@
 <body>
 <div class="onboard-root">
   <div class="onboard-left">
-    <button class="back-arrow" onclick="window.location.href='dashboard-preview.html'" title="Back to Dashboard">←</button>
+    <button class="back-arrow" onclick="window.location.href='dashboard.html'" title="Back to Dashboard">←</button>
     <img src="logos/nexusresq.jpg" alt="Nexus Res-Q Logo" class="nexus-logo" />
     <div class="onboard-headline">Client Onboarding!</div>
     <div class="feature-blurb">
@@ -369,7 +369,7 @@ function getBcrypt() {
 // Role Check - Only allow nexus users
 const userRole = sessionStorage.getItem('role');
 if (userRole !== 'nexus') {
-  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">Access Denied<br><br>This page is restricted to Nexus Owners.<br><br><a href="dashboard-preview.html" style="color:#fdd835;">Return to Dashboard</a></div>';
+  document.body.innerHTML = '<div style="color:#f33;font-size:1.3em;margin:64px auto;max-width:420px;text-align:center;font-family:Arial,sans-serif;">Access Denied<br><br>This page is restricted to Nexus Owners.<br><br><a href="dashboard.html" style="color:#fdd835;">Return to Dashboard</a></div>';
   throw new Error("Unauthorized Access");
 }
 
