@@ -53,19 +53,19 @@ window.validateNexusInspections = function() {
 
 // Initialize page
 window.addEventListener('DOMContentLoaded', async () => {
-  // Check authentication and client context - TEMPORARILY DISABLED FOR PREVIEW
-  currentClientSubdomain = getCurrentClientSubdomain() || 'preview-client';
+  // Check authentication and client context
+  currentClientSubdomain = getCurrentClientSubdomain();
   
-  // Set dummy values for preview
-  if (!sessionStorage.getItem('username')) sessionStorage.setItem('username', 'Preview User');
-  if (!sessionStorage.getItem('tenant_id')) sessionStorage.setItem('tenant_id', 'preview-client');
-  if (!sessionStorage.getItem('role')) sessionStorage.setItem('role', 'admin');
+  const user = sessionStorage.getItem('username');
+  const role = sessionStorage.getItem('role');
+
+  if (!user || !currentClientSubdomain) {
+    // If no user or client is identified, redirect to login
+    window.location.href = 'login.html';
+    return;
+  }
   
-  // TEMPORARILY DISABLED FOR PREVIEW
-  // if (!currentClientSubdomain) {
-  //   window.location.href = 'login.html';
-  //   return;
-  // }
+  console.log(`Initializing inspections page for client: "${currentClientSubdomain}"`);
 
   // Load all data
   await Promise.all([

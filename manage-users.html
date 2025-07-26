@@ -1239,25 +1239,19 @@
 
     // Wait for DOM to load
     document.addEventListener('DOMContentLoaded', function() {
-      // Session check and initialization - TEMPORARILY DISABLED FOR PREVIEW
-      clientId = sessionStorage.getItem('tenant_id') || 'preview-client';
-      username = sessionStorage.getItem('username') || 'Preview User';
-      role = sessionStorage.getItem('role') || 'admin';
-
-      // Set dummy values for preview if not already set
-      if (!sessionStorage.getItem('tenant_id')) sessionStorage.setItem('tenant_id', 'preview-client');
-      if (!sessionStorage.getItem('username')) sessionStorage.setItem('username', 'Preview User');
-      if (!sessionStorage.getItem('role')) sessionStorage.setItem('role', 'admin');
+      // Session check and initialization
+      clientId = sessionStorage.getItem('tenant_id');
+      username = sessionStorage.getItem('username');
+      role = sessionStorage.getItem('role');
 
       // Debug logging to see actual values
       console.log('Session values:', { clientId, username, role });
 
-      // TEMPORARILY DISABLED FOR PREVIEW
-      // if (!clientId || !username || !role) {
-      //   console.log('Missing session data, redirecting to login');
-      //   window.location.href = "login.html";
-      //   return;
-      // }
+      if (!clientId || !username || !role) {
+        console.log('Missing session data, redirecting to login');
+        window.location.href = "login.html";
+        return;
+      }
 
       // Show client selector for Nexus users (check both role and client ID)
       const isNexusUser = (role && role.toLowerCase() === 'nexus') ||
