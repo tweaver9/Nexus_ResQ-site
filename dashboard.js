@@ -28,16 +28,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   const clientLogoUrl = sessionStorage.getItem('clientLogoUrl');
   const clientName = sessionStorage.getItem('clientName');
 
-  // TEMPORARILY DISABLED FOR PREVIEW
-  // if (!currentClientSubdomain || !username || !role) {
-  //   window.location.href = "login.html";
-  //   return;
-  // }
-  
-  // Set dummy values for preview
-  if (!username) sessionStorage.setItem('username', 'Preview User');
-  if (!role) sessionStorage.setItem('role', 'admin');
-  if (!currentClientSubdomain) currentClientSubdomain = 'preview-client';
+  if (!currentClientSubdomain || !username || !role) {
+    window.location.href = "login.html";
+    return;
+  }
 
   // Load client settings
   try {
